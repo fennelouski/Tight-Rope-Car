@@ -426,7 +426,7 @@ enum CourseCatalog {
             ),
             CourseWaypoint(
                 position: CGPoint(x: 560, y: 5),
-                curveToNext: .quadratic(control: CGPoint(x: 490, y: -145))
+                curveToNext: .quadratic(control: CGPoint(x: 490, y: -168))
             ),
             CourseWaypoint(
                 position: CGPoint(x: 720, y: 32),
@@ -860,36 +860,36 @@ enum CourseCatalog {
         waypoints: [
             CourseWaypoint(position: CGPoint(x: 0, y: 0)),
             CourseWaypoint(
-                position: CGPoint(x: 200, y: 2),
-                curveToNext: .quadratic(control: CGPoint(x: 105, y: 5))
+                position: CGPoint(x: 120, y: 2),
+                curveToNext: .quadratic(control: CGPoint(x: 65, y: 5))
             ),
             CourseWaypoint(
-                position: CGPoint(x: 400, y: -1),
+                position: CGPoint(x: 280, y: -1),
                 curveToNext: .line
             ),
             CourseWaypoint(
-                position: CGPoint(x: 600, y: 1),
+                position: CGPoint(x: 440, y: 1),
                 curveToNext: .line
             ),
             CourseWaypoint(
-                position: CGPoint(x: 800, y: -2),
+                position: CGPoint(x: 560, y: -2),
                 curveToNext: .line,
                 ropeWidth: 28
             ),
             CourseWaypoint(
-                position: CGPoint(x: 1000, y: 0),
+                position: CGPoint(x: 680, y: 0),
                 curveToNext: .line,
                 ropeWidth: 26
             ),
             CourseWaypoint(
-                position: CGPoint(x: 1200, y: 1),
+                position: CGPoint(x: 820, y: 1),
                 curveToNext: .line
             ),
             CourseWaypoint(
-                position: CGPoint(x: 1400, y: -1),
-                curveToNext: .quadratic(control: CGPoint(x: 1320, y: 3))
+                position: CGPoint(x: 960, y: -1),
+                curveToNext: .quadratic(control: CGPoint(x: 1020, y: 3))
             ),
-            CourseWaypoint(position: CGPoint(x: 1520, y: 0)),
+            CourseWaypoint(position: CGPoint(x: 1080, y: 0)),
         ],
         styleDefinitions: [
             StyleDefinition(
