@@ -12,7 +12,8 @@ import SwiftData
 struct Tight_Rope_CarApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            PlayerProfile.self,
+            CourseHighScore.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

@@ -64,6 +64,10 @@ These constants keep implementation and tuning aligned:
 - **Difficulty knobs** — Rope width, wind amplitude, forward speed, rope sway frequency, visual vs hitbox wheelbase.
 - **Fairness** — Calibrate neutral tilt at level start; pause stops motion updates.
 
+## Level backgrounds
+
+Levels can use different visual environments (ocean, forest, city, bedroom, toy shop, candy shop, garden, beach). Theme identity and rendering metadata live in `BackgroundTheme` and `BackgroundThemeCatalog` under `Tight Rope Car/Models/`. All 24 parallax layers are in the asset catalog (imported from `Graphics/` via `scripts/import_parallax_graphics.sh`). On the landing screen, tap **Backgrounds** to open the theme gallery and preview parallax in the Simulator. See [docs/background-themes.md](docs/background-themes.md) and [docs/background-art.md](docs/background-art.md).
+
 ## Technical architecture
 
 The project is a native **iOS / iPadOS** app (Swift, SwiftUI app shell). The Xcode template currently includes placeholder SwiftData UI; that will be replaced by the game scene described below.
