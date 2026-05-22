@@ -26,9 +26,9 @@ Catalog entries live in Swift under `Tight Rope Car/Models/`. They are **not** S
 | `garden` | Garden | Flowers, hedges, garden paths |
 | `beach` | Beach | Sand, umbrellas, shoreline |
 
-Until art is ready, the game can render `skyGradient` and `groundColor` from metadata; SpriteKit textures use the names below.
+Sky gradients and ground bands always come from catalog `ThemeColor` metadata; parallax strips are separate PNG layers (see [background-art.md](background-art.md)).
 
-**Art pipeline and export sizes:** [background-art.md](background-art.md). Ocean, forest, and beach layer PNGs are in the asset catalog; other themes are catalog-only until art lands.
+**Art pipeline and export sizes:** [background-art.md](background-art.md). All eight themes ship 24 parallax imagesets (`bg_{theme}_{far|mid|near}`) in `Assets.xcassets`, imported from `Graphics/` via `scripts/import_parallax_graphics.sh`. Verify with `BackgroundThemeAssetTests` or **Backgrounds** on the landing screen.
 
 ## Asset naming convention
 
