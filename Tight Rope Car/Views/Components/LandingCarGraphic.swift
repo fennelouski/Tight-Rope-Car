@@ -13,6 +13,9 @@ struct LandingCarGraphic: View {
     @State private var flameScale: CGFloat = 1
     @State private var dashPhase: CGFloat = 0
 
+    private let carWidth: CGFloat = 110
+    private let lateralOffsetScale: Double = 0.08
+
     var body: some View {
         ZStack {
             carShadow
@@ -26,11 +29,20 @@ struct LandingCarGraphic: View {
         .onAppear(perform: startIdleAnimations)
     }
 
+    /// Blaze Runner — same die-cast look as garage default (`CarCatalog.defaultCar`).
+    private var heroAppearance: CarAppearance {
+        CarCatalog.defaultCar.appearance
+    }
+
+    private var motionBalance: CGFloat {
+        reduceMotion ? 0 : balance
+    }
+
     private var carShadow: some View {
         Ellipse()
             .fill(HotWheelsTheme.trackBlack.opacity(0.35))
-            .frame(width: 110, height: 18)
-            .offset(y: 52)
+            .frame(width: 100, height: 18)
+            .offset(x: motionBalance * carWidth * CGFloat(lateralOffsetScale), y: 52)
             .blur(radius: 2)
     }
 
@@ -119,56 +131,14 @@ struct LandingCarGraphic: View {
 
     private var car: some View {
         ZStack {
-            Circle()
-                .fill(HotWheelsTheme.trackBlack)
-                .frame(width: 24, height: 24)
-                .offset(x: -30, y: 20)
-
-            Circle()
-                .fill(HotWheelsTheme.trackBlack)
-                .frame(width: 24, height: 24)
-                .offset(x: 30, y: 20)
-
-            Circle()
-                .fill(Color.white.opacity(0.85))
-                .frame(width: 10, height: 10)
-                .offset(x: -30, y: 20)
-
-            Circle()
-                .fill(Color.white.opacity(0.85))
-                .frame(width: 10, height: 10)
-                .offset(x: 30, y: 20)
-
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(HotWheelsTheme.hotRed)
-                .frame(width: 94, height: 38)
-                .offset(y: 4)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.white.opacity(0.35), Color.clear],
-                                startPoint: .top,
-                                endPoint: .center
-                            )
-                        )
-                        .offset(y: 4)
-                }
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .strokeBorder(HotWheelsTheme.trackBlack, lineWidth: 2)
-                        .offset(y: 4)
-                )
-
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(HotWheelsTheme.electricBlue)
-                .frame(width: 42, height: 24)
-                .offset(x: -8, y: -6)
-
-            RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .fill(HotWheelsTheme.racingYellow.opacity(0.9))
-                .frame(width: 20, height: 11)
-                .offset(x: -14, y: -8)
+            CarView(
+                car: Car(
+                    lateralOffset: Double(motionBalance) * lateralOffsetScale,
+                    tiltRadians: Double(motionBalance) * 0.09,
+                    appearance: heroAppearance
+                ),
+                size: CGSize(width: carWidth, height: 50)
+            )
 
             FlameAccent()
                 .fill(
@@ -187,8 +157,6 @@ struct LandingCarGraphic: View {
                 .opacity(0.75 + flameScale * 0.25)
         }
         .offset(y: -10)
-        .rotationEffect(.degrees(balance * 5))
-        .offset(x: balance * 6, y: balance * 2)
     }
 
     private func startIdleAnimations() {
