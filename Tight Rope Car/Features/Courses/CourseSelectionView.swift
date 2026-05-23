@@ -67,26 +67,20 @@ struct CourseSelectionView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
+                .padding(.horizontal, horizontalPadding)
+                .hotWheelsContentWidth()
+                .hotWheelsScreenContentPadding()
                 .opacity(headerAppeared ? 1 : 0)
                 .offset(y: headerAppeared ? 0 : (reduceMotion ? 0 : 12))
 
             mapSection
                 .opacity(contentAppeared ? 1 : 0)
                 .scaleEffect(contentAppeared ? 1 : (reduceMotion ? 1 : 0.96))
-
-            selectedCourseCard
-                .padding(.top, 12)
-
-            Spacer(minLength: 12)
-
-            playButton
-                .opacity(footerAppeared ? 1 : 0)
-                .offset(y: footerAppeared ? 0 : (reduceMotion ? 0 : 16))
         }
-        .padding(.horizontal, horizontalPadding)
-        .padding(.top, 16)
-        .padding(.bottom, 32)
-        .hotWheelsContentWidth()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            bottomChrome
+        }
         .sheet(isPresented: $showHighScores) {
             if let profile = activeProfile {
                 HighScoresView(
@@ -170,6 +164,11 @@ struct CourseSelectionView: View {
                 .accessibilityLabel("Map actions")
             }
 
+            Text("Share includes course unlocks, high scores, and a JSON backup.")
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(.white.opacity(0.55))
+                .fixedSize(horizontal: false, vertical: true)
+
             if let profile = activeProfile {
                 PlayerProgressStripView(profile: profile)
             }
@@ -180,9 +179,13 @@ struct CourseSelectionView: View {
 
     private var headerSubtitle: String {
         guard let profile = activeProfile else {
-            return "Scroll the map · tap an open node · play below"
+            return exploreMapHint
         }
         return progressSubtitle(for: profile)
+    }
+
+    private var exploreMapHint: String {
+        "Pinch & drag to explore · tap an open node · play below"
     }
 
     @ViewBuilder
@@ -208,29 +211,56 @@ struct CourseSelectionView: View {
     // MARK: - Map
 
     private var mapSection: some View {
-        HotWheelsContentPanel(
-            title: "Rope Road",
-            trailingCaption: "Pinch & drag to explore",
-            trailingCaptionColor: .white.opacity(0.55),
-            accessibilityLabel: "Course map",
-            accessibilityHint: "Scroll to explore tracks. Double tap an unlocked node to select it."
-        ) {
-            mapScroll
+        GeometryReader { geometry in
+            let canvasSize = CourseMapLayout.canvasSize(containerWidth: geometry.size.width)
+
+            ScrollView([.horizontal, .vertical], showsIndicators: true) {
+                CourseMapCanvasView(
+                    canvasSize: canvasSize,
+                    nodeStates: nodeStates,
+                    selectedCourseID: selectedCourseID.isEmpty ? nil : selectedCourseID,
+                    onSelect: selectCourse,
+                    onMarkComplete: debugMarkCompleteHandler
+                )
+                .padding(.vertical, 12)
+            }
+            .scrollIndicatorsFlash(onAppear: false)
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Course map")
+            .accessibilityHint("Scroll to explore tracks. Double tap an unlocked node to select it.")
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private var mapScroll: some View {
-        ScrollView([.horizontal, .vertical], showsIndicators: true) {
-            CourseMapCanvasView(
-                nodeStates: nodeStates,
-                selectedCourseID: selectedCourseID.isEmpty ? nil : selectedCourseID,
-                onSelect: selectCourse,
-                onMarkComplete: markCompleteForTesting
-            )
-            .padding(20)
+    // MARK: - Bottom chrome
+
+    private var bottomChrome: some View {
+        VStack(spacing: 12) {
+            selectedCourseCard
+
+            playButton
         }
-        .scrollIndicatorsFlash(onAppear: false)
-        .frame(maxHeight: horizontalSizeClass == .regular ? 620 : 480)
+        .padding(.horizontal, horizontalPadding)
+        .padding(.top, 12)
+        .padding(.bottom, 16)
+        .frame(maxWidth: .infinity)
+        .hotWheelsContentWidth()
+        .background(bottomChromeBackground)
+        .opacity(footerAppeared ? 1 : 0)
+        .offset(y: footerAppeared ? 0 : (reduceMotion ? 0 : 16))
+    }
+
+    private var bottomChromeBackground: some View {
+        LinearGradient(
+            colors: [
+                HotWheelsTheme.trackBlack.opacity(0),
+                HotWheelsTheme.trackBlack.opacity(0.72),
+                HotWheelsTheme.trackBlack.opacity(0.92),
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .ignoresSafeArea(edges: .bottom)
     }
 
     @ViewBuilder
@@ -307,7 +337,7 @@ struct CourseSelectionView: View {
         if profile.totalTickets > 0 || completed > 0 {
             return "\(profile.totalTickets) tickets · \(completed)/\(total) tracks cleared"
         }
-        return "Scroll the map · tap an open node · play below"
+        return exploreMapHint
     }
 
     // MARK: - Actions
@@ -322,14 +352,23 @@ struct CourseSelectionView: View {
         }
     }
 
+    #if DEBUG
+    private var debugMarkCompleteHandler: (String) -> Void {
+        { markCompleteForTesting($0) }
+    }
+
     private func markCompleteForTesting(_ courseID: String) {
         guard let profile = activeProfile else { return }
         try? CourseProgressStore.markCompleted(
             courseID: courseID,
             for: profile,
-            context: modelContext
+            context: modelContext,
+            seedScores: true
         )
     }
+    #else
+    private var debugMarkCompleteHandler: (String) -> Void { { _ in } }
+    #endif
 
     private func selectDefaultCourseIfNeeded() {
         guard selectedCourseID.isEmpty else { return }

@@ -17,12 +17,13 @@ struct LandingView: View {
     @State private var titlePulse = false
     @State private var playButtonPulse = false
     @State private var showsBackgroundGallery = false
+#if DEBUG
+    @State private var showsCarDesignGallery = false
+    @State private var previewCarDesign: CarDesign = .classicBug
+#endif
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer()
-                .frame(height: 48)
-
             titleSection
                 .opacity(titleAppeared ? 1 : 0)
                 .scaleEffect(titleAppeared ? (titlePulse ? 1.02 : 1.0) : 0.96)
@@ -49,15 +50,26 @@ struct LandingView: View {
                         : 0.96
                 )
 
-            backgroundsLink
-                .padding(.bottom, 48)
-                .opacity(buttonAppeared ? 1 : 0)
+            VStack(spacing: 8) {
+                backgroundsLink
+#if DEBUG
+                carDesignsLink
+#endif
+            }
+            .padding(.bottom, 16)
+            .opacity(buttonAppeared ? 1 : 0)
         }
         .padding(.horizontal, 24)
+        .hotWheelsScreenContentPadding()
         .hotWheelsContentWidth()
         .sheet(isPresented: $showsBackgroundGallery) {
             BackgroundThemeGalleryView()
         }
+#if DEBUG
+        .sheet(isPresented: $showsCarDesignGallery) {
+            CarDesignPickerView(selectedDesign: $previewCarDesign)
+        }
+#endif
         .onAppear {
             runEntranceAnimation()
         }
@@ -88,6 +100,34 @@ struct LandingView: View {
         .accessibilityLabel("Background themes")
         .accessibilityHint("Opens parallax background gallery")
     }
+
+#if DEBUG
+    private var carDesignsLink: some View {
+        Button {
+            showsCarDesignGallery = true
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "car.side.fill")
+                    .font(.system(size: 14, weight: .bold))
+                Text("Car Designs")
+                    .font(HotWheelsTheme.taglineFont)
+            }
+            .foregroundStyle(.white.opacity(0.92))
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(
+                Capsule()
+                    .fill(HotWheelsTheme.trackBlack.opacity(0.45))
+                    .overlay(
+                        Capsule()
+                            .strokeBorder(HotWheelsTheme.racingYellow.opacity(0.7), lineWidth: 2)
+                    )
+            )
+        }
+        .accessibilityLabel("Car designs")
+        .accessibilityHint("Opens dev gallery of all car body silhouettes")
+    }
+#endif
 
     private var titleSection: some View {
         VStack(spacing: 8) {

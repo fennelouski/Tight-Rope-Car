@@ -57,7 +57,7 @@ struct TicketPickupView: View {
             if state == .collected {
                 collectedOverlay
             }
-            if state == .available, displaySize != .compact {
+            if showsSparkle {
                 availableSparkle
             }
         }
@@ -79,8 +79,13 @@ struct TicketPickupView: View {
         return 1.06
     }
 
+    private var showsSparkle: Bool {
+        state == .available && displaySize == .playfield
+    }
+
     private var ticketBody: some View {
         let corner = dimensions.width * 0.14
+        let strokeWidth = max(1.5, dimensions.width * (displaySize == .playfield ? 0.07 : 0.08))
         return ZStack {
             RoundedRectangle(cornerRadius: corner, style: .continuous)
                 .fill(
@@ -95,7 +100,7 @@ struct TicketPickupView: View {
                 )
 
             RoundedRectangle(cornerRadius: corner, style: .continuous)
-                .strokeBorder(HotWheelsTheme.hotRed, lineWidth: max(1.5, dimensions.width * 0.07))
+                .strokeBorder(HotWheelsTheme.hotRed, lineWidth: strokeWidth)
 
             perforationLine
 

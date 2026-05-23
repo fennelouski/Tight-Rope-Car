@@ -12,13 +12,49 @@ struct ProfileColorPickerView: View {
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 8)
 
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 8) {
-            ForEach(PlayerColorPalette.all) { entry in
-                colorSwatch(entry)
+        VStack(alignment: .leading, spacing: 10) {
+            selectedColorRow
+
+            LazyVGrid(columns: columns, spacing: 8) {
+                ForEach(PlayerColorPalette.all) { entry in
+                    colorSwatch(entry)
+                }
             }
+
+            Text("Tap a swatch to set your team color")
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(.white.opacity(0.55))
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Profile color")
+    }
+
+    private var selectedColorRow: some View {
+        let entry = PlayerColorPalette.entry(at: selectedIndex)
+
+        return HStack(spacing: 10) {
+            Circle()
+                .fill(entry.color)
+                .frame(width: 22, height: 22)
+                .overlay(
+                    Circle()
+                        .strokeBorder(HotWheelsTheme.trackBlack.opacity(0.35), lineWidth: 1)
+                )
+                .overlay(
+                    Circle()
+                        .strokeBorder(HotWheelsTheme.racingYellow, lineWidth: 2)
+                        .padding(-2)
+                )
+                .accessibilityHidden(true)
+
+            Text(entry.name)
+                .font(HotWheelsTheme.captionFont.weight(.bold))
+                .foregroundStyle(.white.opacity(0.95))
+
+            Spacer(minLength: 0)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Selected color \(entry.name)")
     }
 
     private func colorSwatch(_ entry: PlayerColorPalette.Entry) -> some View {

@@ -58,7 +58,11 @@ struct PlayerColorPalette {
     ]
 
     static func color(at index: Int) -> Color {
+        entry(at: index).color
+    }
+
+    static func entry(at index: Int) -> Entry {
         let clamped = max(0, min(index, all.count - 1))
-        return all[clamped].color
+        return all[clamped]
     }
 }
