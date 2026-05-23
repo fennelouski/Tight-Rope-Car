@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-/// Visual representation of a `Car` for previews and future game placement.
+/// SwiftUI car art for a ``Car``; routes ``CarAppearance`` / ``CarSilhouette`` to `Views/Cars/*`.
+/// Used in the garage (`CarRowView`), design picker, and previews; rasterized by ``CarAppearanceTextureRenderer`` for SpriteKit runs.
 struct CarView: View {
     let car: Car
     var size: CGSize = CGSize(width: 80, height: 40)

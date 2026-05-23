@@ -7,7 +7,9 @@ import Foundation
 import QuartzCore
 import UIKit
 
-/// UIKit impact feedback for falls and near-falls (README v0.2; Core Haptics can replace later).
+/// UIKit ``UIImpactFeedbackGenerator`` fall and near-fall feedback (``.heavy`` / ``.rigid``), invoked from ``GameScene``.
+/// Skips when disabled or when ``respectsReduceMotion`` and Reduce Motion is on; near-fall uses ``GameBalanceConstants.nearFallHapticCooldownSeconds``.
+/// Core Haptics is an optional future enhancement, not a replacement for current UIKit feedback.
 @MainActor
 final class GameplayHaptics: GameHapticProviding {
     static let shared = GameplayHaptics()

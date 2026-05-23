@@ -14,7 +14,8 @@ struct Car: Identifiable, Equatable {
     var progressAlongRope: Double
     /// Lateral offset from rope center; negative = left, positive = right.
     var lateralOffset: Double
-    /// Body tilt in radians; driven by device roll later.
+    /// Body tilt in radians; driven by filtered device roll or on-screen balance during gameplay (``GameplayTiltSession`` / ``TiltInputProcessor``).
+    /// Applied to ``CarView`` rotation and ``GameScene`` car `zRotation` each frame.
     var tiltRadians: Double
     var appearance: CarAppearance
 
