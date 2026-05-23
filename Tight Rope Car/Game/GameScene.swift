@@ -16,6 +16,8 @@ final class GameScene: SKScene {
     private let course: Course
     private let sampler: CourseSampler
     private let carAppearance: CarAppearance
+    private let carTexture: SKTexture
+    private let ticketTexture: SKTexture
     private let theme: BackgroundTheme
 
     // Game state
@@ -53,6 +55,8 @@ final class GameScene: SKScene {
     init(
         course: Course,
         carAppearance: CarAppearance,
+        carTexture: SKTexture,
+        ticketTexture: SKTexture,
         theme: BackgroundTheme,
         tiltProvider: TiltRollProviding? = nil,
         reduceMotion: Bool = false
@@ -60,6 +64,8 @@ final class GameScene: SKScene {
         self.course = course
         self.sampler = CourseSampler(course: course)
         self.carAppearance = carAppearance
+        self.carTexture = carTexture
+        self.ticketTexture = ticketTexture
         self.theme = theme
         self.tiltProvider = tiltProvider ?? TiltInputFactory.makeDefaultProvider()
         self.tiltProcessor = TiltInputProcessor(
@@ -137,7 +143,7 @@ final class GameScene: SKScene {
         ropeNode.zPosition = 10
         addChild(ropeNode)
 
-        carNode = CarSpriteNode(appearance: carAppearance)
+        carNode = CarSpriteNode(appearance: carAppearance, texture: carTexture)
         carNode.zPosition = 20
         cameraNode.addChild(carNode)
 
@@ -160,7 +166,7 @@ final class GameScene: SKScene {
         ticketNodes = []
         for fraction in course.ticketFractions {
             let pt = sampler.sample(at: fraction * sampler.totalLength).position
-            let node = TicketPickupSKNode.make()
+            let node = TicketPickupSKNode.make(texture: ticketTexture)
             node.position = pt
             node.zPosition = 15
             addChild(node)
