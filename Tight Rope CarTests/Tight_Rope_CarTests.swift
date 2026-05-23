@@ -162,15 +162,32 @@ struct Tight_Rope_CarTests {
         }
     }
 
-    @Test func allCarDesignsUseV2RenderVersion() {
-        for design in CarDesign.allDesigns {
-            #expect(design.renderVersion == .v2)
-            #expect(design.appearance.renderVersion == .v2)
+    @Test func eachCarDesignSilhouetteMatchesCase() {
+        let expected: [(CarDesign, CarSilhouette)] = [
+            (.classicBug, .classicBug),
+            (.pickup, .pickup),
+            (.sports, .sports),
+            (.van, .van),
+            (.micro, .micro),
+            (.convertible, .convertible),
+            (.suv, .suv),
+            (.raceCar, .raceCar),
+            (.iceCreamTruck, .iceCreamTruck),
+            (.taxi, .taxi),
+            (.fireTruck, .fireTruck),
+            (.schoolBus, .schoolBus),
+            (.policeCar, .policeCar),
+            (.ambulance, .ambulance),
+            (.motorcycle, .motorcycle),
+        ]
+        #expect(CarDesign.allDesigns.count == 15)
+        for (design, silhouette) in expected {
+            #expect(design.appearance.silhouette == silhouette)
         }
     }
 
-    @Test func carAppearanceDefaultsToV1RenderVersion() {
-        #expect(CarAppearance.default.renderVersion == .v1)
-        #expect(CarCatalog.defaultCar.appearance.renderVersion == .v2)
+    @Test func catalogDefaultCarUsesClassicBugSilhouette() {
+        #expect(CarCatalog.defaultCar.appearance.silhouette == .classicBug)
+        #expect(CarAppearance.default.silhouette == .classicBug)
     }
 }

@@ -1,14 +1,14 @@
 //
-//  AmbulanceV2View.swift
+//  AmbulanceView.swift
 //  Tight Rope Car
 //
-//  Premium side-view ambulance renderer (v2).
+//  Premium side-view ambulance renderer.
 //
 
 import SwiftUI
 
-/// Die-cast style ambulance drawing for ``CarRenderVersion/v2``.
-struct AmbulanceV2View: View {
+/// Die-cast style ambulance side view.
+struct AmbulanceView: View {
     let appearance: CarAppearance
     let size: CGSize
 
@@ -136,7 +136,7 @@ struct AmbulanceV2View: View {
         let rocker = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.1)
 
         return ZStack {
-            AmbulanceV2BodyShape()
+            AmbulanceBodyShape()
                 .fill(
                     LinearGradient(
                         colors: [highlight, appearance.bodyColor, rocker, shadow],
@@ -145,7 +145,7 @@ struct AmbulanceV2View: View {
                     )
                 )
 
-            AmbulanceV2BodyShape()
+            AmbulanceBodyShape()
                 .stroke(
                     LinearGradient(
                         colors: [
@@ -159,12 +159,12 @@ struct AmbulanceV2View: View {
                     lineWidth: 0.7
                 )
 
-            AmbulanceV2BodyShape()
+            AmbulanceBodyShape()
                 .stroke(Color.white.opacity(0.22), lineWidth: 0.34)
                 .padding(1)
                 .blendMode(.plusLighter)
 
-            AmbulanceV2RockerShape()
+            AmbulanceRockerShape()
                 .fill(
                     LinearGradient(
                         colors: [shadow.opacity(0.4), appearance.accentColor.opacity(0.35)],
@@ -173,21 +173,21 @@ struct AmbulanceV2View: View {
                     )
                 )
 
-            AmbulanceV2WindowRowShape()
+            AmbulanceWindowRowShape()
                 .fill(windowGradient)
                 .overlay {
-                    AmbulanceV2WindowRowShape()
+                    AmbulanceWindowRowShape()
                         .stroke(Color.white.opacity(0.36), lineWidth: 0.36)
                 }
 
-            AmbulanceV2WindshieldShape()
+            AmbulanceWindshieldShape()
                 .fill(windowGradient)
                 .overlay {
-                    AmbulanceV2WindshieldShape()
+                    AmbulanceWindshieldShape()
                         .stroke(Color.white.opacity(0.38), lineWidth: 0.38)
                 }
 
-            AmbulanceV2CrossShape()
+            AmbulanceCrossShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, appearance.accentColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.2)],
@@ -196,11 +196,11 @@ struct AmbulanceV2View: View {
                     )
                 )
                 .overlay {
-                    AmbulanceV2CrossShape()
+                    AmbulanceCrossShape()
                         .stroke(Color.white.opacity(0.25), lineWidth: 0.32)
                 }
 
-            AmbulanceV2LowerStripeShape()
+            AmbulanceLowerStripeShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, appearance.accentColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.15)],
@@ -209,7 +209,7 @@ struct AmbulanceV2View: View {
                     )
                 )
 
-            AmbulanceV2LightBarShape()
+            AmbulanceLightBarShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.hotRed, HotWheelsTheme.electricBlue],
@@ -218,11 +218,11 @@ struct AmbulanceV2View: View {
                     )
                 )
                 .overlay {
-                    AmbulanceV2LightBarShape()
+                    AmbulanceLightBarShape()
                         .stroke(Color.white.opacity(0.28), lineWidth: 0.32)
                 }
 
-            AmbulanceV2GrilleShape()
+            AmbulanceGrilleShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor.opacity(0.5), HotWheelsTheme.trackBlack.opacity(0.9)],
@@ -231,7 +231,7 @@ struct AmbulanceV2View: View {
                     )
                 )
 
-            AmbulanceV2HeadlightShape()
+            AmbulanceHeadlightShape()
                 .fill(
                     RadialGradient(
                         colors: [Color.white, HotWheelsTheme.racingYellow.opacity(0.88)],
@@ -241,7 +241,7 @@ struct AmbulanceV2View: View {
                     )
                 )
 
-            AmbulanceV2TaillightShape()
+            AmbulanceTaillightShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.hotRed, appearance.accentColor],
@@ -250,10 +250,10 @@ struct AmbulanceV2View: View {
                     )
                 )
 
-            AmbulanceV2RearDoorLineShape()
+            AmbulanceRearDoorLineShape()
                 .stroke(appearance.accentColor.opacity(0.4), lineWidth: 0.4)
 
-            AmbulanceV2WheelArchShape()
+            AmbulanceWheelArchShape()
                 .stroke(appearance.accentColor.opacity(0.35), lineWidth: 0.42)
         }
         .frame(width: bodyWidth * 0.94, height: bodyHeight * 1.05)
@@ -274,7 +274,7 @@ struct AmbulanceV2View: View {
 
 // MARK: - Body silhouette (box ambulance)
 
-private struct AmbulanceV2BodyShape: Shape {
+private struct AmbulanceBodyShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let w = rect.width
@@ -311,7 +311,7 @@ private struct AmbulanceV2BodyShape: Shape {
     }
 }
 
-private struct AmbulanceV2RockerShape: Shape {
+private struct AmbulanceRockerShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -322,7 +322,7 @@ private struct AmbulanceV2RockerShape: Shape {
     }
 }
 
-private struct AmbulanceV2WindowRowShape: Shape {
+private struct AmbulanceWindowRowShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let windows: [CGRect] = [
@@ -337,7 +337,7 @@ private struct AmbulanceV2WindowRowShape: Shape {
     }
 }
 
-private struct AmbulanceV2WindshieldShape: Shape {
+private struct AmbulanceWindshieldShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let glass = CGRect(x: rect.width * 0.1, y: rect.height * 0.2, width: rect.width * 0.18, height: rect.height * 0.34)
@@ -346,7 +346,7 @@ private struct AmbulanceV2WindshieldShape: Shape {
     }
 }
 
-private struct AmbulanceV2CrossShape: Shape {
+private struct AmbulanceCrossShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let crossSize = min(rect.width, rect.height) * 0.26
@@ -369,7 +369,7 @@ private struct AmbulanceV2CrossShape: Shape {
     }
 }
 
-private struct AmbulanceV2LowerStripeShape: Shape {
+private struct AmbulanceLowerStripeShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRect(CGRect(
@@ -382,7 +382,7 @@ private struct AmbulanceV2LowerStripeShape: Shape {
     }
 }
 
-private struct AmbulanceV2LightBarShape: Shape {
+private struct AmbulanceLightBarShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -393,7 +393,7 @@ private struct AmbulanceV2LightBarShape: Shape {
     }
 }
 
-private struct AmbulanceV2GrilleShape: Shape {
+private struct AmbulanceGrilleShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -404,7 +404,7 @@ private struct AmbulanceV2GrilleShape: Shape {
     }
 }
 
-private struct AmbulanceV2HeadlightShape: Shape {
+private struct AmbulanceHeadlightShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius = min(rect.width, rect.height) * 0.05
         let center = CGPoint(x: rect.width * 0.07, y: rect.height * 0.48)
@@ -417,7 +417,7 @@ private struct AmbulanceV2HeadlightShape: Shape {
     }
 }
 
-private struct AmbulanceV2TaillightShape: Shape {
+private struct AmbulanceTaillightShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -428,7 +428,7 @@ private struct AmbulanceV2TaillightShape: Shape {
     }
 }
 
-private struct AmbulanceV2RearDoorLineShape: Shape {
+private struct AmbulanceRearDoorLineShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.move(to: CGPoint(x: rect.width * 0.88, y: rect.height * 0.58))
@@ -437,7 +437,7 @@ private struct AmbulanceV2RearDoorLineShape: Shape {
     }
 }
 
-private struct AmbulanceV2WheelArchShape: Shape {
+private struct AmbulanceWheelArchShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let arches: [CGRect] = [
@@ -475,7 +475,7 @@ private extension Color {
     }
 }
 
-#Preview("Ambulance v2 standalone") {
+#Preview("Ambulance standalone") {
     CarView(
         car: CarDesign.ambulance.makeCar(),
         size: CGSize(width: 96, height: 48)

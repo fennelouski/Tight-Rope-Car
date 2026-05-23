@@ -1,14 +1,14 @@
 //
-//  SchoolBusV2View.swift
+//  VanView.swift
 //  Tight Rope Car
 //
-//  Premium side-view school bus renderer (v2).
+//  Premium side-view van renderer.
 //
 
 import SwiftUI
 
-/// Die-cast style school bus drawing for ``CarRenderVersion/v2``.
-struct SchoolBusV2View: View {
+/// Die-cast style cargo van side view.
+struct VanView: View {
     let appearance: CarAppearance
     let size: CGSize
 
@@ -25,7 +25,7 @@ struct SchoolBusV2View: View {
     }
 
     private var bodyHeight: CGFloat {
-        size.height * 0.54
+        size.height * 0.62
     }
 
     var body: some View {
@@ -34,12 +34,12 @@ struct SchoolBusV2View: View {
             wheelContactShadows
 
             HStack(spacing: wheelSpacing) {
-                busWheel
-                busWheel
+                vanWheel
+                vanWheel
             }
 
-            schoolBusBodyStack
-                .offset(y: -wheelDiameter * 0.42)
+            vanBodyStack
+                .offset(y: -wheelDiameter * 0.38)
         }
         .frame(width: size.width, height: size.height)
     }
@@ -48,8 +48,8 @@ struct SchoolBusV2View: View {
 
     private var bodyDropShadow: some View {
         Ellipse()
-            .fill(HotWheelsTheme.trackBlack.opacity(0.24))
-            .frame(width: bodyWidth * 0.94, height: size.height * 0.1)
+            .fill(HotWheelsTheme.trackBlack.opacity(0.22))
+            .frame(width: bodyWidth * 0.9, height: size.height * 0.1)
             .offset(y: -wheelDiameter * 0.05)
     }
 
@@ -64,12 +64,12 @@ struct SchoolBusV2View: View {
     private var wheelShadowEllipse: some View {
         Ellipse()
             .fill(HotWheelsTheme.trackBlack.opacity(0.28))
-            .frame(width: wheelDiameter * 1.06, height: wheelDiameter * 0.23)
+            .frame(width: wheelDiameter * 1.05, height: wheelDiameter * 0.23)
     }
 
     // MARK: - Wheels
 
-    private var busWheel: some View {
+    private var vanWheel: some View {
         ZStack {
             Circle()
                 .fill(
@@ -92,7 +92,7 @@ struct SchoolBusV2View: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.5),
+                            Color.white.opacity(0.52),
                             appearance.accentColor.opacity(0.4),
                             appearance.accentColor.opacity(0.88),
                         ],
@@ -106,18 +106,18 @@ struct SchoolBusV2View: View {
                 .strokeBorder(Color.white.opacity(0.3), lineWidth: wheelDiameter * 0.024)
                 .frame(width: wheelDiameter * 0.65, height: wheelDiameter * 0.65)
 
-            ForEach(0..<6, id: \.self) { index in
+            ForEach(0..<5, id: \.self) { index in
                 Capsule()
-                    .fill(Color.white.opacity(0.17))
-                    .frame(width: wheelDiameter * 0.04, height: wheelDiameter * 0.15)
+                    .fill(Color.white.opacity(0.18))
+                    .frame(width: wheelDiameter * 0.042, height: wheelDiameter * 0.15)
                     .offset(y: -wheelDiameter * 0.2)
-                    .rotationEffect(.degrees(Double(index) * 60))
+                    .rotationEffect(.degrees(Double(index) * 72))
             }
 
             Circle()
                 .fill(
                     RadialGradient(
-                        colors: [HotWheelsTheme.racingYellow, appearance.accentColor],
+                        colors: [Color(white: 0.76), appearance.accentColor.opacity(0.88)],
                         center: .center,
                         startRadius: 0,
                         endRadius: wheelDiameter * 0.12
@@ -130,27 +130,27 @@ struct SchoolBusV2View: View {
 
     // MARK: - Body stack
 
-    private var schoolBusBodyStack: some View {
-        let highlight = appearance.bodyColor.mix(with: .white, amount: 0.26)
-        let shadow = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.3)
-        let rocker = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.18)
+    private var vanBodyStack: some View {
+        let highlight = appearance.bodyColor.mix(with: .white, amount: 0.22)
+        let shadow = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.22)
+        let rocker = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.14)
 
         return ZStack {
-            SchoolBusV2BodyShape()
+            VanBodyShape()
                 .fill(
                     LinearGradient(
                         colors: [highlight, appearance.bodyColor, rocker, shadow],
-                        startPoint: UnitPoint(x: 0.28, y: 0),
+                        startPoint: UnitPoint(x: 0.3, y: 0),
                         endPoint: UnitPoint(x: 0.62, y: 1)
                     )
                 )
 
-            SchoolBusV2BodyShape()
+            VanBodyShape()
                 .stroke(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.42),
-                            appearance.accentColor.opacity(0.8),
+                            Color.white.opacity(0.45),
+                            appearance.accentColor.opacity(0.7),
                             appearance.accentColor,
                         ],
                         startPoint: .top,
@@ -159,44 +159,35 @@ struct SchoolBusV2View: View {
                     lineWidth: 0.7
                 )
 
-            SchoolBusV2BodyShape()
-                .stroke(Color.white.opacity(0.2), lineWidth: 0.34)
+            VanBodyShape()
+                .stroke(Color.white.opacity(0.2), lineWidth: 0.35)
                 .padding(1)
                 .blendMode(.plusLighter)
 
-            SchoolBusV2RockerShape()
+            VanRockerShape()
                 .fill(
                     LinearGradient(
-                        colors: [shadow.opacity(0.48), appearance.accentColor.opacity(0.4)],
+                        colors: [shadow.opacity(0.45), appearance.accentColor.opacity(0.38)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
                 )
 
-            SchoolBusV2WindowRowShape()
+            VanWindowRowShape()
                 .fill(windowGradient)
                 .overlay {
-                    SchoolBusV2WindowRowShape()
-                        .stroke(Color.white.opacity(0.34), lineWidth: 0.36)
+                    VanWindowRowShape()
+                        .stroke(Color.white.opacity(0.35), lineWidth: 0.38)
                 }
 
-            SchoolBusV2WindshieldShape()
+            VanWindshieldShape()
                 .fill(windowGradient)
                 .overlay {
-                    SchoolBusV2WindshieldShape()
-                        .stroke(Color.white.opacity(0.36), lineWidth: 0.38)
+                    VanWindshieldShape()
+                        .stroke(Color.white.opacity(0.38), lineWidth: 0.4)
                 }
 
-            SchoolBusV2SideStripeShape()
-                .fill(
-                    LinearGradient(
-                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-
-            SchoolBusV2GrilleShape()
+            VanGrilleShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -204,27 +195,44 @@ struct SchoolBusV2View: View {
                         endPoint: .bottom
                     )
                 )
+                .overlay {
+                    VanGrilleShape()
+                        .stroke(Color.white.opacity(0.14), lineWidth: 0.32)
+                }
 
-            SchoolBusV2HeadlightShape()
+            VanFrontBumperShape()
+                .fill(
+                    LinearGradient(
+                        colors: [appearance.accentColor.opacity(0.9), HotWheelsTheme.trackBlack],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+
+            VanRearBumperShape()
+                .fill(
+                    LinearGradient(
+                        colors: [appearance.accentColor.opacity(0.9), HotWheelsTheme.trackBlack],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+
+            VanHeadlightShape()
                 .fill(
                     RadialGradient(
-                        colors: [Color.white, HotWheelsTheme.racingYellow.opacity(0.88)],
+                        colors: [Color.white, HotWheelsTheme.racingYellow.opacity(0.85)],
                         center: .center,
                         startRadius: 0,
                         endRadius: bodyHeight * 0.06
                     )
                 )
+                .overlay {
+                    VanHeadlightShape()
+                        .stroke(appearance.accentColor.opacity(0.4), lineWidth: 0.32)
+                }
 
-            SchoolBusV2TaillightShape()
-                .fill(
-                    LinearGradient(
-                        colors: [HotWheelsTheme.hotRed, appearance.accentColor],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-
-            SchoolBusV2StopArmShape()
+            VanTaillightShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.hotRed, appearance.accentColor],
@@ -233,42 +241,55 @@ struct SchoolBusV2View: View {
                     )
                 )
                 .overlay {
-                    SchoolBusV2StopArmShape()
-                        .stroke(Color.white.opacity(0.2), lineWidth: 0.3)
+                    VanTaillightShape()
+                        .stroke(Color.white.opacity(0.16), lineWidth: 0.3)
                 }
 
-            SchoolBusV2DoorShape()
+            VanSlidingDoorLineShape()
                 .stroke(appearance.accentColor.opacity(0.42), lineWidth: 0.42)
 
-            SchoolBusV2RoofLightShape()
+            VanRoofRackShape()
+                .stroke(
+                    LinearGradient(
+                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ),
+                    lineWidth: 0.5
+                )
+
+            VanSideMirrorShape()
                 .fill(
                     LinearGradient(
-                        colors: [HotWheelsTheme.hotRed.opacity(0.9), HotWheelsTheme.racingYellow],
+                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            VanAccentStripeShape()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            HotWheelsTheme.electricBlue.opacity(0.5),
+                            appearance.accentColor.opacity(0.35),
+                        ],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
 
-            SchoolBusV2FrontBumperShape()
-                .fill(
-                    LinearGradient(
-                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-
-            SchoolBusV2WheelArchShape()
-                .stroke(appearance.accentColor.opacity(0.35), lineWidth: 0.42)
+            VanWheelArchShape()
+                .stroke(appearance.accentColor.opacity(0.32), lineWidth: 0.42)
         }
-        .frame(width: bodyWidth, height: bodyHeight * 0.95)
+        .frame(width: bodyWidth * 0.88, height: bodyHeight * 1.18)
     }
 
     private var windowGradient: LinearGradient {
         LinearGradient(
             colors: [
-                Color.white.opacity(0.56),
-                HotWheelsTheme.electricBlue.opacity(0.26),
+                Color.white.opacity(0.58),
+                HotWheelsTheme.electricBlue.opacity(0.28),
                 appearance.accentColor.opacity(0.52),
             ],
             startPoint: UnitPoint(x: 0.12, y: 0),
@@ -277,38 +298,38 @@ struct SchoolBusV2View: View {
     }
 }
 
-// MARK: - Body silhouette (long bus, front left → rear right)
+// MARK: - Body silhouette (tall box van, front left → rear right)
 
-private struct SchoolBusV2BodyShape: Shape {
+private struct VanBodyShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let w = rect.width
         let h = rect.height
         let ground = rect.maxY
 
-        path.move(to: CGPoint(x: w * 0.02, y: ground - h * 0.2))
-        path.addLine(to: CGPoint(x: w * 0.05, y: ground - h * 0.26))
+        path.move(to: CGPoint(x: w * 0.02, y: ground - h * 0.18))
+        path.addLine(to: CGPoint(x: w * 0.04, y: ground - h * 0.24))
         path.addQuadCurve(
-            to: CGPoint(x: w * 0.12, y: ground - h * 0.4),
-            control: CGPoint(x: w * 0.06, y: ground - h * 0.32)
+            to: CGPoint(x: w * 0.12, y: ground - h * 0.38),
+            control: CGPoint(x: w * 0.05, y: ground - h * 0.3)
         )
         path.addLine(to: CGPoint(x: w * 0.14, y: ground - h * 0.88))
         path.addQuadCurve(
-            to: CGPoint(x: w * 0.22, y: ground - h * 0.92),
-            control: CGPoint(x: w * 0.16, y: ground - h * 0.96)
+            to: CGPoint(x: w * 0.22, y: ground - h * 0.94),
+            control: CGPoint(x: w * 0.16, y: ground - h * 0.98)
         )
-        path.addLine(to: CGPoint(x: w * 0.96, y: ground - h * 0.92))
+        path.addLine(to: CGPoint(x: w * 0.96, y: ground - h * 0.94))
         path.addQuadCurve(
-            to: CGPoint(x: w * 0.99, y: ground - h * 0.84),
-            control: CGPoint(x: w * 0.99, y: ground - h * 0.9)
+            to: CGPoint(x: w * 0.99, y: ground - h * 0.86),
+            control: CGPoint(x: w * 0.99, y: ground - h * 0.92)
         )
-        path.addLine(to: CGPoint(x: w * 0.99, y: ground - h * 0.24))
+        path.addLine(to: CGPoint(x: w * 0.99, y: ground - h * 0.22))
         path.addQuadCurve(
             to: CGPoint(x: w * 0.88, y: ground - h * 0.16),
             control: CGPoint(x: w * 0.96, y: ground - h * 0.14)
         )
         path.addQuadCurve(
-            to: CGPoint(x: w * 0.02, y: ground - h * 0.2),
+            to: CGPoint(x: w * 0.02, y: ground - h * 0.18),
             control: CGPoint(x: w * 0.42, y: ground - h * 0.12)
         )
         path.closeSubpath()
@@ -316,27 +337,27 @@ private struct SchoolBusV2BodyShape: Shape {
     }
 }
 
-private struct SchoolBusV2RockerShape: Shape {
+private struct VanRockerShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
-            in: CGRect(x: rect.width * 0.1, y: rect.height * 0.64, width: rect.width * 0.84, height: rect.height * 0.1),
+            in: CGRect(x: rect.width * 0.1, y: rect.height * 0.68, width: rect.width * 0.84, height: rect.height * 0.08),
             cornerSize: CGSize(width: 2, height: 2)
         )
         return path
     }
 }
 
-private struct SchoolBusV2WindowRowShape: Shape {
+private struct VanWindowRowShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let windowCount = 5
-        let marginX = rect.width * 0.22
-        let availableWidth = rect.width * 0.68
-        let gap = availableWidth * 0.035
+        let windowCount = 3
+        let marginX = rect.width * 0.32
+        let availableWidth = rect.width * 0.58
+        let gap = availableWidth * 0.06
         let windowWidth = (availableWidth - gap * CGFloat(windowCount - 1)) / CGFloat(windowCount)
         let windowHeight = rect.height * 0.28
-        let windowY = rect.height * 0.22
+        let windowY = rect.height * 0.2
 
         for index in 0..<windowCount {
             let x = marginX + CGFloat(index) * (windowWidth + gap)
@@ -349,38 +370,55 @@ private struct SchoolBusV2WindowRowShape: Shape {
     }
 }
 
-private struct SchoolBusV2WindshieldShape: Shape {
+private struct VanWindshieldShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let glass = CGRect(x: rect.width * 0.1, y: rect.height * 0.2, width: rect.width * 0.1, height: rect.height * 0.34)
-        path.addRoundedRect(in: glass, cornerSize: CGSize(width: glass.height * 0.15, height: glass.height * 0.15))
+        let glass = CGRect(x: rect.width * 0.1, y: rect.height * 0.18, width: rect.width * 0.2, height: rect.height * 0.36)
+        path.addRoundedRect(in: glass, cornerSize: CGSize(width: glass.height * 0.2, height: glass.height * 0.2))
         return path
     }
 }
 
-private struct SchoolBusV2SideStripeShape: Shape {
+private struct VanGrilleShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        path.addRect(CGRect(x: rect.width * 0.12, y: rect.height * 0.54, width: rect.width * 0.82, height: rect.height * 0.05))
+        let grille = CGRect(x: 0, y: rect.height * 0.48, width: rect.width * 0.09, height: rect.height * 0.2)
+        path.addRoundedRect(in: grille, cornerSize: CGSize(width: 2, height: 2))
+        let barWidth = grille.width * 0.2
+        for index in 0..<3 {
+            let x = grille.minX + CGFloat(index + 1) * barWidth
+            path.addRect(CGRect(x: x, y: grille.minY + grille.height * 0.12, width: barWidth * 0.35, height: grille.height * 0.76))
+        }
         return path
     }
 }
 
-private struct SchoolBusV2GrilleShape: Shape {
+private struct VanFrontBumperShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
-            in: CGRect(x: 0, y: rect.height * 0.44, width: rect.width * 0.09, height: rect.height * 0.22),
+            in: CGRect(x: 0, y: rect.height * 0.74, width: rect.width * 0.1, height: rect.height * 0.12),
             cornerSize: CGSize(width: 2, height: 2)
         )
         return path
     }
 }
 
-private struct SchoolBusV2HeadlightShape: Shape {
+private struct VanRearBumperShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.addRoundedRect(
+            in: CGRect(x: rect.width * 0.92, y: rect.height * 0.72, width: rect.width * 0.08, height: rect.height * 0.12),
+            cornerSize: CGSize(width: 2, height: 2)
+        )
+        return path
+    }
+}
+
+private struct VanHeadlightShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius = min(rect.width, rect.height) * 0.05
-        let center = CGPoint(x: rect.width * 0.07, y: rect.height * 0.48)
+        let center = CGPoint(x: rect.width * 0.07, y: rect.height * 0.5)
         return Path(ellipseIn: CGRect(
             x: center.x - radius,
             y: center.y - radius,
@@ -390,68 +428,68 @@ private struct SchoolBusV2HeadlightShape: Shape {
     }
 }
 
-private struct SchoolBusV2TaillightShape: Shape {
+private struct VanTaillightShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
-            in: CGRect(x: rect.width * 0.94, y: rect.height * 0.4, width: rect.width * 0.04, height: rect.height * 0.18),
-            cornerSize: CGSize(width: 2, height: 2)
+            in: CGRect(x: rect.width * 0.94, y: rect.height * 0.44, width: rect.width * 0.04, height: rect.height * 0.16),
+            cornerSize: CGSize(width: 1.5, height: 1.5)
         )
         return path
     }
 }
 
-private struct SchoolBusV2StopArmShape: Shape {
+private struct VanSlidingDoorLineShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let pivot = CGPoint(x: rect.width * 0.28, y: rect.height * 0.38)
-        path.move(to: pivot)
-        path.addLine(to: CGPoint(x: rect.width * 0.22, y: rect.height * 0.32))
-        path.addLine(to: CGPoint(x: rect.width * 0.22, y: rect.height * 0.44))
-        path.closeSubpath()
-        return path
+        let x = rect.width * 0.52
+        path.move(to: CGPoint(x: x, y: rect.height * 0.52))
+        path.addLine(to: CGPoint(x: x, y: rect.height * 0.24))
+        return path.strokedPath(StrokeStyle(lineWidth: 0.42, lineCap: .round))
     }
 }
 
-private struct SchoolBusV2DoorShape: Shape {
+private struct VanRoofRackShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        path.addRoundedRect(
-            in: CGRect(x: rect.width * 0.18, y: rect.height * 0.38, width: rect.width * 0.1, height: rect.height * 0.38),
-            cornerSize: CGSize(width: 2, height: 2)
-        )
-        return path.strokedPath(StrokeStyle(lineWidth: 0.42))
+        let rackY = rect.height * 0.1
+        path.move(to: CGPoint(x: rect.width * 0.28, y: rackY))
+        path.addLine(to: CGPoint(x: rect.width * 0.92, y: rackY))
+        path.move(to: CGPoint(x: rect.width * 0.35, y: rackY + rect.height * 0.04))
+        path.addLine(to: CGPoint(x: rect.width * 0.35, y: rackY))
+        path.move(to: CGPoint(x: rect.width * 0.55, y: rackY + rect.height * 0.04))
+        path.addLine(to: CGPoint(x: rect.width * 0.55, y: rackY))
+        path.move(to: CGPoint(x: rect.width * 0.75, y: rackY + rect.height * 0.04))
+        path.addLine(to: CGPoint(x: rect.width * 0.75, y: rackY))
+        return path.strokedPath(StrokeStyle(lineWidth: 0.5, lineCap: .round))
     }
 }
 
-private struct SchoolBusV2RoofLightShape: Shape {
+private struct VanSideMirrorShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
-            in: CGRect(x: rect.width * 0.12, y: rect.height * 0.1, width: rect.width * 0.2, height: rect.height * 0.05),
-            cornerSize: CGSize(width: 2, height: 2)
-        )
-        return path
-    }
-}
-
-private struct SchoolBusV2FrontBumperShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.addRoundedRect(
-            in: CGRect(x: 0, y: rect.height * 0.7, width: rect.width * 0.1, height: rect.height * 0.12),
-            cornerSize: CGSize(width: 2, height: 2)
+            in: CGRect(x: rect.width * 0.26, y: rect.height * 0.24, width: rect.width * 0.05, height: rect.height * 0.07),
+            cornerSize: CGSize(width: 1.5, height: 1.5)
         )
         return path
     }
 }
 
-private struct SchoolBusV2WheelArchShape: Shape {
+private struct VanAccentStripeShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.addRect(CGRect(x: rect.width * 0.3, y: rect.height * 0.54, width: rect.width * 0.55, height: rect.height * 0.04))
+        return path
+    }
+}
+
+private struct VanWheelArchShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let arches: [CGRect] = [
-            CGRect(x: rect.width * 0.12, y: rect.height * 0.52, width: rect.width * 0.2, height: rect.height * 0.24),
-            CGRect(x: rect.width * 0.68, y: rect.height * 0.52, width: rect.width * 0.2, height: rect.height * 0.24),
+            CGRect(x: rect.width * 0.12, y: rect.height * 0.58, width: rect.width * 0.18, height: rect.height * 0.2),
+            CGRect(x: rect.width * 0.68, y: rect.height * 0.58, width: rect.width * 0.18, height: rect.height * 0.2),
         ]
         for arch in arches {
             path.addEllipse(in: arch)
@@ -484,9 +522,9 @@ private extension Color {
     }
 }
 
-#Preview("School bus v2 standalone") {
+#Preview("Van standalone") {
     CarView(
-        car: CarDesign.schoolBus.makeCar(),
+        car: CarDesign.van.makeCar(),
         size: CGSize(width: 96, height: 48)
     )
     .padding()

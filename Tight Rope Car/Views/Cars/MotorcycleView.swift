@@ -1,14 +1,14 @@
 //
-//  MotorcycleV2View.swift
+//  MotorcycleView.swift
 //  Tight Rope Car
 //
-//  Premium side-view motorcycle renderer (v2).
+//  Premium side-view motorcycle renderer.
 //
 
 import SwiftUI
 
-/// Die-cast style sport bike drawing for ``CarRenderVersion/v2``.
-struct MotorcycleV2View: View {
+/// Die-cast style sport bike side view.
+struct MotorcycleView: View {
     let appearance: CarAppearance
     let size: CGSize
 
@@ -136,7 +136,7 @@ struct MotorcycleV2View: View {
         let accentShadow = appearance.accentColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.2)
 
         return ZStack {
-            MotorcycleV2BodyShape()
+            MotorcycleBodyShape()
                 .fill(
                     LinearGradient(
                         colors: [highlight, appearance.bodyColor, shadow],
@@ -145,7 +145,7 @@ struct MotorcycleV2View: View {
                     )
                 )
 
-            MotorcycleV2BodyShape()
+            MotorcycleBodyShape()
                 .stroke(
                     LinearGradient(
                         colors: [
@@ -159,12 +159,12 @@ struct MotorcycleV2View: View {
                     lineWidth: 0.6
                 )
 
-            MotorcycleV2BodyShape()
+            MotorcycleBodyShape()
                 .stroke(Color.white.opacity(0.18), lineWidth: 0.3)
                 .padding(0.8)
                 .blendMode(.plusLighter)
 
-            MotorcycleV2FairingShape()
+            MotorcycleFairingShape()
                 .fill(
                     LinearGradient(
                         colors: [highlight, appearance.bodyColor, accentShadow],
@@ -173,11 +173,11 @@ struct MotorcycleV2View: View {
                     )
                 )
                 .overlay {
-                    MotorcycleV2FairingShape()
+                    MotorcycleFairingShape()
                         .stroke(appearance.accentColor.opacity(0.4), lineWidth: 0.35)
                 }
 
-            MotorcycleV2TankShape()
+            MotorcycleTankShape()
                 .fill(
                     LinearGradient(
                         colors: [highlight, appearance.bodyColor, shadow],
@@ -186,11 +186,11 @@ struct MotorcycleV2View: View {
                     )
                 )
                 .overlay {
-                    MotorcycleV2TankShape()
+                    MotorcycleTankShape()
                         .stroke(Color.white.opacity(0.22), lineWidth: 0.32)
                 }
 
-            MotorcycleV2SeatShape()
+            MotorcycleSeatShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor.opacity(0.85), HotWheelsTheme.trackBlack.opacity(0.9)],
@@ -199,7 +199,7 @@ struct MotorcycleV2View: View {
                     )
                 )
 
-            MotorcycleV2TailShape()
+            MotorcycleTailShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.bodyColor, shadow],
@@ -208,7 +208,7 @@ struct MotorcycleV2View: View {
                     )
                 )
 
-            MotorcycleV2WindscreenShape()
+            MotorcycleWindscreenShape()
                 .fill(
                     LinearGradient(
                         colors: [
@@ -221,11 +221,11 @@ struct MotorcycleV2View: View {
                     )
                 )
                 .overlay {
-                    MotorcycleV2WindscreenShape()
+                    MotorcycleWindscreenShape()
                         .stroke(Color.white.opacity(0.32), lineWidth: 0.32)
                 }
 
-            MotorcycleV2ForkShape()
+            MotorcycleForkShape()
                 .stroke(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -235,10 +235,10 @@ struct MotorcycleV2View: View {
                     lineWidth: 0.45
                 )
 
-            MotorcycleV2HandlebarShape()
+            MotorcycleHandlebarShape()
                 .stroke(appearance.accentColor.opacity(0.7), lineWidth: 0.4)
 
-            MotorcycleV2ExhaustShape()
+            MotorcycleExhaustShape()
                 .fill(
                     LinearGradient(
                         colors: [Color(white: 0.55), appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -247,11 +247,11 @@ struct MotorcycleV2View: View {
                     )
                 )
                 .overlay {
-                    MotorcycleV2ExhaustShape()
+                    MotorcycleExhaustShape()
                         .stroke(Color.white.opacity(0.15), lineWidth: 0.28)
                 }
 
-            MotorcycleV2HeadlightShape()
+            MotorcycleHeadlightShape()
                 .fill(
                     RadialGradient(
                         colors: [Color.white, HotWheelsTheme.racingYellow.opacity(0.85)],
@@ -261,7 +261,7 @@ struct MotorcycleV2View: View {
                     )
                 )
 
-            MotorcycleV2TaillightShape()
+            MotorcycleTaillightShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.hotRed, appearance.accentColor],
@@ -270,7 +270,7 @@ struct MotorcycleV2View: View {
                     )
                 )
 
-            MotorcycleV2AccentStripeShape()
+            MotorcycleAccentStripeShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.flameOrange.opacity(0.55), HotWheelsTheme.racingYellow.opacity(0.4)],
@@ -285,7 +285,7 @@ struct MotorcycleV2View: View {
 
 // MARK: - Body silhouette (sport bike, front left → rear right)
 
-private struct MotorcycleV2BodyShape: Shape {
+private struct MotorcycleBodyShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let w = rect.width
@@ -323,7 +323,7 @@ private struct MotorcycleV2BodyShape: Shape {
     }
 }
 
-private struct MotorcycleV2FairingShape: Shape {
+private struct MotorcycleFairingShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.move(to: CGPoint(x: rect.width * 0.12, y: rect.height * 0.45))
@@ -338,7 +338,7 @@ private struct MotorcycleV2FairingShape: Shape {
     }
 }
 
-private struct MotorcycleV2TankShape: Shape {
+private struct MotorcycleTankShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let tank = CGRect(x: rect.width * 0.3, y: rect.height * 0.22, width: rect.width * 0.28, height: rect.height * 0.28)
@@ -347,7 +347,7 @@ private struct MotorcycleV2TankShape: Shape {
     }
 }
 
-private struct MotorcycleV2SeatShape: Shape {
+private struct MotorcycleSeatShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.move(to: CGPoint(x: rect.width * 0.48, y: rect.height * 0.38))
@@ -368,7 +368,7 @@ private struct MotorcycleV2SeatShape: Shape {
     }
 }
 
-private struct MotorcycleV2TailShape: Shape {
+private struct MotorcycleTailShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -379,7 +379,7 @@ private struct MotorcycleV2TailShape: Shape {
     }
 }
 
-private struct MotorcycleV2WindscreenShape: Shape {
+private struct MotorcycleWindscreenShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.move(to: CGPoint(x: rect.width * 0.26, y: rect.height * 0.28))
@@ -391,7 +391,7 @@ private struct MotorcycleV2WindscreenShape: Shape {
     }
 }
 
-private struct MotorcycleV2ForkShape: Shape {
+private struct MotorcycleForkShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.move(to: CGPoint(x: rect.width * 0.14, y: rect.height * 0.42))
@@ -400,7 +400,7 @@ private struct MotorcycleV2ForkShape: Shape {
     }
 }
 
-private struct MotorcycleV2HandlebarShape: Shape {
+private struct MotorcycleHandlebarShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.move(to: CGPoint(x: rect.width * 0.22, y: rect.height * 0.12))
@@ -409,7 +409,7 @@ private struct MotorcycleV2HandlebarShape: Shape {
     }
 }
 
-private struct MotorcycleV2ExhaustShape: Shape {
+private struct MotorcycleExhaustShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -420,7 +420,7 @@ private struct MotorcycleV2ExhaustShape: Shape {
     }
 }
 
-private struct MotorcycleV2HeadlightShape: Shape {
+private struct MotorcycleHeadlightShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius = min(rect.width, rect.height) * 0.07
         let center = CGPoint(x: rect.width * 0.1, y: rect.height * 0.38)
@@ -433,7 +433,7 @@ private struct MotorcycleV2HeadlightShape: Shape {
     }
 }
 
-private struct MotorcycleV2TaillightShape: Shape {
+private struct MotorcycleTaillightShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -444,7 +444,7 @@ private struct MotorcycleV2TaillightShape: Shape {
     }
 }
 
-private struct MotorcycleV2AccentStripeShape: Shape {
+private struct MotorcycleAccentStripeShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRect(CGRect(x: rect.width * 0.32, y: rect.height * 0.34, width: rect.width * 0.22, height: rect.height * 0.04))
@@ -476,7 +476,7 @@ private extension Color {
     }
 }
 
-#Preview("Motorcycle v2 standalone") {
+#Preview("Motorcycle standalone") {
     CarView(
         car: CarDesign.motorcycle.makeCar(),
         size: CGSize(width: 96, height: 48)

@@ -1,14 +1,14 @@
 //
-//  MicroV2View.swift
+//  MicroView.swift
 //  Tight Rope Car
 //
-//  Premium side-view micro car renderer (v2).
+//  Premium side-view micro car renderer.
 //
 
 import SwiftUI
 
-/// Die-cast style kei / city micro car drawing for ``CarRenderVersion/v2``.
-struct MicroV2View: View {
+/// Die-cast style kei / city micro car side view.
+struct MicroView: View {
     let appearance: CarAppearance
     let size: CGSize
 
@@ -128,7 +128,7 @@ struct MicroV2View: View {
         let rocker = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.16)
 
         return ZStack {
-            MicroV2BodyShape()
+            MicroBodyShape()
                 .fill(
                     LinearGradient(
                         colors: [highlight, appearance.bodyColor, rocker, shadow],
@@ -137,7 +137,7 @@ struct MicroV2View: View {
                     )
                 )
 
-            MicroV2BodyShape()
+            MicroBodyShape()
                 .stroke(
                     LinearGradient(
                         colors: [
@@ -151,12 +151,12 @@ struct MicroV2View: View {
                     lineWidth: 0.65
                 )
 
-            MicroV2BodyShape()
+            MicroBodyShape()
                 .stroke(Color.white.opacity(0.2), lineWidth: 0.32)
                 .padding(0.9)
                 .blendMode(.plusLighter)
 
-            MicroV2RockerShape()
+            MicroRockerShape()
                 .fill(
                     LinearGradient(
                         colors: [shadow.opacity(0.45), appearance.accentColor.opacity(0.38)],
@@ -165,14 +165,14 @@ struct MicroV2View: View {
                     )
                 )
 
-            MicroV2CanopyGlassShape()
+            MicroCanopyGlassShape()
                 .fill(windowGradient)
                 .overlay {
-                    MicroV2CanopyGlassShape()
+                    MicroCanopyGlassShape()
                         .stroke(Color.white.opacity(0.38), lineWidth: 0.38)
                 }
 
-            MicroV2GrilleShape()
+            MicroGrilleShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor.opacity(0.85), HotWheelsTheme.trackBlack],
@@ -181,11 +181,11 @@ struct MicroV2View: View {
                     )
                 )
                 .overlay {
-                    MicroV2GrilleShape()
+                    MicroGrilleShape()
                         .stroke(Color.white.opacity(0.14), lineWidth: 0.3)
                 }
 
-            MicroV2HeadlightShape()
+            MicroHeadlightShape()
                 .fill(
                     RadialGradient(
                         colors: [Color.white, HotWheelsTheme.racingYellow.opacity(0.88)],
@@ -195,11 +195,11 @@ struct MicroV2View: View {
                     )
                 )
                 .overlay {
-                    MicroV2HeadlightShape()
+                    MicroHeadlightShape()
                         .stroke(appearance.accentColor.opacity(0.4), lineWidth: 0.32)
                 }
 
-            MicroV2TaillightShape()
+            MicroTaillightShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.hotRed.opacity(0.9), appearance.accentColor],
@@ -208,14 +208,14 @@ struct MicroV2View: View {
                     )
                 )
                 .overlay {
-                    MicroV2TaillightShape()
+                    MicroTaillightShape()
                         .stroke(Color.white.opacity(0.16), lineWidth: 0.28)
                 }
 
-            MicroV2DoorLineShape()
+            MicroDoorLineShape()
                 .stroke(appearance.accentColor.opacity(0.38), lineWidth: 0.38)
 
-            MicroV2CheekStripeShape()
+            MicroCheekStripeShape()
                 .fill(
                     LinearGradient(
                         colors: [
@@ -227,7 +227,7 @@ struct MicroV2View: View {
                     )
                 )
 
-            MicroV2MirrorShape()
+            MicroMirrorShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -236,10 +236,10 @@ struct MicroV2View: View {
                     )
                 )
 
-            MicroV2AntennaShape()
+            MicroAntennaShape()
                 .stroke(appearance.accentColor.opacity(0.55), lineWidth: 0.35)
 
-            MicroV2WheelArchShape()
+            MicroWheelArchShape()
                 .stroke(appearance.accentColor.opacity(0.3), lineWidth: 0.38)
         }
         .frame(width: bodyWidth * 0.9, height: bodyHeight * 0.88)
@@ -260,7 +260,7 @@ struct MicroV2View: View {
 
 // MARK: - Body silhouette (rounded bubble micro, front left → rear right)
 
-private struct MicroV2BodyShape: Shape {
+private struct MicroBodyShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let w = rect.width
@@ -301,7 +301,7 @@ private struct MicroV2BodyShape: Shape {
     }
 }
 
-private struct MicroV2RockerShape: Shape {
+private struct MicroRockerShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -312,7 +312,7 @@ private struct MicroV2RockerShape: Shape {
     }
 }
 
-private struct MicroV2CanopyGlassShape: Shape {
+private struct MicroCanopyGlassShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let glass = CGRect(x: rect.width * 0.22, y: rect.height * 0.16, width: rect.width * 0.48, height: rect.height * 0.42)
@@ -321,7 +321,7 @@ private struct MicroV2CanopyGlassShape: Shape {
     }
 }
 
-private struct MicroV2GrilleShape: Shape {
+private struct MicroGrilleShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let grille = CGRect(x: rect.width * 0.04, y: rect.height * 0.5, width: rect.width * 0.1, height: rect.height * 0.12)
@@ -336,7 +336,7 @@ private struct MicroV2GrilleShape: Shape {
     }
 }
 
-private struct MicroV2HeadlightShape: Shape {
+private struct MicroHeadlightShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius = min(rect.width, rect.height) * 0.075
         let center = CGPoint(x: rect.width * 0.1, y: rect.height * 0.5)
@@ -349,7 +349,7 @@ private struct MicroV2HeadlightShape: Shape {
     }
 }
 
-private struct MicroV2TaillightShape: Shape {
+private struct MicroTaillightShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius = min(rect.width, rect.height) * 0.055
         let center = CGPoint(x: rect.width * 0.9, y: rect.height * 0.48)
@@ -362,7 +362,7 @@ private struct MicroV2TaillightShape: Shape {
     }
 }
 
-private struct MicroV2DoorLineShape: Shape {
+private struct MicroDoorLineShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.move(to: CGPoint(x: rect.width * 0.44, y: rect.height * 0.56))
@@ -374,7 +374,7 @@ private struct MicroV2DoorLineShape: Shape {
     }
 }
 
-private struct MicroV2CheekStripeShape: Shape {
+private struct MicroCheekStripeShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -385,7 +385,7 @@ private struct MicroV2CheekStripeShape: Shape {
     }
 }
 
-private struct MicroV2MirrorShape: Shape {
+private struct MicroMirrorShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -396,7 +396,7 @@ private struct MicroV2MirrorShape: Shape {
     }
 }
 
-private struct MicroV2AntennaShape: Shape {
+private struct MicroAntennaShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let base = CGPoint(x: rect.width * 0.5, y: rect.height * 0.12)
@@ -406,7 +406,7 @@ private struct MicroV2AntennaShape: Shape {
     }
 }
 
-private struct MicroV2WheelArchShape: Shape {
+private struct MicroWheelArchShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let arches: [CGRect] = [
@@ -444,7 +444,7 @@ private extension Color {
     }
 }
 
-#Preview("Micro v2 standalone") {
+#Preview("Micro standalone") {
     CarView(
         car: CarDesign.micro.makeCar(),
         size: CGSize(width: 96, height: 48)

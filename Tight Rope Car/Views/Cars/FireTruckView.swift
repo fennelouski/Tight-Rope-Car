@@ -1,14 +1,14 @@
 //
-//  FireTruckV2View.swift
+//  FireTruckView.swift
 //  Tight Rope Car
 //
-//  Premium side-view fire truck renderer (v2).
+//  Premium side-view fire truck renderer.
 //
 
 import SwiftUI
 
-/// Die-cast style fire engine drawing for ``CarRenderVersion/v2``.
-struct FireTruckV2View: View {
+/// Die-cast style fire engine side view.
+struct FireTruckView: View {
     let appearance: CarAppearance
     let size: CGSize
 
@@ -136,7 +136,7 @@ struct FireTruckV2View: View {
         let rocker = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.2)
 
         return ZStack {
-            FireTruckV2BodyShape()
+            FireTruckBodyShape()
                 .fill(
                     LinearGradient(
                         colors: [highlight, appearance.bodyColor, rocker, shadow],
@@ -145,7 +145,7 @@ struct FireTruckV2View: View {
                     )
                 )
 
-            FireTruckV2BodyShape()
+            FireTruckBodyShape()
                 .stroke(
                     LinearGradient(
                         colors: [
@@ -159,12 +159,12 @@ struct FireTruckV2View: View {
                     lineWidth: 0.72
                 )
 
-            FireTruckV2BodyShape()
+            FireTruckBodyShape()
                 .stroke(Color.white.opacity(0.18), lineWidth: 0.35)
                 .padding(1.1)
                 .blendMode(.plusLighter)
 
-            FireTruckV2LadderBaseShape()
+            FireTruckLadderBaseShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor.opacity(0.9), HotWheelsTheme.trackBlack],
@@ -173,7 +173,7 @@ struct FireTruckV2View: View {
                     )
                 )
 
-            FireTruckV2LadderStripeShape()
+            FireTruckLadderStripeShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.racingYellow, appearance.accentColor],
@@ -182,7 +182,7 @@ struct FireTruckV2View: View {
                     )
                 )
 
-            FireTruckV2LightBarShape()
+            FireTruckLightBarShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.hotRed, HotWheelsTheme.electricBlue],
@@ -191,11 +191,11 @@ struct FireTruckV2View: View {
                     )
                 )
                 .overlay {
-                    FireTruckV2LightBarShape()
+                    FireTruckLightBarShape()
                         .stroke(Color.white.opacity(0.25), lineWidth: 0.32)
                 }
 
-            FireTruckV2RockerShape()
+            FireTruckRockerShape()
                 .fill(
                     LinearGradient(
                         colors: [shadow.opacity(0.5), appearance.accentColor.opacity(0.42)],
@@ -204,17 +204,17 @@ struct FireTruckV2View: View {
                     )
                 )
 
-            FireTruckV2CabGlassShape()
+            FireTruckCabGlassShape()
                 .fill(windowGradient)
                 .overlay {
-                    FireTruckV2CabGlassShape()
+                    FireTruckCabGlassShape()
                         .stroke(Color.white.opacity(0.36), lineWidth: 0.38)
                 }
 
-            FireTruckV2CompartmentDoorShape()
+            FireTruckCompartmentDoorShape()
                 .stroke(appearance.accentColor.opacity(0.45), lineWidth: 0.42)
 
-            FireTruckV2GrilleShape()
+            FireTruckGrilleShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -223,7 +223,7 @@ struct FireTruckV2View: View {
                     )
                 )
 
-            FireTruckV2HeadlightShape()
+            FireTruckHeadlightShape()
                 .fill(
                     RadialGradient(
                         colors: [Color.white, HotWheelsTheme.racingYellow.opacity(0.9)],
@@ -233,7 +233,7 @@ struct FireTruckV2View: View {
                     )
                 )
 
-            FireTruckV2TaillightShape()
+            FireTruckTaillightShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.hotRed, appearance.accentColor],
@@ -242,7 +242,7 @@ struct FireTruckV2View: View {
                     )
                 )
 
-            FireTruckV2HoseReelShape()
+            FireTruckHoseReelShape()
                 .fill(
                     RadialGradient(
                         colors: [appearance.accentColor.opacity(0.75), HotWheelsTheme.trackBlack],
@@ -252,11 +252,11 @@ struct FireTruckV2View: View {
                     )
                 )
                 .overlay {
-                    FireTruckV2HoseReelShape()
+                    FireTruckHoseReelShape()
                         .stroke(Color.white.opacity(0.2), lineWidth: 0.32)
                 }
 
-            FireTruckV2BumperShape()
+            FireTruckBumperShape()
                 .fill(
                     LinearGradient(
                         colors: [Color(white: 0.55), appearance.accentColor],
@@ -265,7 +265,7 @@ struct FireTruckV2View: View {
                     )
                 )
 
-            FireTruckV2WheelArchShape()
+            FireTruckWheelArchShape()
                 .stroke(appearance.accentColor.opacity(0.38), lineWidth: 0.45)
         }
         .frame(width: bodyWidth, height: bodyHeight * 1.08)
@@ -286,7 +286,7 @@ struct FireTruckV2View: View {
 
 // MARK: - Body silhouette (cab + apparatus body)
 
-private struct FireTruckV2BodyShape: Shape {
+private struct FireTruckBodyShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let w = rect.width
@@ -314,7 +314,7 @@ private struct FireTruckV2BodyShape: Shape {
     }
 }
 
-private struct FireTruckV2LadderBaseShape: Shape {
+private struct FireTruckLadderBaseShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRect(CGRect(
@@ -327,7 +327,7 @@ private struct FireTruckV2LadderBaseShape: Shape {
     }
 }
 
-private struct FireTruckV2LadderStripeShape: Shape {
+private struct FireTruckLadderStripeShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let ladderRect = CGRect(
@@ -346,7 +346,7 @@ private struct FireTruckV2LadderStripeShape: Shape {
     }
 }
 
-private struct FireTruckV2LightBarShape: Shape {
+private struct FireTruckLightBarShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -357,7 +357,7 @@ private struct FireTruckV2LightBarShape: Shape {
     }
 }
 
-private struct FireTruckV2RockerShape: Shape {
+private struct FireTruckRockerShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -368,7 +368,7 @@ private struct FireTruckV2RockerShape: Shape {
     }
 }
 
-private struct FireTruckV2CabGlassShape: Shape {
+private struct FireTruckCabGlassShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let glass = CGRect(x: rect.width * 0.1, y: rect.height * 0.22, width: rect.width * 0.2, height: rect.height * 0.32)
@@ -377,7 +377,7 @@ private struct FireTruckV2CabGlassShape: Shape {
     }
 }
 
-private struct FireTruckV2CompartmentDoorShape: Shape {
+private struct FireTruckCompartmentDoorShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let doorWidth = rect.width * 0.14
@@ -395,7 +395,7 @@ private struct FireTruckV2CompartmentDoorShape: Shape {
     }
 }
 
-private struct FireTruckV2GrilleShape: Shape {
+private struct FireTruckGrilleShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -406,7 +406,7 @@ private struct FireTruckV2GrilleShape: Shape {
     }
 }
 
-private struct FireTruckV2HeadlightShape: Shape {
+private struct FireTruckHeadlightShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius = min(rect.width, rect.height) * 0.05
         let center = CGPoint(x: rect.width * 0.07, y: rect.height * 0.48)
@@ -419,7 +419,7 @@ private struct FireTruckV2HeadlightShape: Shape {
     }
 }
 
-private struct FireTruckV2TaillightShape: Shape {
+private struct FireTruckTaillightShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -430,7 +430,7 @@ private struct FireTruckV2TaillightShape: Shape {
     }
 }
 
-private struct FireTruckV2HoseReelShape: Shape {
+private struct FireTruckHoseReelShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius = min(rect.width, rect.height) * 0.055
         let center = CGPoint(x: rect.width * 0.72, y: rect.height * 0.48)
@@ -443,7 +443,7 @@ private struct FireTruckV2HoseReelShape: Shape {
     }
 }
 
-private struct FireTruckV2BumperShape: Shape {
+private struct FireTruckBumperShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -454,7 +454,7 @@ private struct FireTruckV2BumperShape: Shape {
     }
 }
 
-private struct FireTruckV2WheelArchShape: Shape {
+private struct FireTruckWheelArchShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let arches: [CGRect] = [
@@ -492,7 +492,7 @@ private extension Color {
     }
 }
 
-#Preview("Fire truck v2 standalone") {
+#Preview("Fire truck standalone") {
     CarView(
         car: CarDesign.fireTruck.makeCar(),
         size: CGSize(width: 96, height: 48)

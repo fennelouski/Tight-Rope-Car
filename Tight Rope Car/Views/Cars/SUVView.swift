@@ -1,14 +1,14 @@
 //
-//  SUVV2View.swift
+//  SUVView.swift
 //  Tight Rope Car
 //
-//  Premium side-view SUV renderer (v2).
+//  Premium side-view SUV renderer.
 //
 
 import SwiftUI
 
-/// Die-cast style sport-utility drawing for ``CarRenderVersion/v2``.
-struct SUVV2View: View {
+/// Die-cast style sport-utility side view.
+struct SUVView: View {
     let appearance: CarAppearance
     let size: CGSize
 
@@ -136,7 +136,7 @@ struct SUVV2View: View {
         let rocker = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.2)
 
         return ZStack {
-            SUVV2BodyShape()
+            SUVBodyShape()
                 .fill(
                     LinearGradient(
                         colors: [highlight, appearance.bodyColor, rocker, shadow],
@@ -145,7 +145,7 @@ struct SUVV2View: View {
                     )
                 )
 
-            SUVV2BodyShape()
+            SUVBodyShape()
                 .stroke(
                     LinearGradient(
                         colors: [
@@ -159,12 +159,12 @@ struct SUVV2View: View {
                     lineWidth: 0.72
                 )
 
-            SUVV2BodyShape()
+            SUVBodyShape()
                 .stroke(Color.white.opacity(0.18), lineWidth: 0.35)
                 .padding(1.1)
                 .blendMode(.plusLighter)
 
-            SUVV2CladdingShape()
+            SUVCladdingShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor.opacity(0.85), HotWheelsTheme.trackBlack.opacity(0.9)],
@@ -173,11 +173,11 @@ struct SUVV2View: View {
                     )
                 )
                 .overlay {
-                    SUVV2CladdingShape()
+                    SUVCladdingShape()
                         .stroke(Color.white.opacity(0.12), lineWidth: 0.32)
                 }
 
-            SUVV2RockerShape()
+            SUVRockerShape()
                 .fill(
                     LinearGradient(
                         colors: [shadow.opacity(0.5), appearance.accentColor.opacity(0.42)],
@@ -186,21 +186,21 @@ struct SUVV2View: View {
                     )
                 )
 
-            SUVV2WindowRowShape()
+            SUVWindowRowShape()
                 .fill(windowGradient)
                 .overlay {
-                    SUVV2WindowRowShape()
+                    SUVWindowRowShape()
                         .stroke(Color.white.opacity(0.34), lineWidth: 0.38)
                 }
 
-            SUVV2WindshieldShape()
+            SUVWindshieldShape()
                 .fill(windowGradient)
                 .overlay {
-                    SUVV2WindshieldShape()
+                    SUVWindshieldShape()
                         .stroke(Color.white.opacity(0.36), lineWidth: 0.4)
                 }
 
-            SUVV2GrilleShape()
+            SUVGrilleShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -209,11 +209,11 @@ struct SUVV2View: View {
                     )
                 )
                 .overlay {
-                    SUVV2GrilleShape()
+                    SUVGrilleShape()
                         .stroke(Color.white.opacity(0.14), lineWidth: 0.32)
                 }
 
-            SUVV2SkidPlateShape()
+            SUVSkidPlateShape()
                 .fill(
                     LinearGradient(
                         colors: [Color(white: 0.55), appearance.accentColor],
@@ -222,7 +222,7 @@ struct SUVV2View: View {
                     )
                 )
 
-            SUVV2FrontBumperShape()
+            SUVFrontBumperShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -231,7 +231,7 @@ struct SUVV2View: View {
                     )
                 )
 
-            SUVV2RearBumperShape()
+            SUVRearBumperShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -240,7 +240,7 @@ struct SUVV2View: View {
                     )
                 )
 
-            SUVV2HeadlightShape()
+            SUVHeadlightShape()
                 .fill(
                     RadialGradient(
                         colors: [Color.white, HotWheelsTheme.racingYellow.opacity(0.88)],
@@ -250,11 +250,11 @@ struct SUVV2View: View {
                     )
                 )
                 .overlay {
-                    SUVV2HeadlightShape()
+                    SUVHeadlightShape()
                         .stroke(appearance.accentColor.opacity(0.4), lineWidth: 0.34)
                 }
 
-            SUVV2TaillightShape()
+            SUVTaillightShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.hotRed, appearance.accentColor],
@@ -263,11 +263,11 @@ struct SUVV2View: View {
                     )
                 )
                 .overlay {
-                    SUVV2TaillightShape()
+                    SUVTaillightShape()
                         .stroke(Color.white.opacity(0.16), lineWidth: 0.3)
                 }
 
-            SUVV2RoofRailShape()
+            SUVRoofRailShape()
                 .stroke(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -277,7 +277,7 @@ struct SUVV2View: View {
                     lineWidth: 0.5
                 )
 
-            SUVV2RunningBoardShape()
+            SUVRunningBoardShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor.opacity(0.9), HotWheelsTheme.trackBlack],
@@ -286,7 +286,7 @@ struct SUVV2View: View {
                     )
                 )
 
-            SUVV2SpareTireShape()
+            SUVSpareTireShape()
                 .fill(
                     RadialGradient(
                         colors: [appearance.accentColor.opacity(0.7), HotWheelsTheme.trackBlack],
@@ -296,14 +296,14 @@ struct SUVV2View: View {
                     )
                 )
                 .overlay {
-                    SUVV2SpareTireShape()
+                    SUVSpareTireShape()
                         .stroke(Color.white.opacity(0.18), lineWidth: 0.32)
                 }
 
-            SUVV2DoorLineShape()
+            SUVDoorLineShape()
                 .stroke(appearance.accentColor.opacity(0.38), lineWidth: 0.4)
 
-            SUVV2AccentStripeShape()
+            SUVAccentStripeShape()
                 .fill(
                     LinearGradient(
                         colors: [
@@ -315,7 +315,7 @@ struct SUVV2View: View {
                     )
                 )
 
-            SUVV2WheelArchShape()
+            SUVWheelArchShape()
                 .stroke(appearance.accentColor.opacity(0.38), lineWidth: 0.48)
         }
         .frame(width: bodyWidth * 0.9, height: bodyHeight * 1.15)
@@ -336,7 +336,7 @@ struct SUVV2View: View {
 
 // MARK: - Body silhouette (tall SUV, front left → rear right)
 
-private struct SUVV2BodyShape: Shape {
+private struct SUVBodyShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let w = rect.width
@@ -373,7 +373,7 @@ private struct SUVV2BodyShape: Shape {
     }
 }
 
-private struct SUVV2CladdingShape: Shape {
+private struct SUVCladdingShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -384,7 +384,7 @@ private struct SUVV2CladdingShape: Shape {
     }
 }
 
-private struct SUVV2RockerShape: Shape {
+private struct SUVRockerShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -395,7 +395,7 @@ private struct SUVV2RockerShape: Shape {
     }
 }
 
-private struct SUVV2WindowRowShape: Shape {
+private struct SUVWindowRowShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let windowCount = 3
@@ -417,7 +417,7 @@ private struct SUVV2WindowRowShape: Shape {
     }
 }
 
-private struct SUVV2WindshieldShape: Shape {
+private struct SUVWindshieldShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let glass = CGRect(x: rect.width * 0.1, y: rect.height * 0.18, width: rect.width * 0.18, height: rect.height * 0.34)
@@ -426,7 +426,7 @@ private struct SUVV2WindshieldShape: Shape {
     }
 }
 
-private struct SUVV2GrilleShape: Shape {
+private struct SUVGrilleShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let grille = CGRect(x: 0, y: rect.height * 0.46, width: rect.width * 0.1, height: rect.height * 0.22)
@@ -440,7 +440,7 @@ private struct SUVV2GrilleShape: Shape {
     }
 }
 
-private struct SUVV2SkidPlateShape: Shape {
+private struct SUVSkidPlateShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -451,7 +451,7 @@ private struct SUVV2SkidPlateShape: Shape {
     }
 }
 
-private struct SUVV2FrontBumperShape: Shape {
+private struct SUVFrontBumperShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -462,7 +462,7 @@ private struct SUVV2FrontBumperShape: Shape {
     }
 }
 
-private struct SUVV2RearBumperShape: Shape {
+private struct SUVRearBumperShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -473,7 +473,7 @@ private struct SUVV2RearBumperShape: Shape {
     }
 }
 
-private struct SUVV2HeadlightShape: Shape {
+private struct SUVHeadlightShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius = min(rect.width, rect.height) * 0.048
         let center = CGPoint(x: rect.width * 0.08, y: rect.height * 0.48)
@@ -486,7 +486,7 @@ private struct SUVV2HeadlightShape: Shape {
     }
 }
 
-private struct SUVV2TaillightShape: Shape {
+private struct SUVTaillightShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -497,7 +497,7 @@ private struct SUVV2TaillightShape: Shape {
     }
 }
 
-private struct SUVV2RoofRailShape: Shape {
+private struct SUVRoofRailShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let rackY = rect.height * 0.1
@@ -513,7 +513,7 @@ private struct SUVV2RoofRailShape: Shape {
     }
 }
 
-private struct SUVV2RunningBoardShape: Shape {
+private struct SUVRunningBoardShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -524,7 +524,7 @@ private struct SUVV2RunningBoardShape: Shape {
     }
 }
 
-private struct SUVV2SpareTireShape: Shape {
+private struct SUVSpareTireShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius = min(rect.width, rect.height) * 0.065
         let center = CGPoint(x: rect.width * 0.88, y: rect.height * 0.48)
@@ -537,7 +537,7 @@ private struct SUVV2SpareTireShape: Shape {
     }
 }
 
-private struct SUVV2DoorLineShape: Shape {
+private struct SUVDoorLineShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.move(to: CGPoint(x: rect.width * 0.48, y: rect.height * 0.56))
@@ -546,7 +546,7 @@ private struct SUVV2DoorLineShape: Shape {
     }
 }
 
-private struct SUVV2AccentStripeShape: Shape {
+private struct SUVAccentStripeShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRect(CGRect(x: rect.width * 0.32, y: rect.height * 0.52, width: rect.width * 0.5, height: rect.height * 0.04))
@@ -554,7 +554,7 @@ private struct SUVV2AccentStripeShape: Shape {
     }
 }
 
-private struct SUVV2WheelArchShape: Shape {
+private struct SUVWheelArchShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let arches: [CGRect] = [
@@ -592,7 +592,7 @@ private extension Color {
     }
 }
 
-#Preview("SUV v2 standalone") {
+#Preview("SUV standalone") {
     CarView(
         car: CarDesign.suv.makeCar(),
         size: CGSize(width: 96, height: 48)

@@ -1,14 +1,14 @@
 //
-//  IceCreamTruckV2View.swift
+//  IceCreamTruckView.swift
 //  Tight Rope Car
 //
-//  Premium side-view ice cream truck renderer (v2).
+//  Premium side-view ice cream truck renderer.
 //
 
 import SwiftUI
 
-/// Die-cast style ice cream truck drawing for ``CarRenderVersion/v2``.
-struct IceCreamTruckV2View: View {
+/// Die-cast style ice cream truck side view.
+struct IceCreamTruckView: View {
     let appearance: CarAppearance
     let size: CGSize
 
@@ -67,7 +67,7 @@ struct IceCreamTruckV2View: View {
             .frame(width: wheelDiameter * 1.05, height: wheelDiameter * 0.23)
     }
 
-    // MARK: - Wheels (white rim + body-color hub, like v1)
+    // MARK: - Wheels (white rim + body-color hub)
 
     private var iceCreamWheel: some View {
         ZStack {
@@ -118,7 +118,7 @@ struct IceCreamTruckV2View: View {
         let rocker = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.16)
 
         return ZStack {
-            IceCreamTruckV2BodyShape()
+            IceCreamTruckBodyShape()
                 .fill(
                     LinearGradient(
                         colors: [highlight, appearance.bodyColor, rocker, shadow],
@@ -127,7 +127,7 @@ struct IceCreamTruckV2View: View {
                     )
                 )
 
-            IceCreamTruckV2BodyShape()
+            IceCreamTruckBodyShape()
                 .stroke(
                     LinearGradient(
                         colors: [
@@ -141,12 +141,12 @@ struct IceCreamTruckV2View: View {
                     lineWidth: 0.7
                 )
 
-            IceCreamTruckV2BodyShape()
+            IceCreamTruckBodyShape()
                 .stroke(Color.white.opacity(0.2), lineWidth: 0.34)
                 .padding(1)
                 .blendMode(.plusLighter)
 
-            IceCreamTruckV2RoofBandShape()
+            IceCreamTruckRoofBandShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, appearance.accentColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.08)],
@@ -155,11 +155,11 @@ struct IceCreamTruckV2View: View {
                     )
                 )
                 .overlay {
-                    IceCreamTruckV2RoofBandShape()
+                    IceCreamTruckRoofBandShape()
                         .stroke(Color.white.opacity(0.25), lineWidth: 0.35)
                 }
 
-            IceCreamTruckV2RockerShape()
+            IceCreamTruckRockerShape()
                 .fill(
                     LinearGradient(
                         colors: [shadow.opacity(0.45), appearance.accentColor.opacity(0.35)],
@@ -168,21 +168,21 @@ struct IceCreamTruckV2View: View {
                     )
                 )
 
-            IceCreamTruckV2CabGlassShape()
+            IceCreamTruckCabGlassShape()
                 .fill(windowGradient)
                 .overlay {
-                    IceCreamTruckV2CabGlassShape()
+                    IceCreamTruckCabGlassShape()
                         .stroke(Color.white.opacity(0.38), lineWidth: 0.38)
                 }
 
-            IceCreamTruckV2ServiceWindowShape()
+            IceCreamTruckServiceWindowShape()
                 .fill(windowGradient)
                 .overlay {
-                    IceCreamTruckV2ServiceWindowShape()
+                    IceCreamTruckServiceWindowShape()
                         .stroke(Color.white.opacity(0.36), lineWidth: 0.38)
                 }
 
-            IceCreamTruckV2AwningShape()
+            IceCreamTruckAwningShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.flameOrange.opacity(0.35)],
@@ -191,7 +191,7 @@ struct IceCreamTruckV2View: View {
                     )
                 )
                 .overlay {
-                    IceCreamTruckV2AwningStripeShape()
+                    IceCreamTruckAwningStripeShape()
                         .fill(
                             LinearGradient(
                                 colors: [HotWheelsTheme.hotRed.opacity(0.55), HotWheelsTheme.electricBlue.opacity(0.45)],
@@ -201,7 +201,7 @@ struct IceCreamTruckV2View: View {
                         )
                 }
 
-            IceCreamTruckV2GrilleShape()
+            IceCreamTruckGrilleShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack.opacity(0.9)],
@@ -210,7 +210,7 @@ struct IceCreamTruckV2View: View {
                     )
                 )
 
-            IceCreamTruckV2HeadlightShape()
+            IceCreamTruckHeadlightShape()
                 .fill(
                     RadialGradient(
                         colors: [Color.white, HotWheelsTheme.racingYellow.opacity(0.88)],
@@ -220,7 +220,7 @@ struct IceCreamTruckV2View: View {
                     )
                 )
 
-            IceCreamTruckV2TaillightShape()
+            IceCreamTruckTaillightShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.hotRed, appearance.accentColor.opacity(0.8)],
@@ -229,7 +229,7 @@ struct IceCreamTruckV2View: View {
                     )
                 )
 
-            IceCreamTruckV2ConeShape()
+            IceCreamTruckConeShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.flameOrange, HotWheelsTheme.racingYellow],
@@ -238,7 +238,7 @@ struct IceCreamTruckV2View: View {
                     )
                 )
                 .overlay {
-                    IceCreamTruckV2ConeScoopShape()
+                    IceCreamTruckConeScoopShape()
                         .fill(
                             LinearGradient(
                                 colors: [appearance.accentColor, appearance.bodyColor.opacity(0.9)],
@@ -248,7 +248,7 @@ struct IceCreamTruckV2View: View {
                         )
                 }
 
-            IceCreamTruckV2SpeakerShape()
+            IceCreamTruckSpeakerShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack.opacity(0.85)],
@@ -257,14 +257,14 @@ struct IceCreamTruckV2View: View {
                     )
                 )
                 .overlay {
-                    IceCreamTruckV2SpeakerShape()
+                    IceCreamTruckSpeakerShape()
                         .stroke(Color.white.opacity(0.18), lineWidth: 0.3)
                 }
 
-            IceCreamTruckV2MusicNotesShape()
+            IceCreamTruckMusicNotesShape()
                 .stroke(HotWheelsTheme.electricBlue.opacity(0.7), lineWidth: 0.4)
 
-            IceCreamTruckV2WheelArchShape()
+            IceCreamTruckWheelArchShape()
                 .stroke(appearance.accentColor.opacity(0.4), lineWidth: 0.42)
         }
         .frame(width: bodyWidth * 0.92, height: bodyHeight * 1.12)
@@ -285,7 +285,7 @@ struct IceCreamTruckV2View: View {
 
 // MARK: - Body silhouette (cab + box, front left → rear right)
 
-private struct IceCreamTruckV2BodyShape: Shape {
+private struct IceCreamTruckBodyShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let w = rect.width
@@ -321,7 +321,7 @@ private struct IceCreamTruckV2BodyShape: Shape {
     }
 }
 
-private struct IceCreamTruckV2RoofBandShape: Shape {
+private struct IceCreamTruckRoofBandShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRect(CGRect(x: 0, y: 0, width: rect.width, height: rect.height * 0.18))
@@ -329,7 +329,7 @@ private struct IceCreamTruckV2RoofBandShape: Shape {
     }
 }
 
-private struct IceCreamTruckV2RockerShape: Shape {
+private struct IceCreamTruckRockerShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -340,7 +340,7 @@ private struct IceCreamTruckV2RockerShape: Shape {
     }
 }
 
-private struct IceCreamTruckV2CabGlassShape: Shape {
+private struct IceCreamTruckCabGlassShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let glass = CGRect(x: rect.width * 0.1, y: rect.height * 0.24, width: rect.width * 0.2, height: rect.height * 0.3)
@@ -349,7 +349,7 @@ private struct IceCreamTruckV2CabGlassShape: Shape {
     }
 }
 
-private struct IceCreamTruckV2ServiceWindowShape: Shape {
+private struct IceCreamTruckServiceWindowShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let window = CGRect(x: rect.width * 0.4, y: rect.height * 0.32, width: rect.width * 0.38, height: rect.height * 0.26)
@@ -358,7 +358,7 @@ private struct IceCreamTruckV2ServiceWindowShape: Shape {
     }
 }
 
-private struct IceCreamTruckV2AwningShape: Shape {
+private struct IceCreamTruckAwningShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let awningTop = rect.height * 0.28
@@ -371,7 +371,7 @@ private struct IceCreamTruckV2AwningShape: Shape {
     }
 }
 
-private struct IceCreamTruckV2AwningStripeShape: Shape {
+private struct IceCreamTruckAwningStripeShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let stripeWidth = rect.width * 0.06
@@ -386,7 +386,7 @@ private struct IceCreamTruckV2AwningStripeShape: Shape {
     }
 }
 
-private struct IceCreamTruckV2GrilleShape: Shape {
+private struct IceCreamTruckGrilleShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -397,7 +397,7 @@ private struct IceCreamTruckV2GrilleShape: Shape {
     }
 }
 
-private struct IceCreamTruckV2HeadlightShape: Shape {
+private struct IceCreamTruckHeadlightShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius = min(rect.width, rect.height) * 0.05
         let center = CGPoint(x: rect.width * 0.07, y: rect.height * 0.48)
@@ -410,7 +410,7 @@ private struct IceCreamTruckV2HeadlightShape: Shape {
     }
 }
 
-private struct IceCreamTruckV2TaillightShape: Shape {
+private struct IceCreamTruckTaillightShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -421,7 +421,7 @@ private struct IceCreamTruckV2TaillightShape: Shape {
     }
 }
 
-private struct IceCreamTruckV2ConeShape: Shape {
+private struct IceCreamTruckConeShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let tip = CGPoint(x: rect.width * 0.58, y: rect.height * 0.58)
@@ -433,7 +433,7 @@ private struct IceCreamTruckV2ConeShape: Shape {
     }
 }
 
-private struct IceCreamTruckV2ConeScoopShape: Shape {
+private struct IceCreamTruckConeScoopShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius = min(rect.width, rect.height) * 0.045
         let center = CGPoint(x: rect.width * 0.58, y: rect.height * 0.44)
@@ -446,7 +446,7 @@ private struct IceCreamTruckV2ConeScoopShape: Shape {
     }
 }
 
-private struct IceCreamTruckV2SpeakerShape: Shape {
+private struct IceCreamTruckSpeakerShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -457,7 +457,7 @@ private struct IceCreamTruckV2SpeakerShape: Shape {
     }
 }
 
-private struct IceCreamTruckV2MusicNotesShape: Shape {
+private struct IceCreamTruckMusicNotesShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let noteX = rect.width * 0.86
@@ -473,7 +473,7 @@ private struct IceCreamTruckV2MusicNotesShape: Shape {
     }
 }
 
-private struct IceCreamTruckV2WheelArchShape: Shape {
+private struct IceCreamTruckWheelArchShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let arches: [CGRect] = [
@@ -511,7 +511,7 @@ private extension Color {
     }
 }
 
-#Preview("Ice cream truck v2 standalone") {
+#Preview("Ice cream truck standalone") {
     CarView(
         car: CarDesign.iceCreamTruck.makeCar(),
         size: CGSize(width: 96, height: 48)

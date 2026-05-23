@@ -1,14 +1,14 @@
 //
-//  ConvertibleV2View.swift
+//  SportsView.swift
 //  Tight Rope Car
 //
-//  Premium side-view convertible roadster renderer (v2).
+//  Premium side-view sports car renderer.
 //
 
 import SwiftUI
 
-/// Die-cast style open-top roadster drawing for ``CarRenderVersion/v2``.
-struct ConvertibleV2View: View {
+/// Die-cast style sports coupe side view.
+struct SportsView: View {
     let appearance: CarAppearance
     let size: CGSize
 
@@ -25,7 +25,7 @@ struct ConvertibleV2View: View {
     }
 
     private var bodyHeight: CGFloat {
-        size.height * 0.52
+        size.height * 0.5
     }
 
     var body: some View {
@@ -34,12 +34,12 @@ struct ConvertibleV2View: View {
             wheelContactShadows
 
             HStack(spacing: wheelSpacing) {
-                convertibleWheel
-                convertibleWheel
+                sportsWheel
+                sportsWheel
             }
 
-            convertibleBodyStack
-                .offset(y: -wheelDiameter * 0.3)
+            sportsBodyStack
+                .offset(y: -wheelDiameter * 0.28)
         }
         .frame(width: size.width, height: size.height)
     }
@@ -49,8 +49,8 @@ struct ConvertibleV2View: View {
     private var bodyDropShadow: some View {
         Ellipse()
             .fill(HotWheelsTheme.trackBlack.opacity(0.22))
-            .frame(width: bodyWidth * 0.88, height: size.height * 0.1)
-            .offset(y: -wheelDiameter * 0.06)
+            .frame(width: bodyWidth * 0.9, height: size.height * 0.1)
+            .offset(y: -wheelDiameter * 0.07)
     }
 
     private var wheelContactShadows: some View {
@@ -69,7 +69,7 @@ struct ConvertibleV2View: View {
 
     // MARK: - Wheels
 
-    private var convertibleWheel: some View {
+    private var sportsWheel: some View {
         ZStack {
             Circle()
                 .fill(
@@ -86,7 +86,7 @@ struct ConvertibleV2View: View {
                 )
 
             Circle()
-                .strokeBorder(Color(white: 0.7).opacity(0.5), lineWidth: wheelDiameter * 0.046)
+                .strokeBorder(Color(white: 0.68).opacity(0.5), lineWidth: wheelDiameter * 0.045)
 
             Circle()
                 .fill(
@@ -109,7 +109,7 @@ struct ConvertibleV2View: View {
             ForEach(0..<5, id: \.self) { index in
                 Capsule()
                     .fill(Color.white.opacity(0.2))
-                    .frame(width: wheelDiameter * 0.044, height: wheelDiameter * 0.16)
+                    .frame(width: wheelDiameter * 0.045, height: wheelDiameter * 0.17)
                     .offset(y: -wheelDiameter * 0.21)
                     .rotationEffect(.degrees(Double(index) * 72))
             }
@@ -130,103 +130,119 @@ struct ConvertibleV2View: View {
 
     // MARK: - Body stack
 
-    private var convertibleBodyStack: some View {
+    private var sportsBodyStack: some View {
         let highlight = appearance.bodyColor.mix(with: .white, amount: 0.3)
-        let shadow = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.3)
-        let rocker = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.18)
+        let shadow = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.32)
+        let rocker = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.2)
 
         return ZStack {
-            ConvertibleV2BodyShape()
+            SportsBodyShape()
                 .fill(
                     LinearGradient(
                         colors: [highlight, appearance.bodyColor, rocker, shadow],
-                        startPoint: UnitPoint(x: 0.3, y: 0),
+                        startPoint: UnitPoint(x: 0.32, y: 0),
                         endPoint: UnitPoint(x: 0.58, y: 1)
                     )
                 )
 
-            ConvertibleV2BodyShape()
+            SportsBodyShape()
                 .stroke(
                     LinearGradient(
                         colors: [
                             Color.white.opacity(0.42),
-                            appearance.accentColor.opacity(0.75),
+                            appearance.accentColor.opacity(0.8),
                             appearance.accentColor,
                         ],
                         startPoint: .top,
                         endPoint: .bottom
                     ),
-                    lineWidth: 0.68
+                    lineWidth: 0.7
                 )
 
-            ConvertibleV2BodyShape()
-                .stroke(Color.white.opacity(0.2), lineWidth: 0.34)
-                .padding(1)
+            SportsBodyShape()
+                .stroke(Color.white.opacity(0.2), lineWidth: 0.35)
+                .padding(1.1)
                 .blendMode(.plusLighter)
 
-            ConvertibleV2InteriorShape()
+            SportsRockerShape()
                 .fill(
                     LinearGradient(
-                        colors: [appearance.accentColor.opacity(0.75), HotWheelsTheme.trackBlack.opacity(0.85)],
+                        colors: [shadow.opacity(0.5), appearance.accentColor.opacity(0.38)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
                 )
 
-            ConvertibleV2RockerShape()
+            SportsFrontSplitterShape()
                 .fill(
                     LinearGradient(
-                        colors: [shadow.opacity(0.48), appearance.accentColor.opacity(0.38)],
-                        startPoint: .top,
-                        endPoint: .bottom
+                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
+                        startPoint: .leading,
+                        endPoint: .trailing
                     )
                 )
-
-            ConvertibleV2WindscreenShape()
-                .fill(windowGradient)
                 .overlay {
-                    ConvertibleV2WindscreenShape()
-                        .stroke(Color.white.opacity(0.4), lineWidth: 0.42)
+                    SportsFrontSplitterShape()
+                        .stroke(Color.white.opacity(0.22), lineWidth: 0.35)
                 }
 
-            ConvertibleV2RollBarShape()
-                .stroke(
-                    LinearGradient(
-                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    lineWidth: 0.55
-                )
-
-            ConvertibleV2GrilleShape()
+            SportsSideVentShape()
                 .fill(
                     LinearGradient(
-                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
+                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack.opacity(0.92)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
                 )
                 .overlay {
-                    ConvertibleV2GrilleShape()
+                    SportsSideVentShape()
                         .stroke(Color.white.opacity(0.14), lineWidth: 0.32)
                 }
 
-            ConvertibleV2HeadlightShape()
+            SportsCanopyGlassShape()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.56),
+                            HotWheelsTheme.electricBlue.opacity(0.32),
+                            appearance.accentColor.opacity(0.62),
+                        ],
+                        startPoint: UnitPoint(x: 0.2, y: 0),
+                        endPoint: UnitPoint(x: 0.82, y: 1)
+                    )
+                )
+                .overlay {
+                    SportsCanopyGlassShape()
+                        .stroke(Color.white.opacity(0.38), lineWidth: 0.42)
+                }
+
+            SportsDoorLineShape()
+                .stroke(appearance.accentColor.opacity(0.42), lineWidth: 0.42)
+
+            SportsRacingStripeShape()
+                .fill(
+                    LinearGradient(
+                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+
+            SportsHeadlightShape()
                 .fill(
                     RadialGradient(
-                        colors: [Color.white, HotWheelsTheme.racingYellow.opacity(0.88)],
+                        colors: [Color.white, HotWheelsTheme.racingYellow.opacity(0.85)],
                         center: .center,
                         startRadius: 0,
                         endRadius: bodyHeight * 0.07
                     )
                 )
                 .overlay {
-                    ConvertibleV2HeadlightShape()
-                        .stroke(appearance.accentColor.opacity(0.42), lineWidth: 0.34)
+                    SportsHeadlightShape()
+                        .stroke(appearance.accentColor.opacity(0.45), lineWidth: 0.35)
                 }
 
-            ConvertibleV2TaillightShape()
+            SportsTaillightShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.hotRed, appearance.accentColor],
@@ -235,26 +251,24 @@ struct ConvertibleV2View: View {
                     )
                 )
                 .overlay {
-                    ConvertibleV2TaillightShape()
+                    SportsTaillightShape()
                         .stroke(Color.white.opacity(0.18), lineWidth: 0.3)
                 }
 
-            ConvertibleV2DoorLineShape()
-                .stroke(appearance.accentColor.opacity(0.4), lineWidth: 0.4)
-
-            ConvertibleV2SideStripeShape()
+            SportsRearSpoilerShape()
                 .fill(
                     LinearGradient(
-                        colors: [
-                            HotWheelsTheme.flameOrange.opacity(0.55),
-                            HotWheelsTheme.racingYellow.opacity(0.45),
-                        ],
-                        startPoint: .leading,
-                        endPoint: .trailing
+                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
+                        startPoint: .top,
+                        endPoint: .bottom
                     )
                 )
+                .overlay {
+                    SportsRearSpoilerShape()
+                        .stroke(Color.white.opacity(0.22), lineWidth: 0.38)
+                }
 
-            ConvertibleV2MirrorShape()
+            SportsMirrorShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -262,150 +276,127 @@ struct ConvertibleV2View: View {
                         endPoint: .bottomTrailing
                     )
                 )
-
-            ConvertibleV2DeckShape()
-                .fill(
-                    LinearGradient(
-                        colors: [highlight.opacity(0.9), appearance.bodyColor, shadow],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
                 .overlay {
-                    ConvertibleV2DeckShape()
-                        .stroke(Color.white.opacity(0.15), lineWidth: 0.32)
+                    SportsMirrorShape()
+                        .stroke(Color.white.opacity(0.2), lineWidth: 0.3)
                 }
 
-            ConvertibleV2WheelArchShape()
-                .stroke(appearance.accentColor.opacity(0.32), lineWidth: 0.4)
+            SportsExhaustTipShape()
+                .fill(
+                    LinearGradient(
+                        colors: [Color(white: 0.58), appearance.accentColor, HotWheelsTheme.trackBlack],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
         }
-        .frame(width: bodyWidth, height: bodyHeight * 0.58)
-    }
-
-    private var windowGradient: LinearGradient {
-        LinearGradient(
-            colors: [
-                Color.white.opacity(0.56),
-                HotWheelsTheme.electricBlue.opacity(0.3),
-                appearance.accentColor.opacity(0.55),
-            ],
-            startPoint: UnitPoint(x: 0.2, y: 0),
-            endPoint: UnitPoint(x: 0.8, y: 1)
-        )
+        .frame(width: bodyWidth, height: bodyHeight * 0.62)
     }
 }
 
-// MARK: - Body silhouette (open roadster, front left → rear right)
+// MARK: - Body silhouette (low GT coupe, front left → rear right)
 
-private struct ConvertibleV2BodyShape: Shape {
+private struct SportsBodyShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let w = rect.width
         let h = rect.height
         let ground = rect.maxY
 
-        path.move(to: CGPoint(x: w * 0.02, y: ground - h * 0.16))
-        path.addLine(to: CGPoint(x: w * 0.06, y: ground - h * 0.22))
+        path.move(to: CGPoint(x: w * 0.01, y: ground - h * 0.14))
+        path.addLine(to: CGPoint(x: w * 0.05, y: ground - h * 0.2))
         path.addQuadCurve(
-            to: CGPoint(x: w * 0.24, y: ground - h * 0.36),
-            control: CGPoint(x: w * 0.12, y: ground - h * 0.26)
+            to: CGPoint(x: w * 0.22, y: ground - h * 0.34),
+            control: CGPoint(x: w * 0.1, y: ground - h * 0.24)
         )
         path.addQuadCurve(
-            to: CGPoint(x: w * 0.4, y: ground - h * 0.52),
-            control: CGPoint(x: w * 0.3, y: ground - h * 0.44)
-        )
-        path.addLine(to: CGPoint(x: w * 0.52, y: ground - h * 0.54))
-        path.addQuadCurve(
-            to: CGPoint(x: w * 0.68, y: ground - h * 0.48),
-            control: CGPoint(x: w * 0.6, y: ground - h * 0.56)
+            to: CGPoint(x: w * 0.38, y: ground - h * 0.58),
+            control: CGPoint(x: w * 0.28, y: ground - h * 0.46)
         )
         path.addQuadCurve(
-            to: CGPoint(x: w * 0.9, y: ground - h * 0.36),
-            control: CGPoint(x: w * 0.8, y: ground - h * 0.4)
-        )
-        path.addLine(to: CGPoint(x: w * 0.97, y: ground - h * 0.28))
-        path.addLine(to: CGPoint(x: w * 0.96, y: ground - h * 0.2))
-        path.addQuadCurve(
-            to: CGPoint(x: w * 0.48, y: ground - h * 0.12),
-            control: CGPoint(x: w * 0.72, y: ground - h * 0.1)
+            to: CGPoint(x: w * 0.52, y: ground - h * 0.82),
+            control: CGPoint(x: w * 0.44, y: ground - h * 0.72)
         )
         path.addQuadCurve(
-            to: CGPoint(x: w * 0.02, y: ground - h * 0.16),
-            control: CGPoint(x: w * 0.2, y: ground - h * 0.13)
+            to: CGPoint(x: w * 0.64, y: ground - h * 0.78),
+            control: CGPoint(x: w * 0.58, y: ground - h * 0.88)
+        )
+        path.addQuadCurve(
+            to: CGPoint(x: w * 0.82, y: ground - h * 0.48),
+            control: CGPoint(x: w * 0.74, y: ground - h * 0.62)
+        )
+        path.addLine(to: CGPoint(x: w * 0.96, y: ground - h * 0.38))
+        path.addLine(to: CGPoint(x: w * 0.99, y: ground - h * 0.3))
+        path.addLine(to: CGPoint(x: w * 0.96, y: ground - h * 0.22))
+        path.addQuadCurve(
+            to: CGPoint(x: w * 0.5, y: ground - h * 0.1),
+            control: CGPoint(x: w * 0.74, y: ground - h * 0.08)
+        )
+        path.addQuadCurve(
+            to: CGPoint(x: w * 0.01, y: ground - h * 0.14),
+            control: CGPoint(x: w * 0.22, y: ground - h * 0.11)
         )
         path.closeSubpath()
         return path
     }
 }
 
-private struct ConvertibleV2DeckShape: Shape {
+private struct SportsRockerShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        path.addRoundedRect(
-            in: CGRect(x: rect.width * 0.62, y: rect.height * 0.38, width: rect.width * 0.32, height: rect.height * 0.14),
-            cornerSize: CGSize(width: 3, height: 3)
-        )
+        let panel = CGRect(x: rect.width * 0.2, y: rect.height * 0.56, width: rect.width * 0.58, height: rect.height * 0.13)
+        path.addRoundedRect(in: panel, cornerSize: CGSize(width: 2, height: 2))
         return path
     }
 }
 
-private struct ConvertibleV2InteriorShape: Shape {
+private struct SportsFrontSplitterShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        path.addRoundedRect(
-            in: CGRect(x: rect.width * 0.34, y: rect.height * 0.36, width: rect.width * 0.3, height: rect.height * 0.16),
-            cornerSize: CGSize(width: 4, height: 4)
-        )
+        path.addRect(CGRect(x: 0, y: rect.height * 0.8, width: rect.width * 0.18, height: rect.height * 0.1))
         return path
     }
 }
 
-private struct ConvertibleV2RockerShape: Shape {
+private struct SportsSideVentShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        path.addRoundedRect(
-            in: CGRect(x: rect.width * 0.14, y: rect.height * 0.54, width: rect.width * 0.72, height: rect.height * 0.12),
-            cornerSize: CGSize(width: 2, height: 2)
-        )
+        let vent = CGRect(x: rect.width * 0.58, y: rect.height * 0.44, width: rect.width * 0.09, height: rect.height * 0.18)
+        path.addRoundedRect(in: vent, cornerSize: CGSize(width: vent.height * 0.22, height: vent.height * 0.22))
         return path
     }
 }
 
-private struct ConvertibleV2WindscreenShape: Shape {
+private struct SportsCanopyGlassShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        path.move(to: CGPoint(x: rect.width * 0.32, y: rect.height * 0.52))
-        path.addLine(to: CGPoint(x: rect.width * 0.38, y: rect.height * 0.22))
-        path.addLine(to: CGPoint(x: rect.width * 0.48, y: rect.height * 0.2))
-        path.addLine(to: CGPoint(x: rect.width * 0.5, y: rect.height * 0.5))
-        path.closeSubpath()
+        let glass = CGRect(x: rect.width * 0.34, y: rect.height * 0.14, width: rect.width * 0.34, height: rect.height * 0.4)
+        path.addRoundedRect(in: glass, cornerSize: CGSize(width: glass.height * 0.42, height: glass.height * 0.42))
         return path
     }
 }
 
-private struct ConvertibleV2RollBarShape: Shape {
+private struct SportsDoorLineShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let x = rect.width * 0.54
-        path.move(to: CGPoint(x: x, y: rect.height * 0.48))
+        path.move(to: CGPoint(x: rect.width * 0.48, y: rect.height * 0.56))
         path.addQuadCurve(
-            to: CGPoint(x: x + rect.width * 0.04, y: rect.height * 0.18),
-            control: CGPoint(x: x + rect.width * 0.06, y: rect.height * 0.32)
+            to: CGPoint(x: rect.width * 0.62, y: rect.height * 0.56),
+            control: CGPoint(x: rect.width * 0.55, y: rect.height * 0.52)
         )
-        return path.strokedPath(StrokeStyle(lineWidth: 0.55, lineCap: .round))
+        return path.strokedPath(StrokeStyle(lineWidth: 0.42, lineCap: .round))
     }
 }
 
-private struct ConvertibleV2GrilleShape: Shape {
+private struct SportsRacingStripeShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let grille = CGRect(x: 0, y: rect.height * 0.44, width: rect.width * 0.09, height: rect.height * 0.18)
-        path.addRoundedRect(in: grille, cornerSize: CGSize(width: 2, height: 2))
+        path.addRect(CGRect(x: rect.width * 0.42, y: rect.height * 0.36, width: rect.width * 0.22, height: rect.height * 0.06))
         return path
     }
 }
 
-private struct ConvertibleV2HeadlightShape: Shape {
+private struct SportsHeadlightShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius = min(rect.width, rect.height) * 0.065
         let center = CGPoint(x: rect.width * 0.08, y: rect.height * 0.44)
@@ -418,56 +409,57 @@ private struct ConvertibleV2HeadlightShape: Shape {
     }
 }
 
-private struct ConvertibleV2TaillightShape: Shape {
+private struct SportsTaillightShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
-            in: CGRect(x: rect.width * 0.91, y: rect.height * 0.38, width: rect.width * 0.06, height: rect.height * 0.12),
+            in: CGRect(x: rect.width * 0.9, y: rect.height * 0.4, width: rect.width * 0.07, height: rect.height * 0.12),
             cornerSize: CGSize(width: 2, height: 2)
         )
         return path
     }
 }
 
-private struct ConvertibleV2DoorLineShape: Shape {
+private struct SportsRearSpoilerShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        path.move(to: CGPoint(x: rect.width * 0.42, y: rect.height * 0.52))
-        path.addLine(to: CGPoint(x: rect.width * 0.42, y: rect.height * 0.34))
-        return path.strokedPath(StrokeStyle(lineWidth: 0.4, lineCap: .round))
-    }
-}
-
-private struct ConvertibleV2SideStripeShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.addRect(CGRect(x: rect.width * 0.38, y: rect.height * 0.44, width: rect.width * 0.24, height: rect.height * 0.05))
+        let lipY = rect.height * 0.08
+        path.move(to: CGPoint(x: rect.width * 0.78, y: rect.height * 0.28))
+        path.addLine(to: CGPoint(x: rect.width * 0.82, y: lipY))
+        path.addLine(to: CGPoint(x: rect.width * 0.98, y: lipY + rect.height * 0.04))
+        path.addLine(to: CGPoint(x: rect.width * 0.98, y: lipY + rect.height * 0.1))
+        path.addLine(to: CGPoint(x: rect.width * 0.82, y: lipY + rect.height * 0.08))
+        path.addLine(to: CGPoint(x: rect.width * 0.78, y: rect.height * 0.34))
+        path.closeSubpath()
         return path
     }
 }
 
-private struct ConvertibleV2MirrorShape: Shape {
+private struct SportsMirrorShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
-            in: CGRect(x: rect.width * 0.3, y: rect.height * 0.24, width: rect.width * 0.05, height: rect.height * 0.07),
+            in: CGRect(x: rect.width * 0.3, y: rect.height * 0.22, width: rect.width * 0.05, height: rect.height * 0.08),
             cornerSize: CGSize(width: 1.5, height: 1.5)
         )
         return path
     }
 }
 
-private struct ConvertibleV2WheelArchShape: Shape {
+private struct SportsExhaustTipShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let arches: [CGRect] = [
-            CGRect(x: rect.width * 0.1, y: rect.height * 0.5, width: rect.width * 0.2, height: rect.height * 0.22),
-            CGRect(x: rect.width * 0.66, y: rect.height * 0.5, width: rect.width * 0.2, height: rect.height * 0.22),
-        ]
-        for arch in arches {
-            path.addEllipse(in: arch)
-        }
-        return path.strokedPath(StrokeStyle(lineWidth: 0.4))
+        let pipeHeight = rect.height * 0.055
+        let y = rect.height * 0.5
+        path.addRoundedRect(
+            in: CGRect(x: rect.width * 0.92, y: y, width: rect.width * 0.06, height: pipeHeight),
+            cornerSize: CGSize(width: pipeHeight * 0.35, height: pipeHeight * 0.35)
+        )
+        path.addRoundedRect(
+            in: CGRect(x: rect.width * 0.92, y: y + pipeHeight * 1.12, width: rect.width * 0.06, height: pipeHeight),
+            cornerSize: CGSize(width: pipeHeight * 0.35, height: pipeHeight * 0.35)
+        )
+        return path
     }
 }
 
@@ -495,9 +487,9 @@ private extension Color {
     }
 }
 
-#Preview("Convertible v2 standalone") {
+#Preview("Sports car standalone") {
     CarView(
-        car: CarDesign.convertible.makeCar(),
+        car: CarDesign.sports.makeCar(),
         size: CGSize(width: 96, height: 48)
     )
     .padding()

@@ -29,10 +29,6 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
 
     static let allDesigns: [CarDesign] = Array(allCases)
 
-    var renderVersion: CarRenderVersion {
-        appearance.renderVersion
-    }
-
     var displayName: String {
         switch self {
         case .classicBug: "Classic Bug"
@@ -63,8 +59,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .classicBug,
                 bodyAspectRatio: 1.35,
                 wheelSpacingMultiplier: 0.88,
-                wheelSizeMultiplier: 0.95,
-                renderVersion: .v2
+                wheelSizeMultiplier: 0.95
             )
         case .pickup:
             CarAppearance(
@@ -74,9 +69,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .pickup,
                 bodyAspectRatio: 1.2,
                 wheelSpacingMultiplier: 1.05,
-                wheelSizeMultiplier: 1.0,
-                renderVersion: .v2
-            )
+                wheelSizeMultiplier: 1.0            )
         case .sports:
             CarAppearance(
                 bodyColor: Color(red: 0.95, green: 0.82, blue: 0.1),
@@ -85,9 +78,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .sports,
                 bodyAspectRatio: 1.55,
                 wheelSpacingMultiplier: 1.28,
-                wheelSizeMultiplier: 1.0,
-                renderVersion: .v2
-            )
+                wheelSizeMultiplier: 1.0            )
         case .van:
             CarAppearance(
                 bodyColor: .white,
@@ -96,9 +87,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .van,
                 bodyAspectRatio: 0.92,
                 wheelSpacingMultiplier: 0.95,
-                wheelSizeMultiplier: 1.0,
-                renderVersion: .v2
-            )
+                wheelSizeMultiplier: 1.0            )
         case .micro:
             CarAppearance(
                 bodyColor: Color(red: 0.45, green: 0.88, blue: 0.72),
@@ -107,9 +96,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .micro,
                 bodyAspectRatio: 1.1,
                 wheelSpacingMultiplier: 0.82,
-                wheelSizeMultiplier: 0.78,
-                renderVersion: .v2
-            )
+                wheelSizeMultiplier: 0.78            )
         case .convertible:
             CarAppearance(
                 bodyColor: Color(red: 0.95, green: 0.42, blue: 0.38),
@@ -118,9 +105,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .convertible,
                 bodyAspectRatio: 1.25,
                 wheelSpacingMultiplier: 0.95,
-                wheelSizeMultiplier: 0.95,
-                renderVersion: .v2
-            )
+                wheelSizeMultiplier: 0.95            )
         case .suv:
             CarAppearance(
                 bodyColor: Color(red: 0.18, green: 0.42, blue: 0.24),
@@ -129,9 +114,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .suv,
                 bodyAspectRatio: 0.95,
                 wheelSpacingMultiplier: 0.98,
-                wheelSizeMultiplier: 1.05,
-                renderVersion: .v2
-            )
+                wheelSizeMultiplier: 1.05            )
         case .raceCar:
             CarAppearance(
                 bodyColor: HotWheelsTheme.hotRed,
@@ -140,9 +123,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .raceCar,
                 bodyAspectRatio: 1.6,
                 wheelSpacingMultiplier: 0.78,
-                wheelSizeMultiplier: 1.0,
-                renderVersion: .v2
-            )
+                wheelSizeMultiplier: 1.0            )
         case .iceCreamTruck:
             CarAppearance(
                 bodyColor: Color(red: 0.95, green: 0.55, blue: 0.72),
@@ -151,9 +132,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .iceCreamTruck,
                 bodyAspectRatio: 0.9,
                 wheelSpacingMultiplier: 0.92,
-                wheelSizeMultiplier: 1.0,
-                renderVersion: .v2
-            )
+                wheelSizeMultiplier: 1.0            )
         case .taxi:
             CarAppearance(
                 bodyColor: Color(red: 0.95, green: 0.82, blue: 0.12),
@@ -162,9 +141,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .taxi,
                 bodyAspectRatio: 1.3,
                 wheelSpacingMultiplier: 1.05,
-                wheelSizeMultiplier: 1.0,
-                renderVersion: .v2
-            )
+                wheelSizeMultiplier: 1.0            )
         case .fireTruck:
             CarAppearance(
                 bodyColor: Color(red: 0.88, green: 0.14, blue: 0.12),
@@ -173,9 +150,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .fireTruck,
                 bodyAspectRatio: 1.1,
                 wheelSpacingMultiplier: 0.9,
-                wheelSizeMultiplier: 1.0,
-                renderVersion: .v2
-            )
+                wheelSizeMultiplier: 1.0            )
         case .schoolBus:
             CarAppearance(
                 bodyColor: Color(red: 0.92, green: 0.78, blue: 0.12),
@@ -184,9 +159,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .schoolBus,
                 bodyAspectRatio: 1.45,
                 wheelSpacingMultiplier: 1.22,
-                wheelSizeMultiplier: 1.0,
-                renderVersion: .v2
-            )
+                wheelSizeMultiplier: 1.0            )
         case .policeCar:
             CarAppearance(
                 bodyColor: Color(red: 0.12, green: 0.28, blue: 0.62),
@@ -195,9 +168,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .policeCar,
                 bodyAspectRatio: 1.28,
                 wheelSpacingMultiplier: 1.02,
-                wheelSizeMultiplier: 1.0,
-                renderVersion: .v2
-            )
+                wheelSizeMultiplier: 1.0            )
         case .ambulance:
             CarAppearance(
                 bodyColor: .white,
@@ -206,9 +177,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .ambulance,
                 bodyAspectRatio: 1.05,
                 wheelSpacingMultiplier: 0.96,
-                wheelSizeMultiplier: 1.0,
-                renderVersion: .v2
-            )
+                wheelSizeMultiplier: 1.0            )
         case .motorcycle:
             CarAppearance(
                 bodyColor: Color(red: 0.22, green: 0.24, blue: 0.28),
@@ -217,9 +186,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .motorcycle,
                 bodyAspectRatio: 0.55,
                 wheelSpacingMultiplier: 0.58,
-                wheelSizeMultiplier: 0.88,
-                renderVersion: .v2
-            )
+                wheelSizeMultiplier: 0.88            )
         }
     }
 

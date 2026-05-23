@@ -1,14 +1,14 @@
 //
-//  ClassicBugV2View.swift
+//  ClassicBugView.swift
 //  Tight Rope Car
 //
-//  Premium side-view classic bug renderer (v2).
+//  Premium side-view classic bug renderer.
 //
 
 import SwiftUI
 
-/// Die-cast style beetle drawing for ``CarRenderVersion/v2``.
-struct ClassicBugV2View: View {
+/// Die-cast style beetle side view.
+struct ClassicBugView: View {
     let appearance: CarAppearance
     let size: CGSize
 
@@ -137,7 +137,7 @@ struct ClassicBugV2View: View {
         let rocker = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.18)
 
         return ZStack {
-            ClassicBugV2FrontFenderShape()
+            ClassicBugFrontFenderShape()
                 .fill(
                     LinearGradient(
                         colors: [highlight, appearance.bodyColor, rocker],
@@ -146,11 +146,11 @@ struct ClassicBugV2View: View {
                     )
                 )
                 .overlay {
-                    ClassicBugV2FrontFenderShape()
+                    ClassicBugFrontFenderShape()
                         .stroke(appearance.accentColor.opacity(0.35), lineWidth: 0.5)
                 }
 
-            ClassicBugV2RearFenderShape()
+            ClassicBugRearFenderShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.bodyColor, rocker, shadow],
@@ -159,11 +159,11 @@ struct ClassicBugV2View: View {
                     )
                 )
                 .overlay {
-                    ClassicBugV2RearFenderShape()
+                    ClassicBugRearFenderShape()
                         .stroke(appearance.accentColor.opacity(0.35), lineWidth: 0.5)
                 }
 
-            ClassicBugV2BodyShape()
+            ClassicBugBodyShape()
                 .fill(
                     LinearGradient(
                         colors: [highlight, appearance.bodyColor, appearance.bodyColor, shadow],
@@ -172,7 +172,7 @@ struct ClassicBugV2View: View {
                     )
                 )
 
-            ClassicBugV2BodyShape()
+            ClassicBugBodyShape()
                 .stroke(
                     LinearGradient(
                         colors: [
@@ -186,12 +186,12 @@ struct ClassicBugV2View: View {
                     lineWidth: 0.7
                 )
 
-            ClassicBugV2BodyShape()
+            ClassicBugBodyShape()
                 .stroke(Color.white.opacity(0.18), lineWidth: 0.35)
                 .padding(1)
                 .blendMode(.plusLighter)
 
-            ClassicBugV2RockerShape()
+            ClassicBugRockerShape()
                 .fill(
                     LinearGradient(
                         colors: [shadow.opacity(0.55), appearance.accentColor.opacity(0.4)],
@@ -200,24 +200,24 @@ struct ClassicBugV2View: View {
                     )
                 )
 
-            ClassicBugV2FrontWindowShape()
+            ClassicBugFrontWindowShape()
                 .fill(windowGradient)
                 .overlay {
-                    ClassicBugV2FrontWindowShape()
+                    ClassicBugFrontWindowShape()
                         .stroke(Color.white.opacity(0.38), lineWidth: 0.4)
                 }
 
-            ClassicBugV2RearWindowShape()
+            ClassicBugRearWindowShape()
                 .fill(windowGradient)
                 .overlay {
-                    ClassicBugV2RearWindowShape()
+                    ClassicBugRearWindowShape()
                         .stroke(Color.white.opacity(0.38), lineWidth: 0.4)
                 }
 
-            ClassicBugV2WindowDividerShape()
+            ClassicBugWindowDividerShape()
                 .fill(appearance.accentColor.opacity(0.85))
 
-            ClassicBugV2RunningBoardShape()
+            ClassicBugRunningBoardShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -226,11 +226,11 @@ struct ClassicBugV2View: View {
                     )
                 )
                 .overlay {
-                    ClassicBugV2RunningBoardShape()
+                    ClassicBugRunningBoardShape()
                         .stroke(Color.white.opacity(0.2), lineWidth: 0.35)
                 }
 
-            ClassicBugV2HeadlightShape()
+            ClassicBugHeadlightShape()
                 .fill(
                     RadialGradient(
                         colors: [Color.white, HotWheelsTheme.racingYellow.opacity(0.9)],
@@ -240,11 +240,11 @@ struct ClassicBugV2View: View {
                     )
                 )
                 .overlay {
-                    ClassicBugV2HeadlightShape()
+                    ClassicBugHeadlightShape()
                         .stroke(appearance.accentColor.opacity(0.5), lineWidth: 0.35)
                 }
 
-            ClassicBugV2TaillightShape()
+            ClassicBugTaillightShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.hotRed, appearance.accentColor],
@@ -253,11 +253,11 @@ struct ClassicBugV2View: View {
                     )
                 )
                 .overlay {
-                    ClassicBugV2TaillightShape()
+                    ClassicBugTaillightShape()
                         .stroke(Color.white.opacity(0.2), lineWidth: 0.3)
                 }
 
-            ClassicBugV2FrontBumperShape()
+            ClassicBugFrontBumperShape()
                 .fill(
                     LinearGradient(
                         colors: [Color(white: 0.82), appearance.accentColor],
@@ -266,7 +266,7 @@ struct ClassicBugV2View: View {
                     )
                 )
 
-            ClassicBugV2RearBumperShape()
+            ClassicBugRearBumperShape()
                 .fill(
                     LinearGradient(
                         colors: [Color(white: 0.82), appearance.accentColor],
@@ -275,7 +275,7 @@ struct ClassicBugV2View: View {
                     )
                 )
 
-            ClassicBugV2RearEngineLouversShape()
+            ClassicBugRearEngineLouversShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor.opacity(0.85), HotWheelsTheme.trackBlack],
@@ -284,14 +284,14 @@ struct ClassicBugV2View: View {
                     )
                 )
                 .overlay {
-                    ClassicBugV2RearEngineLouversShape()
+                    ClassicBugRearEngineLouversShape()
                         .stroke(Color.white.opacity(0.12), lineWidth: 0.3)
                 }
 
-            ClassicBugV2DoorLineShape()
+            ClassicBugDoorLineShape()
                 .stroke(appearance.accentColor.opacity(0.45), lineWidth: 0.45)
 
-            ClassicBugV2SideStripeShape()
+            ClassicBugSideStripeShape()
                 .fill(
                     LinearGradient(
                         colors: [
@@ -322,7 +322,7 @@ struct ClassicBugV2View: View {
 
 // MARK: - Body silhouette (side profile, front left → rear right)
 
-private struct ClassicBugV2BodyShape: Shape {
+private struct ClassicBugBodyShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let w = rect.width
@@ -364,7 +364,7 @@ private struct ClassicBugV2BodyShape: Shape {
     }
 }
 
-private struct ClassicBugV2FrontFenderShape: Shape {
+private struct ClassicBugFrontFenderShape: Shape {
     func path(in rect: CGRect) -> Path {
         let w = rect.width
         let h = rect.height
@@ -373,7 +373,7 @@ private struct ClassicBugV2FrontFenderShape: Shape {
     }
 }
 
-private struct ClassicBugV2RearFenderShape: Shape {
+private struct ClassicBugRearFenderShape: Shape {
     func path(in rect: CGRect) -> Path {
         let w = rect.width
         let h = rect.height
@@ -382,7 +382,7 @@ private struct ClassicBugV2RearFenderShape: Shape {
     }
 }
 
-private struct ClassicBugV2RockerShape: Shape {
+private struct ClassicBugRockerShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let panel = CGRect(x: rect.width * 0.2, y: rect.height * 0.62, width: rect.width * 0.58, height: rect.height * 0.12)
@@ -391,21 +391,21 @@ private struct ClassicBugV2RockerShape: Shape {
     }
 }
 
-private struct ClassicBugV2FrontWindowShape: Shape {
+private struct ClassicBugFrontWindowShape: Shape {
     func path(in rect: CGRect) -> Path {
         let glass = CGRect(x: rect.width * 0.3, y: rect.height * 0.2, width: rect.width * 0.16, height: rect.height * 0.36)
         return Path(roundedRect: glass, cornerRadius: glass.height * 0.35)
     }
 }
 
-private struct ClassicBugV2RearWindowShape: Shape {
+private struct ClassicBugRearWindowShape: Shape {
     func path(in rect: CGRect) -> Path {
         let glass = CGRect(x: rect.width * 0.48, y: rect.height * 0.18, width: rect.width * 0.16, height: rect.height * 0.38)
         return Path(roundedRect: glass, cornerRadius: glass.height * 0.35)
     }
 }
 
-private struct ClassicBugV2WindowDividerShape: Shape {
+private struct ClassicBugWindowDividerShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let x = rect.width * 0.465
@@ -415,7 +415,7 @@ private struct ClassicBugV2WindowDividerShape: Shape {
     }
 }
 
-private struct ClassicBugV2RunningBoardShape: Shape {
+private struct ClassicBugRunningBoardShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -426,7 +426,7 @@ private struct ClassicBugV2RunningBoardShape: Shape {
     }
 }
 
-private struct ClassicBugV2HeadlightShape: Shape {
+private struct ClassicBugHeadlightShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius = min(rect.width, rect.height) * 0.07
         let center = CGPoint(x: rect.width * 0.1, y: rect.height * 0.48)
@@ -439,7 +439,7 @@ private struct ClassicBugV2HeadlightShape: Shape {
     }
 }
 
-private struct ClassicBugV2TaillightShape: Shape {
+private struct ClassicBugTaillightShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -450,7 +450,7 @@ private struct ClassicBugV2TaillightShape: Shape {
     }
 }
 
-private struct ClassicBugV2FrontBumperShape: Shape {
+private struct ClassicBugFrontBumperShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -461,7 +461,7 @@ private struct ClassicBugV2FrontBumperShape: Shape {
     }
 }
 
-private struct ClassicBugV2RearBumperShape: Shape {
+private struct ClassicBugRearBumperShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -472,7 +472,7 @@ private struct ClassicBugV2RearBumperShape: Shape {
     }
 }
 
-private struct ClassicBugV2RearEngineLouversShape: Shape {
+private struct ClassicBugRearEngineLouversShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let slotWidth = rect.width * 0.025
@@ -490,7 +490,7 @@ private struct ClassicBugV2RearEngineLouversShape: Shape {
     }
 }
 
-private struct ClassicBugV2DoorLineShape: Shape {
+private struct ClassicBugDoorLineShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.move(to: CGPoint(x: rect.width * 0.38, y: rect.height * 0.58))
@@ -502,7 +502,7 @@ private struct ClassicBugV2DoorLineShape: Shape {
     }
 }
 
-private struct ClassicBugV2SideStripeShape: Shape {
+private struct ClassicBugSideStripeShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRect(CGRect(x: rect.width * 0.24, y: rect.height * 0.5, width: rect.width * 0.5, height: rect.height * 0.05))
@@ -534,7 +534,7 @@ private extension Color {
     }
 }
 
-#Preview("Classic bug v2 standalone") {
+#Preview("Classic bug standalone") {
     CarView(
         car: CarDesign.classicBug.makeCar(),
         size: CGSize(width: 96, height: 48)

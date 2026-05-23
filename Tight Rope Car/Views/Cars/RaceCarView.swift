@@ -1,14 +1,14 @@
 //
-//  RaceCarV2View.swift
+//  RaceCarView.swift
 //  Tight Rope Car
 //
-//  Premium side-view race car renderer (v2).
+//  Premium side-view race car renderer.
 //
 
 import SwiftUI
 
-/// Die-cast style race car drawing for ``CarRenderVersion/v2``.
-struct RaceCarV2View: View {
+/// Die-cast style race car side view.
+struct RaceCarView: View {
     let appearance: CarAppearance
     let size: CGSize
 
@@ -134,7 +134,7 @@ struct RaceCarV2View: View {
         let rocker = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.22)
 
         return ZStack {
-            RaceCarV2BodyShape()
+            RaceCarBodyShape()
                 .fill(
                     LinearGradient(
                         colors: [highlight, appearance.bodyColor, rocker, shadow],
@@ -143,7 +143,7 @@ struct RaceCarV2View: View {
                     )
                 )
 
-            RaceCarV2BodyShape()
+            RaceCarBodyShape()
                 .stroke(
                     LinearGradient(
                         colors: [
@@ -157,12 +157,12 @@ struct RaceCarV2View: View {
                     lineWidth: 0.75
                 )
 
-            RaceCarV2BodyShape()
+            RaceCarBodyShape()
                 .stroke(Color.white.opacity(0.2), lineWidth: 0.35)
                 .padding(1.2)
                 .blendMode(.plusLighter)
 
-            RaceCarV2RockerPanelShape()
+            RaceCarRockerPanelShape()
                 .fill(
                     LinearGradient(
                         colors: [shadow.opacity(0.5), appearance.accentColor.opacity(0.35)],
@@ -171,7 +171,7 @@ struct RaceCarV2View: View {
                     )
                 )
 
-            RaceCarV2SplitterShape()
+            RaceCarSplitterShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -180,11 +180,11 @@ struct RaceCarV2View: View {
                     )
                 )
                 .overlay {
-                    RaceCarV2SplitterShape()
+                    RaceCarSplitterShape()
                         .stroke(Color.white.opacity(0.25), lineWidth: 0.4)
                 }
 
-            RaceCarV2SideIntakeShape()
+            RaceCarSideIntakeShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack.opacity(0.9)],
@@ -193,11 +193,11 @@ struct RaceCarV2View: View {
                     )
                 )
                 .overlay {
-                    RaceCarV2SideIntakeShape()
+                    RaceCarSideIntakeShape()
                         .stroke(Color.white.opacity(0.15), lineWidth: 0.35)
                 }
 
-            RaceCarV2CanopyGlassShape()
+            RaceCarCanopyGlassShape()
                 .fill(
                     LinearGradient(
                         colors: [
@@ -210,11 +210,11 @@ struct RaceCarV2View: View {
                     )
                 )
                 .overlay {
-                    RaceCarV2CanopyGlassShape()
+                    RaceCarCanopyGlassShape()
                         .stroke(Color.white.opacity(0.4), lineWidth: 0.45)
                 }
 
-            RaceCarV2StripeShape()
+            RaceCarStripeShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.racingYellow, HotWheelsTheme.flameOrange],
@@ -223,10 +223,10 @@ struct RaceCarV2View: View {
                     )
                 )
 
-            RaceCarV2NumberRoundelShape()
+            RaceCarNumberRoundelShape()
                 .fill(Color.white)
                 .overlay {
-                    RaceCarV2NumberRoundelShape()
+                    RaceCarNumberRoundelShape()
                         .stroke(HotWheelsTheme.trackBlack, lineWidth: 0.6)
                 }
                 .overlay {
@@ -236,7 +236,7 @@ struct RaceCarV2View: View {
                         .offset(x: bodyWidth * 0.02, y: -bodyHeight * 0.01)
                 }
 
-            RaceCarV2RearWingShape()
+            RaceCarRearWingShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -245,18 +245,18 @@ struct RaceCarV2View: View {
                     )
                 )
                 .overlay {
-                    RaceCarV2RearWingShape()
+                    RaceCarRearWingShape()
                         .stroke(Color.white.opacity(0.2), lineWidth: 0.4)
                 }
 
-            RaceCarV2WingEndplateShape()
+            RaceCarWingEndplateShape()
                 .fill(appearance.accentColor)
                 .overlay {
-                    RaceCarV2WingEndplateShape()
+                    RaceCarWingEndplateShape()
                         .stroke(HotWheelsTheme.racingYellow.opacity(0.7), lineWidth: 0.5)
                 }
 
-            RaceCarV2ExhaustShape()
+            RaceCarExhaustShape()
                 .fill(
                     LinearGradient(
                         colors: [Color(white: 0.55), appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -271,7 +271,7 @@ struct RaceCarV2View: View {
 
 // MARK: - Body silhouette (side profile, front left → rear right)
 
-private struct RaceCarV2BodyShape: Shape {
+private struct RaceCarBodyShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let w = rect.width
@@ -312,7 +312,7 @@ private struct RaceCarV2BodyShape: Shape {
     }
 }
 
-private struct RaceCarV2RockerPanelShape: Shape {
+private struct RaceCarRockerPanelShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let panel = CGRect(x: rect.width * 0.18, y: rect.height * 0.58, width: rect.width * 0.55, height: rect.height * 0.14)
@@ -321,7 +321,7 @@ private struct RaceCarV2RockerPanelShape: Shape {
     }
 }
 
-private struct RaceCarV2SplitterShape: Shape {
+private struct RaceCarSplitterShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRect(CGRect(x: 0, y: rect.height * 0.82, width: rect.width * 0.2, height: rect.height * 0.1))
@@ -329,7 +329,7 @@ private struct RaceCarV2SplitterShape: Shape {
     }
 }
 
-private struct RaceCarV2SideIntakeShape: Shape {
+private struct RaceCarSideIntakeShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let intake = CGRect(x: rect.width * 0.34, y: rect.height * 0.48, width: rect.width * 0.1, height: rect.height * 0.2)
@@ -338,7 +338,7 @@ private struct RaceCarV2SideIntakeShape: Shape {
     }
 }
 
-private struct RaceCarV2CanopyGlassShape: Shape {
+private struct RaceCarCanopyGlassShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let glass = CGRect(x: rect.width * 0.36, y: rect.height * 0.12, width: rect.width * 0.22, height: rect.height * 0.38)
@@ -347,7 +347,7 @@ private struct RaceCarV2CanopyGlassShape: Shape {
     }
 }
 
-private struct RaceCarV2StripeShape: Shape {
+private struct RaceCarStripeShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRect(CGRect(x: rect.width * 0.52, y: rect.height * 0.38, width: rect.width * 0.28, height: rect.height * 0.08))
@@ -355,7 +355,7 @@ private struct RaceCarV2StripeShape: Shape {
     }
 }
 
-private struct RaceCarV2NumberRoundelShape: Shape {
+private struct RaceCarNumberRoundelShape: Shape {
     func path(in rect: CGRect) -> Path {
         let center = CGPoint(x: rect.width * 0.62, y: rect.height * 0.32)
         let radius = min(rect.width, rect.height) * 0.11
@@ -368,7 +368,7 @@ private struct RaceCarV2NumberRoundelShape: Shape {
     }
 }
 
-private struct RaceCarV2RearWingShape: Shape {
+private struct RaceCarRearWingShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let wingY = rect.height * 0.04
@@ -384,7 +384,7 @@ private struct RaceCarV2RearWingShape: Shape {
     }
 }
 
-private struct RaceCarV2WingEndplateShape: Shape {
+private struct RaceCarWingEndplateShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRect(CGRect(
@@ -397,7 +397,7 @@ private struct RaceCarV2WingEndplateShape: Shape {
     }
 }
 
-private struct RaceCarV2ExhaustShape: Shape {
+private struct RaceCarExhaustShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let pipeHeight = rect.height * 0.06
@@ -438,7 +438,7 @@ private extension Color {
     }
 }
 
-#Preview("Race car v2 standalone") {
+#Preview("Race car standalone") {
     CarView(
         car: CarDesign.raceCar.makeCar(),
         size: CGSize(width: 96, height: 48)

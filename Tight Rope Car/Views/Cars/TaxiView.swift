@@ -1,14 +1,14 @@
 //
-//  PoliceCarV2View.swift
+//  TaxiView.swift
 //  Tight Rope Car
 //
-//  Premium side-view police cruiser renderer (v2).
+//  Premium side-view taxi renderer.
 //
 
 import SwiftUI
 
-/// Die-cast style police car drawing for ``CarRenderVersion/v2``.
-struct PoliceCarV2View: View {
+/// Die-cast style yellow cab side view.
+struct TaxiView: View {
     let appearance: CarAppearance
     let size: CGSize
 
@@ -25,7 +25,7 @@ struct PoliceCarV2View: View {
     }
 
     private var bodyHeight: CGFloat {
-        size.height * 0.54
+        size.height * 0.56
     }
 
     var body: some View {
@@ -34,11 +34,11 @@ struct PoliceCarV2View: View {
             wheelContactShadows
 
             HStack(spacing: wheelSpacing) {
-                policeWheel
-                policeWheel
+                taxiWheel
+                taxiWheel
             }
 
-            policeBodyStack
+            taxiBodyStack
                 .offset(y: -wheelDiameter * 0.35)
         }
         .frame(width: size.width, height: size.height)
@@ -69,14 +69,14 @@ struct PoliceCarV2View: View {
 
     // MARK: - Wheels
 
-    private var policeWheel: some View {
+    private var taxiWheel: some View {
         ZStack {
             Circle()
                 .fill(
                     RadialGradient(
                         colors: [
-                            appearance.accentColor.opacity(0.85),
-                            HotWheelsTheme.trackBlack.opacity(0.9),
+                            appearance.accentColor.opacity(0.9),
+                            appearance.accentColor,
                             HotWheelsTheme.trackBlack,
                         ],
                         center: .center,
@@ -86,15 +86,15 @@ struct PoliceCarV2View: View {
                 )
 
             Circle()
-                .strokeBorder(appearance.bodyColor.opacity(0.4), lineWidth: wheelDiameter * 0.044)
+                .strokeBorder(Color(white: 0.68).opacity(0.48), lineWidth: wheelDiameter * 0.046)
 
             Circle()
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.48),
-                            appearance.accentColor.opacity(0.35),
-                            HotWheelsTheme.trackBlack.opacity(0.85),
+                            Color.white.opacity(0.5),
+                            appearance.accentColor.opacity(0.38),
+                            appearance.accentColor.opacity(0.88),
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -103,12 +103,12 @@ struct PoliceCarV2View: View {
                 .frame(width: wheelDiameter * 0.64, height: wheelDiameter * 0.64)
 
             Circle()
-                .strokeBorder(Color.white.opacity(0.28), lineWidth: wheelDiameter * 0.024)
+                .strokeBorder(Color.white.opacity(0.3), lineWidth: wheelDiameter * 0.024)
                 .frame(width: wheelDiameter * 0.64, height: wheelDiameter * 0.64)
 
             ForEach(0..<5, id: \.self) { index in
                 Capsule()
-                    .fill(Color.white.opacity(0.16))
+                    .fill(Color.white.opacity(0.18))
                     .frame(width: wheelDiameter * 0.044, height: wheelDiameter * 0.16)
                     .offset(y: -wheelDiameter * 0.21)
                     .rotationEffect(.degrees(Double(index) * 72))
@@ -117,7 +117,7 @@ struct PoliceCarV2View: View {
             Circle()
                 .fill(
                     RadialGradient(
-                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
+                        colors: [HotWheelsTheme.racingYellow, appearance.accentColor],
                         center: .center,
                         startRadius: 0,
                         endRadius: wheelDiameter * 0.12
@@ -130,13 +130,13 @@ struct PoliceCarV2View: View {
 
     // MARK: - Body stack
 
-    private var policeBodyStack: some View {
+    private var taxiBodyStack: some View {
         let highlight = appearance.bodyColor.mix(with: .white, amount: 0.28)
-        let shadow = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.32)
-        let rocker = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.18)
+        let shadow = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.28)
+        let rocker = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.16)
 
         return ZStack {
-            PoliceCarV2BodyShape()
+            TaxiBodyShape()
                 .fill(
                     LinearGradient(
                         colors: [highlight, appearance.bodyColor, rocker, shadow],
@@ -145,12 +145,12 @@ struct PoliceCarV2View: View {
                     )
                 )
 
-            PoliceCarV2BodyShape()
+            TaxiBodyShape()
                 .stroke(
                     LinearGradient(
                         colors: [
                             Color.white.opacity(0.42),
-                            appearance.accentColor.opacity(0.75),
+                            appearance.accentColor.opacity(0.8),
                             appearance.accentColor,
                         ],
                         startPoint: .top,
@@ -159,72 +159,65 @@ struct PoliceCarV2View: View {
                     lineWidth: 0.68
                 )
 
-            PoliceCarV2BodyShape()
+            TaxiBodyShape()
                 .stroke(Color.white.opacity(0.2), lineWidth: 0.34)
                 .padding(1)
                 .blendMode(.plusLighter)
 
-            PoliceCarV2RockerShape()
+            TaxiRockerShape()
                 .fill(
                     LinearGradient(
-                        colors: [shadow.opacity(0.48), appearance.accentColor.opacity(0.35)],
+                        colors: [shadow.opacity(0.48), appearance.accentColor.opacity(0.4)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
                 )
 
-            PoliceCarV2DoorAccentShape()
-                .fill(
-                    LinearGradient(
-                        colors: [appearance.accentColor, appearance.accentColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.08)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .overlay {
-                    PoliceCarV2DoorAccentShape()
-                        .stroke(appearance.bodyColor.opacity(0.25), lineWidth: 0.32)
-                }
-
-            PoliceCarV2WindowShape()
+            TaxiWindowShape()
                 .fill(windowGradient)
                 .overlay {
-                    PoliceCarV2WindowShape()
-                        .stroke(Color.white.opacity(0.38), lineWidth: 0.38)
+                    TaxiWindowShape()
+                        .stroke(Color.white.opacity(0.36), lineWidth: 0.38)
                 }
 
-            PoliceCarV2LightBarShape()
+            TaxiCheckerStripeShape()
                 .fill(
                     LinearGradient(
-                        colors: [HotWheelsTheme.hotRed, HotWheelsTheme.electricBlue],
-                        startPoint: .leading,
-                        endPoint: .trailing
+                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
                     )
                 )
                 .overlay {
-                    PoliceCarV2LightBarShape()
-                        .stroke(Color.white.opacity(0.28), lineWidth: 0.32)
+                    TaxiCheckerStripeShape()
+                        .stroke(Color.white.opacity(0.12), lineWidth: 0.28)
                 }
 
-            PoliceCarV2PushBarShape()
+            TaxiRoofSignShape()
                 .fill(
                     LinearGradient(
-                        colors: [appearance.accentColor.opacity(0.9), HotWheelsTheme.trackBlack.opacity(0.85)],
+                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay {
+                    Text("TAXI")
+                        .font(.system(size: bodyHeight * 0.1, weight: .black, design: .rounded))
+                        .foregroundStyle(appearance.bodyColor)
+                        .offset(y: -bodyHeight * 0.02)
+                }
+
+            TaxiGrilleShape()
+                .fill(
+                    LinearGradient(
+                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
                         startPoint: .top,
                         endPoint: .bottom
                     )
                 )
 
-            PoliceCarV2GrilleShape()
-                .fill(
-                    LinearGradient(
-                        colors: [appearance.accentColor.opacity(0.85), HotWheelsTheme.trackBlack],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-
-            PoliceCarV2HeadlightShape()
+            TaxiHeadlightShape()
                 .fill(
                     RadialGradient(
                         colors: [Color.white, HotWheelsTheme.racingYellow.opacity(0.88)],
@@ -233,46 +226,44 @@ struct PoliceCarV2View: View {
                         endRadius: bodyHeight * 0.065
                     )
                 )
+                .overlay {
+                    TaxiHeadlightShape()
+                        .stroke(appearance.accentColor.opacity(0.4), lineWidth: 0.32)
+                }
 
-            PoliceCarV2TaillightShape()
+            TaxiTaillightShape()
                 .fill(
                     LinearGradient(
-                        colors: [HotWheelsTheme.hotRed, appearance.bodyColor.opacity(0.9)],
+                        colors: [HotWheelsTheme.hotRed, appearance.accentColor],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
 
-            PoliceCarV2SideStripeShape()
-                .fill(
-                    LinearGradient(
-                        colors: [appearance.accentColor.opacity(0.9), appearance.accentColor.opacity(0.5)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+            TaxiDoorLineShape()
+                .stroke(appearance.accentColor.opacity(0.38), lineWidth: 0.4)
 
-            PoliceCarV2MirrorShape()
+            TaxiMirrorShape()
                 .fill(
                     LinearGradient(
-                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack.opacity(0.85)],
+                        colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
 
-            PoliceCarV2WheelArchShape()
-                .stroke(appearance.accentColor.opacity(0.38), lineWidth: 0.4)
+            TaxiWheelArchShape()
+                .stroke(appearance.accentColor.opacity(0.32), lineWidth: 0.4)
         }
-        .frame(width: bodyWidth, height: bodyHeight * 0.8)
+        .frame(width: bodyWidth, height: bodyHeight * 0.82)
     }
 
     private var windowGradient: LinearGradient {
         LinearGradient(
             colors: [
                 Color.white.opacity(0.56),
-                HotWheelsTheme.electricBlue.opacity(0.3),
-                appearance.bodyColor.opacity(0.45),
+                HotWheelsTheme.electricBlue.opacity(0.28),
+                appearance.accentColor.opacity(0.5),
             ],
             startPoint: UnitPoint(x: 0.15, y: 0),
             endPoint: UnitPoint(x: 0.85, y: 1)
@@ -280,9 +271,9 @@ struct PoliceCarV2View: View {
     }
 }
 
-// MARK: - Body silhouette (cruiser sedan)
+// MARK: - Body silhouette (sedan cab, front left → rear right)
 
-private struct PoliceCarV2BodyShape: Shape {
+private struct TaxiBodyShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let w = rect.width
@@ -296,19 +287,19 @@ private struct PoliceCarV2BodyShape: Shape {
             control: CGPoint(x: w * 0.1, y: ground - h * 0.28)
         )
         path.addQuadCurve(
-            to: CGPoint(x: w * 0.4, y: ground - h * 0.7),
-            control: CGPoint(x: w * 0.28, y: ground - h * 0.54)
+            to: CGPoint(x: w * 0.38, y: ground - h * 0.68),
+            control: CGPoint(x: w * 0.26, y: ground - h * 0.52)
         )
         path.addQuadCurve(
-            to: CGPoint(x: w * 0.58, y: ground - h * 0.74),
-            control: CGPoint(x: w * 0.5, y: ground - h * 0.8)
+            to: CGPoint(x: w * 0.55, y: ground - h * 0.72),
+            control: CGPoint(x: w * 0.46, y: ground - h * 0.78)
         )
         path.addQuadCurve(
-            to: CGPoint(x: w * 0.84, y: ground - h * 0.42),
-            control: CGPoint(x: w * 0.72, y: ground - h * 0.56)
+            to: CGPoint(x: w * 0.82, y: ground - h * 0.44),
+            control: CGPoint(x: w * 0.7, y: ground - h * 0.58)
         )
-        path.addLine(to: CGPoint(x: w * 0.97, y: ground - h * 0.3))
-        path.addLine(to: CGPoint(x: w * 0.98, y: ground - h * 0.22))
+        path.addLine(to: CGPoint(x: w * 0.96, y: ground - h * 0.32))
+        path.addLine(to: CGPoint(x: w * 0.98, y: ground - h * 0.24))
         path.addQuadCurve(
             to: CGPoint(x: w * 0.48, y: ground - h * 0.14),
             control: CGPoint(x: w * 0.74, y: ground - h * 0.1)
@@ -322,7 +313,7 @@ private struct PoliceCarV2BodyShape: Shape {
     }
 }
 
-private struct PoliceCarV2RockerShape: Shape {
+private struct TaxiRockerShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -333,49 +324,49 @@ private struct PoliceCarV2RockerShape: Shape {
     }
 }
 
-private struct PoliceCarV2DoorAccentShape: Shape {
+private struct TaxiWindowShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        path.addRoundedRect(
-            in: CGRect(x: rect.width * 0.38, y: rect.height * 0.28, width: rect.width * 0.32, height: rect.height * 0.38),
-            cornerSize: CGSize(width: 3, height: 3)
-        )
+        let glass = CGRect(x: rect.width * 0.22, y: rect.height * 0.2, width: rect.width * 0.38, height: rect.height * 0.34)
+        path.addRoundedRect(in: glass, cornerSize: CGSize(width: glass.height * 0.22, height: glass.height * 0.22))
         return path
     }
 }
 
-private struct PoliceCarV2WindowShape: Shape {
+private struct TaxiCheckerStripeShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let glass = CGRect(x: rect.width * 0.2, y: rect.height * 0.2, width: rect.width * 0.4, height: rect.height * 0.34)
-        path.addRoundedRect(in: glass, cornerSize: CGSize(width: glass.height * 0.2, height: glass.height * 0.2))
+        let stripeHeight = rect.height * 0.22
+        let stripeY = rect.height * 0.42
+        let squareSize = rect.width * 0.075
+        let columns = 4
+        let startX = rect.width * 0.5
+
+        for column in 0..<columns {
+            let x = startX + CGFloat(column) * squareSize
+            if column % 2 == 0 {
+                path.addRect(CGRect(x: x, y: stripeY, width: squareSize, height: squareSize))
+                path.addRect(CGRect(x: x, y: stripeY + squareSize, width: squareSize, height: squareSize))
+            } else {
+                path.addRect(CGRect(x: x, y: stripeY + squareSize * 0.5, width: squareSize, height: squareSize))
+            }
+        }
         return path
     }
 }
 
-private struct PoliceCarV2LightBarShape: Shape {
+private struct TaxiRoofSignShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
-            in: CGRect(x: rect.width * 0.32, y: rect.height * 0.1, width: rect.width * 0.28, height: rect.height * 0.06),
+            in: CGRect(x: rect.width * 0.38, y: rect.height * 0.06, width: rect.width * 0.24, height: rect.height * 0.1),
             cornerSize: CGSize(width: 2, height: 2)
         )
         return path
     }
 }
 
-private struct PoliceCarV2PushBarShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.addRoundedRect(
-            in: CGRect(x: 0, y: rect.height * 0.62, width: rect.width * 0.1, height: rect.height * 0.14),
-            cornerSize: CGSize(width: 2, height: 2)
-        )
-        return path
-    }
-}
-
-private struct PoliceCarV2GrilleShape: Shape {
+private struct TaxiGrilleShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -386,7 +377,7 @@ private struct PoliceCarV2GrilleShape: Shape {
     }
 }
 
-private struct PoliceCarV2HeadlightShape: Shape {
+private struct TaxiHeadlightShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius = min(rect.width, rect.height) * 0.06
         let center = CGPoint(x: rect.width * 0.08, y: rect.height * 0.46)
@@ -399,37 +390,38 @@ private struct PoliceCarV2HeadlightShape: Shape {
     }
 }
 
-private struct PoliceCarV2TaillightShape: Shape {
+private struct TaxiTaillightShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
-            in: CGRect(x: rect.width * 0.91, y: rect.height * 0.4, width: rect.width * 0.06, height: rect.height * 0.14),
+            in: CGRect(x: rect.width * 0.92, y: rect.height * 0.4, width: rect.width * 0.06, height: rect.height * 0.14),
             cornerSize: CGSize(width: 2, height: 2)
         )
         return path
     }
 }
 
-private struct PoliceCarV2SideStripeShape: Shape {
+private struct TaxiDoorLineShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        path.addRect(CGRect(x: rect.width * 0.22, y: rect.height * 0.5, width: rect.width * 0.58, height: rect.height * 0.04))
-        return path
+        path.move(to: CGPoint(x: rect.width * 0.46, y: rect.height * 0.54))
+        path.addLine(to: CGPoint(x: rect.width * 0.46, y: rect.height * 0.28))
+        return path.strokedPath(StrokeStyle(lineWidth: 0.4, lineCap: .round))
     }
 }
 
-private struct PoliceCarV2MirrorShape: Shape {
+private struct TaxiMirrorShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
-            in: CGRect(x: rect.width * 0.18, y: rect.height * 0.24, width: rect.width * 0.05, height: rect.height * 0.07),
+            in: CGRect(x: rect.width * 0.2, y: rect.height * 0.24, width: rect.width * 0.05, height: rect.height * 0.07),
             cornerSize: CGSize(width: 1.5, height: 1.5)
         )
         return path
     }
 }
 
-private struct PoliceCarV2WheelArchShape: Shape {
+private struct TaxiWheelArchShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let arches: [CGRect] = [
@@ -467,9 +459,9 @@ private extension Color {
     }
 }
 
-#Preview("Police car v2 standalone") {
+#Preview("Taxi standalone") {
     CarView(
-        car: CarDesign.policeCar.makeCar(),
+        car: CarDesign.taxi.makeCar(),
         size: CGSize(width: 96, height: 48)
     )
     .padding()

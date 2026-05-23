@@ -1,14 +1,14 @@
 //
-//  PickupV2View.swift
+//  PickupView.swift
 //  Tight Rope Car
 //
-//  Premium side-view pickup truck renderer (v2).
+//  Premium side-view pickup truck renderer.
 //
 
 import SwiftUI
 
-/// Die-cast style pickup truck drawing for ``CarRenderVersion/v2``.
-struct PickupV2View: View {
+/// Die-cast style pickup truck side view.
+struct PickupView: View {
     let appearance: CarAppearance
     let size: CGSize
 
@@ -137,7 +137,7 @@ struct PickupV2View: View {
         let bedShadow = appearance.bodyColor.mix(with: HotWheelsTheme.trackBlack, amount: 0.42)
 
         return ZStack {
-            PickupV2BodyShape()
+            PickupBodyShape()
                 .fill(
                     LinearGradient(
                         colors: [highlight, appearance.bodyColor, rocker, shadow],
@@ -146,7 +146,7 @@ struct PickupV2View: View {
                     )
                 )
 
-            PickupV2BodyShape()
+            PickupBodyShape()
                 .stroke(
                     LinearGradient(
                         colors: [
@@ -160,12 +160,12 @@ struct PickupV2View: View {
                     lineWidth: 0.7
                 )
 
-            PickupV2BodyShape()
+            PickupBodyShape()
                 .stroke(Color.white.opacity(0.18), lineWidth: 0.35)
                 .padding(1)
                 .blendMode(.plusLighter)
 
-            PickupV2BedInteriorShape()
+            PickupBedInteriorShape()
                 .fill(
                     LinearGradient(
                         colors: [bedShadow.opacity(0.7), appearance.accentColor.opacity(0.55)],
@@ -174,7 +174,7 @@ struct PickupV2View: View {
                     )
                 )
 
-            PickupV2BedRailShape()
+            PickupBedRailShape()
                 .stroke(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -184,7 +184,7 @@ struct PickupV2View: View {
                     lineWidth: 0.55
                 )
 
-            PickupV2TailgateShape()
+            PickupTailgateShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor.opacity(0.9), HotWheelsTheme.trackBlack],
@@ -193,11 +193,11 @@ struct PickupV2View: View {
                     )
                 )
                 .overlay {
-                    PickupV2TailgateShape()
+                    PickupTailgateShape()
                         .stroke(Color.white.opacity(0.2), lineWidth: 0.35)
                 }
 
-            PickupV2RockerShape()
+            PickupRockerShape()
                 .fill(
                     LinearGradient(
                         colors: [shadow.opacity(0.5), appearance.accentColor.opacity(0.4)],
@@ -206,7 +206,7 @@ struct PickupV2View: View {
                     )
                 )
 
-            PickupV2GrilleShape()
+            PickupGrilleShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -215,18 +215,18 @@ struct PickupV2View: View {
                     )
                 )
                 .overlay {
-                    PickupV2GrilleShape()
+                    PickupGrilleShape()
                         .stroke(Color.white.opacity(0.15), lineWidth: 0.32)
                 }
 
-            PickupV2CabGlassShape()
+            PickupCabGlassShape()
                 .fill(windowGradient)
                 .overlay {
-                    PickupV2CabGlassShape()
+                    PickupCabGlassShape()
                         .stroke(Color.white.opacity(0.36), lineWidth: 0.4)
                 }
 
-            PickupV2SideStepShape()
+            PickupSideStepShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -235,11 +235,11 @@ struct PickupV2View: View {
                     )
                 )
                 .overlay {
-                    PickupV2SideStepShape()
+                    PickupSideStepShape()
                         .stroke(Color.white.opacity(0.18), lineWidth: 0.3)
                 }
 
-            PickupV2HeadlightShape()
+            PickupHeadlightShape()
                 .fill(
                     RadialGradient(
                         colors: [Color.white, HotWheelsTheme.racingYellow.opacity(0.88)],
@@ -249,11 +249,11 @@ struct PickupV2View: View {
                     )
                 )
                 .overlay {
-                    PickupV2HeadlightShape()
+                    PickupHeadlightShape()
                         .stroke(appearance.accentColor.opacity(0.45), lineWidth: 0.35)
                 }
 
-            PickupV2TaillightShape()
+            PickupTaillightShape()
                 .fill(
                     LinearGradient(
                         colors: [HotWheelsTheme.hotRed, appearance.accentColor],
@@ -262,11 +262,11 @@ struct PickupV2View: View {
                     )
                 )
                 .overlay {
-                    PickupV2TaillightShape()
+                    PickupTaillightShape()
                         .stroke(Color.white.opacity(0.18), lineWidth: 0.3)
                 }
 
-            PickupV2ToolboxShape()
+            PickupToolboxShape()
                 .fill(
                     LinearGradient(
                         colors: [appearance.accentColor, HotWheelsTheme.trackBlack],
@@ -275,14 +275,14 @@ struct PickupV2View: View {
                     )
                 )
                 .overlay {
-                    PickupV2ToolboxShape()
+                    PickupToolboxShape()
                         .stroke(Color.white.opacity(0.22), lineWidth: 0.35)
                 }
 
-            PickupV2WheelArchShape()
+            PickupWheelArchShape()
                 .stroke(appearance.accentColor.opacity(0.35), lineWidth: 0.45)
 
-            PickupV2DoorLineShape()
+            PickupDoorLineShape()
                 .stroke(appearance.accentColor.opacity(0.4), lineWidth: 0.4)
         }
         .frame(width: bodyWidth, height: bodyHeight * 1.05)
@@ -303,7 +303,7 @@ struct PickupV2View: View {
 
 // MARK: - Body silhouette (cab left, bed right)
 
-private struct PickupV2BodyShape: Shape {
+private struct PickupBodyShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let w = rect.width
@@ -343,7 +343,7 @@ private struct PickupV2BodyShape: Shape {
     }
 }
 
-private struct PickupV2BedInteriorShape: Shape {
+private struct PickupBedInteriorShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let bed = CGRect(
@@ -357,7 +357,7 @@ private struct PickupV2BedInteriorShape: Shape {
     }
 }
 
-private struct PickupV2BedRailShape: Shape {
+private struct PickupBedRailShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let bedTop = rect.height * 0.3
@@ -370,7 +370,7 @@ private struct PickupV2BedRailShape: Shape {
     }
 }
 
-private struct PickupV2TailgateShape: Shape {
+private struct PickupTailgateShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -386,7 +386,7 @@ private struct PickupV2TailgateShape: Shape {
     }
 }
 
-private struct PickupV2RockerShape: Shape {
+private struct PickupRockerShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -397,7 +397,7 @@ private struct PickupV2RockerShape: Shape {
     }
 }
 
-private struct PickupV2GrilleShape: Shape {
+private struct PickupGrilleShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let grille = CGRect(x: 0, y: rect.height * 0.42, width: rect.width * 0.1, height: rect.height * 0.22)
@@ -411,7 +411,7 @@ private struct PickupV2GrilleShape: Shape {
     }
 }
 
-private struct PickupV2CabGlassShape: Shape {
+private struct PickupCabGlassShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let glass = CGRect(x: rect.width * 0.18, y: rect.height * 0.2, width: rect.width * 0.22, height: rect.height * 0.38)
@@ -420,7 +420,7 @@ private struct PickupV2CabGlassShape: Shape {
     }
 }
 
-private struct PickupV2SideStepShape: Shape {
+private struct PickupSideStepShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -431,7 +431,7 @@ private struct PickupV2SideStepShape: Shape {
     }
 }
 
-private struct PickupV2HeadlightShape: Shape {
+private struct PickupHeadlightShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius = min(rect.width, rect.height) * 0.06
         let center = CGPoint(x: rect.width * 0.08, y: rect.height * 0.46)
@@ -444,7 +444,7 @@ private struct PickupV2HeadlightShape: Shape {
     }
 }
 
-private struct PickupV2TaillightShape: Shape {
+private struct PickupTaillightShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -455,7 +455,7 @@ private struct PickupV2TaillightShape: Shape {
     }
 }
 
-private struct PickupV2ToolboxShape: Shape {
+private struct PickupToolboxShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRoundedRect(
@@ -466,7 +466,7 @@ private struct PickupV2ToolboxShape: Shape {
     }
 }
 
-private struct PickupV2WheelArchShape: Shape {
+private struct PickupWheelArchShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let arches: [CGRect] = [
@@ -480,7 +480,7 @@ private struct PickupV2WheelArchShape: Shape {
     }
 }
 
-private struct PickupV2DoorLineShape: Shape {
+private struct PickupDoorLineShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.move(to: CGPoint(x: rect.width * 0.38, y: rect.height * 0.58))
@@ -513,7 +513,7 @@ private extension Color {
     }
 }
 
-#Preview("Pickup v2 standalone") {
+#Preview("Pickup standalone") {
     CarView(
         car: CarDesign.pickup.makeCar(),
         size: CGSize(width: 96, height: 48)
