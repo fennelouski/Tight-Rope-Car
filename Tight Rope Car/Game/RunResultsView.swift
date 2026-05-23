@@ -5,6 +5,100 @@
 
 import SwiftUI
 
+/// Achievement pills shown on the run-results overlay.
+enum RunResultsAchievementBanners {
+    struct Item: Equatable {
+        let text: String
+        let style: HotWheelsAchievementBanner.Style
+        let accessibilityLabel: String?
+
+        init(
+            text: String,
+            style: HotWheelsAchievementBanner.Style,
+            accessibilityLabel: String? = nil
+        ) {
+            self.text = text
+            self.style = style
+            self.accessibilityLabel = accessibilityLabel
+        }
+    }
+
+    static func items(
+        outcome: GameRunOutcome,
+        recordResult: GameRunRecordResult
+    ) -> [Item] {
+        var items: [Item] = []
+
+        if outcome.isSuccess, recordResult.unlockedCourseNow {
+            items.append(Item(
+                text: "New course unlocked on the map!",
+                style: .unlock
+            ))
+        }
+
+        let recordKinds = recordKinds(outcome: outcome, recordResult: recordResult)
+        guard !recordKinds.isEmpty else { return items }
+
+        if recordKinds.count >= 2 {
+            items.append(Item(
+                text: "New personal bests!",
+                style: .record,
+                accessibilityLabel: combinedRecordAccessibilityLabel(kinds: recordKinds)
+            ))
+        } else {
+            items.append(Item(
+                text: singleRecordText(for: recordKinds[0]),
+                style: .record
+            ))
+        }
+
+        return items
+    }
+
+    private static func recordKinds(
+        outcome: GameRunOutcome,
+        recordResult: GameRunRecordResult
+    ) -> [RecordKind] {
+        var kinds: [RecordKind] = []
+        if outcome.isSuccess, recordResult.isNewBestTime {
+            kinds.append(.time)
+        }
+        if recordResult.isNewBestDistance {
+            kinds.append(.distance)
+        }
+        if recordResult.isNewBestTicketCount {
+            kinds.append(.tickets)
+        }
+        return kinds
+    }
+
+    private enum RecordKind: String {
+        case time
+        case distance
+        case tickets
+    }
+
+    private static func singleRecordText(for kind: RecordKind) -> String {
+        switch kind {
+        case .time: "New best time!"
+        case .distance: "New best distance!"
+        case .tickets: "New ticket record!"
+        }
+    }
+
+    private static func combinedRecordAccessibilityLabel(kinds: [RecordKind]) -> String {
+        let names = kinds.map { kind -> String in
+            switch kind {
+            case .time: "time"
+            case .distance: "distance"
+            case .tickets: "tickets"
+            }
+        }
+        let list = names.formatted(.list(type: .and))
+        return "New personal bests: \(list)"
+    }
+}
+
 struct RunResultsView: View {
     let outcome: GameRunOutcome
     let recordResult: GameRunRecordResult
@@ -24,47 +118,31 @@ struct RunResultsView: View {
         outcome.isSuccess ? HotWheelsTheme.racingYellow : HotWheelsTheme.hotRed
     }
 
-    private var badgeItems: [(text: String, style: HotWheelsAchievementBanner.Style)] {
-        var items: [(String, HotWheelsAchievementBanner.Style)] = []
-        if outcome.isSuccess {
-            if recordResult.unlockedCourseNow {
-                items.append(("New course unlocked on the map!", .unlock))
-            }
-            if recordResult.isNewBestTime {
-                items.append(("New best time!", .record))
-            }
-            if recordResult.isNewBestDistance {
-                items.append(("New best distance!", .record))
-            }
-            if recordResult.isNewBestTicketCount {
-                items.append(("New ticket record!", .record))
-            }
-        } else {
-            if recordResult.isNewBestDistance {
-                items.append(("New best distance!", .record))
-            }
-            if recordResult.isNewBestTicketCount {
-                items.append(("New ticket record!", .record))
-            }
-        }
-        return items
+    private var badgeItems: [RunResultsAchievementBanners.Item] {
+        RunResultsAchievementBanners.items(outcome: outcome, recordResult: recordResult)
     }
 
     var body: some View {
         ZStack {
             RunFlowOverlayBackdrop(accentColor: accentColor)
 
-            RunFlowOverlayCard(borderColor: accentColor) {
-                VStack(spacing: 18) {
-                    header
-                    statsSection
-                    if !badgeItems.isEmpty {
-                        badgesSection
+            ScrollView {
+                RunFlowOverlayCard(borderColor: accentColor) {
+                    VStack(spacing: 18) {
+                        header
+                        statsSection
+                        if !badgeItems.isEmpty {
+                            badgesSection
+                        }
+                        actionButtons
                     }
-                    actionButtons
                 }
+                .padding(.horizontal, 24)
+                .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, 24)
+            .scrollBounceBehavior(.basedOnSize)
+            .safeAreaPadding(.vertical, 12)
+            .safeAreaPadding(.bottom, 8)
             .hotWheelsContentWidth()
             .opacity(contentAppeared ? 1 : 0)
             .scaleEffect(contentAppeared ? 1 : (reduceMotion ? 1 : 0.94))
@@ -136,40 +214,53 @@ struct RunResultsView: View {
     private var badgesSection: some View {
         VStack(spacing: 8) {
             ForEach(Array(badgeItems.enumerated()), id: \.offset) { index, item in
-                HotWheelsAchievementBanner(text: item.text, style: item.style)
-                    .opacity(contentAppeared ? 1 : 0)
-                    .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 8))
-                    .animation(
-                        reduceMotion ? nil : .easeOut(duration: 0.35).delay(0.12 + Double(index) * 0.06),
-                        value: contentAppeared
-                    )
+                HotWheelsAchievementBanner(
+                    text: item.text,
+                    style: item.style,
+                    accessibilityLabel: item.accessibilityLabel
+                )
+                .opacity(contentAppeared ? 1 : 0)
+                .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 8))
+                .animation(
+                    reduceMotion ? nil : .easeOut(duration: 0.35).delay(0.12 + Double(index) * 0.06),
+                    value: contentAppeared
+                )
             }
         }
+    }
+
+    private var actionItems: [(icon: String, title: String, subtitle: String?, style: HotWheelsOverlayActionButton.Style, action: () -> Void)] {
+        if outcome.isSuccess {
+            return [
+                ("arrow.clockwise", "Play Again", "Run this course again", .primary, onPlayAgain),
+                ("map.fill", "Course Map", "Back to the track map", .secondary, onMap),
+            ]
+        }
+        return [
+            ("arrow.clockwise", "Retry", "Give it another shot", .primary, onRetry),
+            ("map.fill", "Course Map", "Pick a different course", .secondary, onMap),
+        ]
     }
 
     private var actionButtons: some View {
-        VStack(spacing: 12) {
-            if outcome.isSuccess {
-                resultsButton("Course Map", fillColor: HotWheelsTheme.racingYellow, action: onMap)
-                resultsButton("Play Again", fillColor: .white.opacity(0.92), action: onPlayAgain)
-            } else {
-                resultsButton("Retry", fillColor: HotWheelsTheme.racingYellow, action: onRetry)
-                resultsButton("Course Map", fillColor: .white.opacity(0.92), action: onMap)
+        VStack(spacing: 10) {
+            ForEach(Array(actionItems.enumerated()), id: \.offset) { index, item in
+                HotWheelsOverlayActionButton(
+                    systemImage: item.icon,
+                    title: item.title,
+                    subtitle: item.subtitle,
+                    style: item.style,
+                    action: item.action
+                )
+                .opacity(contentAppeared ? 1 : 0)
+                .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 10))
+                .animation(
+                    reduceMotion ? nil : .easeOut(duration: 0.32).delay(0.08 + Double(index) * 0.05),
+                    value: contentAppeared
+                )
             }
         }
         .padding(.top, 4)
-    }
-
-    private func resultsButton(
-        _ title: String,
-        fillColor: Color,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Text(title)
-        }
-        .buttonStyle(HotWheelsAccentButtonStyle(fillColor: fillColor))
-        .frame(maxWidth: .infinity)
     }
 
     private func runEntranceAnimation() {
@@ -195,7 +286,50 @@ struct RunResultsView: View {
         recordResult: GameRunRecordResult(
             unlockedCourseNow: true,
             isNewBestTime: true,
-            isNewBestDistance: false,
+            isNewBestDistance: true,
+            ticketsCollected: 3,
+            isNewBestTicketCount: true,
+            newTotalTickets: 12,
+            ticketsCreditedToProfile: 3
+        ),
+        courseDisplayName: "First Steps",
+        onMap: {},
+        onPlayAgain: {},
+        onRetry: {}
+    )
+}
+
+#Preview("Success — busy", traits: .sizeThatFitsLayout) {
+    RunResultsView(
+        outcome: .success(
+            GameRunStats(elapsedSeconds: 42.5, distanceMeters: 520, ticketsCollected: 3)
+        ),
+        recordResult: GameRunRecordResult(
+            unlockedCourseNow: true,
+            isNewBestTime: true,
+            isNewBestDistance: true,
+            ticketsCollected: 3,
+            isNewBestTicketCount: true,
+            newTotalTickets: 12,
+            ticketsCreditedToProfile: 3
+        ),
+        courseDisplayName: "First Steps",
+        onMap: {},
+        onPlayAgain: {},
+        onRetry: {}
+    )
+    .frame(width: 375, height: 667)
+}
+
+#Preview("Success — iPhone SE", traits: .fixedLayout(width: 375, height: 667)) {
+    RunResultsView(
+        outcome: .success(
+            GameRunStats(elapsedSeconds: 42.5, distanceMeters: 520, ticketsCollected: 3)
+        ),
+        recordResult: GameRunRecordResult(
+            unlockedCourseNow: true,
+            isNewBestTime: true,
+            isNewBestDistance: true,
             ticketsCollected: 3,
             isNewBestTicketCount: true,
             newTotalTickets: 12,
@@ -218,7 +352,7 @@ struct RunResultsView: View {
             isNewBestTime: false,
             isNewBestDistance: true,
             ticketsCollected: 1,
-            isNewBestTicketCount: false,
+            isNewBestTicketCount: true,
             newTotalTickets: 8,
             ticketsCreditedToProfile: 1
         ),

@@ -442,6 +442,8 @@ struct HotWheelsAchievementBanner: View {
 
     let text: String
     var style: Style = .record
+    /// Spoken label when it should differ from visible `text` (e.g. consolidated personal bests).
+    var accessibilityLabel: String?
 
     private var fill: Color {
         switch style {
@@ -469,7 +471,7 @@ struct HotWheelsAchievementBanner: View {
             Image(systemName: systemImage)
                 .font(.system(size: 12, weight: .black))
             Text(text)
-                .font(HotWheelsTheme.captionFont.weight(.bold))
+                .font(.system(size: 14, weight: .semibold, design: .rounded))
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
@@ -484,7 +486,7 @@ struct HotWheelsAchievementBanner: View {
                 .shadow(color: HotWheelsTheme.trackBlack.opacity(0.35), radius: 0, x: 0, y: 2)
         )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(text)
+        .accessibilityLabel(accessibilityLabel ?? text)
     }
 }
 
@@ -600,6 +602,170 @@ struct HotWheelsFormValidationBanner: View {
     }
 }
 
+/// Circular progress indicator for calibration and loading steps.
+struct HotWheelsProgressRing: View {
+    let progress: Double
+    let systemImage: String
+    var accent: Color = HotWheelsTheme.racingYellow
+    var trackColor: Color = HotWheelsTheme.trackBlack.opacity(0.45)
+    var size: CGFloat = 120
+    var lineWidth: CGFloat = 10
+
+    private var clampedProgress: Double {
+        min(max(progress, 0), 1)
+    }
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(trackColor, lineWidth: lineWidth)
+
+            Circle()
+                .trim(from: 0, to: clampedProgress)
+                .stroke(
+                    accent,
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+
+            VStack(spacing: 4) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 24, weight: .black))
+                    .foregroundStyle(accent)
+
+                Text("\(Int(clampedProgress * 100))%")
+                    .font(.system(size: 16, weight: .heavy, design: .rounded))
+                    .foregroundStyle(.white)
+                    .monospacedDigit()
+            }
+        }
+        .frame(width: size, height: size)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Progress \(Int(clampedProgress * 100)) percent")
+    }
+}
+
+// MARK: - Run-flow overlays (pause, results)
+
+struct HotWheelsInfoBanner: View {
+    let message: String
+    var systemImage: String = "info.circle.fill"
+    var accent: Color = HotWheelsTheme.electricBlue
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: systemImage)
+                .font(.body.weight(.bold))
+                .foregroundStyle(accent)
+                .accessibilityHidden(true)
+
+            Text(message)
+                .font(HotWheelsTheme.captionFont)
+                .foregroundStyle(.white.opacity(0.92))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(accent.opacity(0.18))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(accent.opacity(0.55), lineWidth: 1.5)
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(message)
+    }
+}
+
+struct HotWheelsOverlayActionButton: View {
+    enum Style {
+        case primary
+        case secondary
+        case destructive
+    }
+
+    let systemImage: String
+    let title: String
+    var subtitle: String? = nil
+    var style: Style = .primary
+    let action: () -> Void
+
+    private var fillColor: Color {
+        switch style {
+        case .primary: HotWheelsTheme.racingYellow
+        case .secondary: Color.white.opacity(0.92)
+        case .destructive: HotWheelsTheme.hotRed.opacity(0.9)
+        }
+    }
+
+    private var strokeColor: Color {
+        switch style {
+        case .primary: HotWheelsTheme.hotRed
+        case .secondary: HotWheelsTheme.hotRed.opacity(0.65)
+        case .destructive: HotWheelsTheme.trackBlack.opacity(0.35)
+        }
+    }
+
+    private var foregroundColor: Color {
+        switch style {
+        case .primary, .secondary: HotWheelsTheme.trackBlack
+        case .destructive: .white
+        }
+    }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 18, weight: .black))
+                    .frame(width: 28)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(HotWheelsTheme.bodyFont.weight(.bold))
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundStyle(foregroundColor.opacity(0.72))
+                    }
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .black))
+                    .opacity(style == .secondary ? 0.45 : 0.65)
+            }
+            .foregroundStyle(foregroundColor)
+            .padding(.horizontal, 16)
+            .padding(.vertical, subtitle == nil ? 14 : 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(fillColor)
+                    .shadow(color: HotWheelsTheme.trackBlack.opacity(0.35), radius: 0, x: 0, y: 3)
+            )
+            .overlay(
+                Capsule(style: .continuous)
+                    .strokeBorder(strokeColor, lineWidth: 2.5)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityHint("Double tap to \(title.lowercased())")
+    }
+
+    private var accessibilityLabel: String {
+        if let subtitle {
+            return "\(title). \(subtitle)"
+        }
+        return title
+    }
+}
+
 extension View {
     func profileEditorSheetChrome(title: String, canSave: Bool, onCancel: @escaping () -> Void, onSave: @escaping () -> Void) -> some View {
         self
@@ -623,6 +789,75 @@ extension View {
                         .accessibilityHint(canSave ? "Save profile changes" : "Enter a valid name to save")
                 }
             }
+    }
+}
+
+/// Large circular tap target for gameplay balance and other repeated actions.
+struct HotWheelsCircularControlButton: View {
+    enum Style {
+        case primary
+        case secondary
+        case neutral
+    }
+
+    let systemImage: String
+    let accessibilityLabel: String
+    var accessibilityHint: String? = nil
+    var style: Style = .primary
+    var diameter: CGFloat = 58
+    var iconSize: CGFloat = 22
+    let action: () -> Void
+
+    private var fillColor: Color {
+        switch style {
+        case .primary: HotWheelsTheme.racingYellow
+        case .secondary: HotWheelsTheme.electricBlue
+        case .neutral: Color.white.opacity(0.92)
+        }
+    }
+
+    private var strokeColor: Color {
+        switch style {
+        case .primary: HotWheelsTheme.hotRed
+        case .secondary: HotWheelsTheme.racingYellow
+        case .neutral: HotWheelsTheme.hotRed.opacity(0.65)
+        }
+    }
+
+    private var foregroundColor: Color {
+        switch style {
+        case .primary, .neutral: HotWheelsTheme.trackBlack
+        case .secondary: .white
+        }
+    }
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: iconSize, weight: .black))
+                .foregroundStyle(foregroundColor)
+                .frame(width: diameter, height: diameter)
+                .background(
+                    Circle()
+                        .fill(fillColor)
+                        .shadow(color: HotWheelsTheme.trackBlack.opacity(0.35), radius: 0, x: 0, y: 3)
+                )
+                .overlay(
+                    Circle()
+                        .strokeBorder(strokeColor, lineWidth: 2.5)
+                )
+        }
+        .buttonStyle(HotWheelsCircularControlButtonStyle())
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityHint(accessibilityHint ?? "")
+    }
+}
+
+private struct HotWheelsCircularControlButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.92 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }
 
@@ -716,6 +951,85 @@ struct HotWheelsProminentIconButton: View {
                     value: "3/3",
                     accent: HotWheelsTheme.flameOrange
                 )
+            }
+
+            HotWheelsProgressRing(
+                progress: 0.65,
+                systemImage: "level.fill",
+                accent: HotWheelsTheme.racingYellow
+            )
+
+            VStack(spacing: 10) {
+                HotWheelsOverlayActionButton(
+                    systemImage: "play.fill",
+                    title: "Resume",
+                    subtitle: "Pick up where you left off",
+                    style: .primary,
+                    action: {}
+                )
+                HotWheelsOverlayActionButton(
+                    systemImage: "map.fill",
+                    title: "Course Map",
+                    subtitle: "Back to the track map",
+                    style: .secondary,
+                    action: {}
+                )
+                HotWheelsOverlayActionButton(
+                    systemImage: "house.fill",
+                    title: "Main Menu",
+                    subtitle: "Back to Play screen",
+                    style: .destructive,
+                    action: {}
+                )
+            }
+
+            VStack(spacing: 8) {
+                HotWheelsAchievementBanner(text: "New course unlocked on the map!", style: .unlock)
+                HotWheelsAchievementBanner(text: "New best time!", style: .record)
+            }
+
+            HStack(spacing: 16) {
+                HotWheelsCircularControlButton(
+                    systemImage: "arrow.left",
+                    accessibilityLabel: "Balance left",
+                    style: .primary,
+                    action: {}
+                )
+                HotWheelsCircularControlButton(
+                    systemImage: "arrow.right",
+                    accessibilityLabel: "Balance right",
+                    style: .secondary,
+                    action: {}
+                )
+            }
+
+            HotWheelsSelectableRowCard(
+                isSelected: true,
+                accentColor: HotWheelsTheme.electricBlue
+            ) {
+                HStack(spacing: 14) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Speed Racer")
+                            .font(HotWheelsTheme.headlineFont)
+                            .foregroundStyle(.white)
+                        HStack(spacing: 14) {
+                            HotWheelsInlineStat(
+                                systemImage: "ticket.fill",
+                                text: "27",
+                                accent: HotWheelsTheme.flameOrange
+                            )
+                            HotWheelsInlineStat(
+                                systemImage: "flag.checkered",
+                                text: "3/120",
+                                accent: HotWheelsTheme.electricBlue
+                            )
+                        }
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.title3.weight(.black))
+                        .foregroundStyle(HotWheelsTheme.racingYellow)
+                }
             }
         }
         .padding()

@@ -48,6 +48,15 @@ struct GameplayView: View {
         return false
     }
 
+    private var canRecordRunOutcome: Bool {
+        switch phase {
+        case .running, .paused:
+            return true
+        case .calibrating, .results:
+            return false
+        }
+    }
+
     private var balanceHintText: String {
         if !isRunActive { return "Hold device level" }
         if showsOnScreenBalance { return "Use balance buttons" }
@@ -138,7 +147,7 @@ struct GameplayView: View {
 
             overlayForPhase
 
-            if showsOnScreenBalance, let course {
+            if showsOnScreenBalancePad, let course {
                 VStack {
                     Spacer(minLength: 0)
                     GameplayOnScreenBalanceControls(
@@ -148,8 +157,6 @@ struct GameplayView: View {
                         onCenter: { tiltSession.centerOnScreenBalance() }
                     )
                 }
-                .allowsHitTesting(isRunActive)
-                .opacity(isRunActive ? 1 : 0.35)
             }
         }
         .hotWheelsContentWidth()
@@ -168,6 +175,10 @@ struct GameplayView: View {
 
     private var showsOnScreenBalance: Bool {
         tiltSession.preferOnScreenBalance
+    }
+
+    private var showsOnScreenBalancePad: Bool {
+        isRunActive && showsOnScreenBalance && course != nil
     }
 
     private func nudgeOnScreenBalance(left: Bool) {
@@ -303,6 +314,9 @@ struct GameplayView: View {
         case .calibrating:
             GameplayCalibrationOverlay(
                 progress: tiltSession.calibrationProgress,
+                courseDisplayName: courseDisplayName,
+                profile: activeProfile,
+                usesOnScreenBalance: showsOnScreenBalance,
                 showsSkipControl: reduceMotion || isSimulator,
                 onSkip: skipCalibrationAndStartRun
             )
@@ -311,6 +325,8 @@ struct GameplayView: View {
             EmptyView()
         case .paused:
             GameplayPauseOverlay(
+                courseDisplayName: courseDisplayName,
+                profile: activeProfile,
                 onResume: { phase = .running },
                 onQuitToMap: onExitToMap,
                 onMainMenu: onExitToLanding
@@ -340,6 +356,8 @@ struct GameplayView: View {
     // MARK: - Run completion
 
     private func finishRun(outcome: GameRunOutcome) {
+        guard canRecordRunOutcome else { return }
+
         guard let profile = activeProfile else {
             phase = .results(outcome)
             return
