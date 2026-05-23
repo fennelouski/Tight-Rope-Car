@@ -29,6 +29,10 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
 
     static let allDesigns: [CarDesign] = Array(allCases)
 
+    var renderVersion: CarRenderVersion {
+        appearance.renderVersion
+    }
+
     var displayName: String {
         switch self {
         case .classicBug: "Classic Bug"
@@ -59,7 +63,8 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .classicBug,
                 bodyAspectRatio: 1.35,
                 wheelSpacingMultiplier: 0.88,
-                wheelSizeMultiplier: 0.95
+                wheelSizeMultiplier: 0.95,
+                renderVersion: .v2
             )
         case .pickup:
             CarAppearance(
@@ -123,13 +128,14 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
             )
         case .raceCar:
             CarAppearance(
-                bodyColor: Color(red: 0.88, green: 0.12, blue: 0.14),
-                accentColor: .black,
+                bodyColor: HotWheelsTheme.hotRed,
+                accentColor: HotWheelsTheme.trackBlack,
                 scale: 1.0,
                 silhouette: .raceCar,
                 bodyAspectRatio: 1.6,
                 wheelSpacingMultiplier: 0.78,
-                wheelSizeMultiplier: 1.0
+                wheelSizeMultiplier: 1.0,
+                renderVersion: .v2
             )
         case .iceCreamTruck:
             CarAppearance(

@@ -20,6 +20,8 @@ struct CarAppearance: Equatable {
     var wheelSpacingMultiplier: CGFloat
     /// Wheel diameter relative to default for this frame size.
     var wheelSizeMultiplier: CGFloat
+    /// Procedural renderer tier; default v1 preserves existing drawing.
+    var renderVersion: CarRenderVersion
 
     init(
         bodyColor: Color = .red,
@@ -28,7 +30,8 @@ struct CarAppearance: Equatable {
         silhouette: CarSilhouette = .classicBug,
         bodyAspectRatio: CGFloat = 1.0,
         wheelSpacingMultiplier: CGFloat = 1.0,
-        wheelSizeMultiplier: CGFloat = 1.0
+        wheelSizeMultiplier: CGFloat = 1.0,
+        renderVersion: CarRenderVersion = .v1
     ) {
         self.bodyColor = bodyColor
         self.accentColor = accentColor
@@ -37,6 +40,7 @@ struct CarAppearance: Equatable {
         self.bodyAspectRatio = bodyAspectRatio
         self.wheelSpacingMultiplier = wheelSpacingMultiplier
         self.wheelSizeMultiplier = wheelSizeMultiplier
+        self.renderVersion = renderVersion
     }
 
     static let `default` = CarAppearance()

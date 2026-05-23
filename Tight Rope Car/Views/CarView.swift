@@ -27,10 +27,23 @@ struct CarView: View {
         let wheelSpacing = s.width * 0.12 * appearance.wheelSpacingMultiplier
 
         ZStack(alignment: .bottom) {
-            wheelRow(size: s, defaultDiameter: wheelDiameter, defaultSpacing: wheelSpacing)
+            if appearance.renderVersion == .v2 {
+                switch appearance.silhouette {
+                case .raceCar:
+                    RaceCarV2View(appearance: appearance, size: s)
+                case .classicBug:
+                    ClassicBugV2View(appearance: appearance, size: s)
+                default:
+                    wheelRow(size: s, defaultDiameter: wheelDiameter, defaultSpacing: wheelSpacing)
+                    carBody(in: s, wheelDiameter: wheelDiameter)
+                        .offset(y: -wheelDiameter * bodyVerticalOffsetFactor)
+                }
+            } else {
+                wheelRow(size: s, defaultDiameter: wheelDiameter, defaultSpacing: wheelSpacing)
 
-            carBody(in: s, wheelDiameter: wheelDiameter)
-                .offset(y: -wheelDiameter * bodyVerticalOffsetFactor)
+                carBody(in: s, wheelDiameter: wheelDiameter)
+                    .offset(y: -wheelDiameter * bodyVerticalOffsetFactor)
+            }
         }
         .frame(width: s.width, height: s.height)
         .offset(x: car.lateralOffset * s.width, y: 0)
@@ -466,6 +479,60 @@ private struct TaxiCheckerStripeShape: Shape {
         VStack {
             CarView(car: .preview)
             Text("Preview")
+                .font(.caption)
+        }
+    }
+    .padding()
+}
+
+#Preview("Classic bug v1 vs v2") {
+    let frame = CGSize(width: 96, height: 48)
+    let v1Appearance = CarAppearance(
+        bodyColor: Color(red: 0.82, green: 0.22, blue: 0.18),
+        accentColor: Color(red: 0.15, green: 0.12, blue: 0.12),
+        scale: 0.85,
+        silhouette: .classicBug,
+        bodyAspectRatio: 1.35,
+        wheelSpacingMultiplier: 0.88,
+        wheelSizeMultiplier: 0.95,
+        renderVersion: .v1
+    )
+    HStack(spacing: 28) {
+        VStack(spacing: 6) {
+            CarView(car: Car(appearance: v1Appearance), size: frame)
+            Text("Classic Bug v1")
+                .font(.caption)
+        }
+        VStack(spacing: 6) {
+            CarView(car: CarDesign.classicBug.makeCar(), size: frame)
+            Text("Classic Bug v2")
+                .font(.caption)
+        }
+    }
+    .padding()
+}
+
+#Preview("Race car v1 vs v2") {
+    let frame = CGSize(width: 96, height: 48)
+    let v1Appearance = CarAppearance(
+        bodyColor: HotWheelsTheme.hotRed,
+        accentColor: HotWheelsTheme.trackBlack,
+        scale: 1.0,
+        silhouette: .raceCar,
+        bodyAspectRatio: 1.6,
+        wheelSpacingMultiplier: 0.78,
+        wheelSizeMultiplier: 1.0,
+        renderVersion: .v1
+    )
+    HStack(spacing: 28) {
+        VStack(spacing: 6) {
+            CarView(car: Car(appearance: v1Appearance), size: frame)
+            Text("Race Car v1")
+                .font(.caption)
+        }
+        VStack(spacing: 6) {
+            CarView(car: CarDesign.raceCar.makeCar(), size: frame)
+            Text("Race Car v2")
                 .font(.caption)
         }
     }

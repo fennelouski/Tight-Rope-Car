@@ -136,4 +136,22 @@ struct Tight_Rope_CarTests {
             #expect(car.tiltRadians == 0.1)
         }
     }
+
+    @Test func v2RenderVersionOnlyOnUpgradedDesigns() {
+        let v2Designs: Set<CarDesign> = [.raceCar, .classicBug]
+        for design in CarDesign.allDesigns {
+            if v2Designs.contains(design) {
+                #expect(design.renderVersion == .v2)
+                #expect(design.appearance.renderVersion == .v2)
+            } else {
+                #expect(design.renderVersion == .v1)
+                #expect(design.appearance.renderVersion == .v1)
+            }
+        }
+    }
+
+    @Test func carAppearanceDefaultsToV1RenderVersion() {
+        #expect(CarAppearance.default.renderVersion == .v1)
+        #expect(CarCatalog.defaultCar.appearance.renderVersion == .v2)
+    }
 }

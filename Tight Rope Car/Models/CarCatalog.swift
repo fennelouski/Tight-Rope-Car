@@ -36,7 +36,8 @@ enum CarCatalog {
         appearance: CarAppearance(
             bodyColor: HotWheelsTheme.hotRed,
             accentColor: HotWheelsTheme.trackBlack,
-            scale: 1.0
+            scale: 1.0,
+            renderVersion: .v2
         ),
         sortOrder: 0
     )
