@@ -55,9 +55,6 @@ struct CourseMapNodeView: View {
                     .frame(width: diameter - 14)
             }
 
-            if state == .beaten {
-                starBadge
-            }
         }
         .frame(width: diameter, height: diameter)
         .opacity(state == .locked ? 0.55 : 1)
@@ -109,20 +106,6 @@ struct CourseMapNodeView: View {
         }
     }
 
-    private var starBadge: some View {
-        Image(systemName: "star.fill")
-            .font(.system(size: 11, weight: .black))
-            .foregroundStyle(HotWheelsTheme.racingYellow)
-            .padding(4)
-            .background(
-                Circle()
-                    .fill(HotWheelsTheme.trackBlack)
-                    .overlay(Circle().strokeBorder(HotWheelsTheme.flameOrange, lineWidth: 1.5))
-            )
-            .offset(x: diameter * 0.34, y: -diameter * 0.34)
-            .accessibilityHidden(true)
-    }
-
     private var shortLabel: String {
         let words = displayName.split(separator: " ")
         if words.count >= 2, let first = words.first, let second = words.dropFirst().first {
@@ -142,6 +125,7 @@ struct CourseMapNodeView: View {
             Image(systemName: "flag.checkered")
                 .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(HotWheelsTheme.racingYellow)
+        // Beaten = cleared at least once (`completedCourseIDs`); not a 1–3 performance star score (v0.3).
         case .beaten:
             Image(systemName: "checkmark.seal.fill")
                 .font(.system(size: 15, weight: .bold))

@@ -44,7 +44,8 @@ A physical device is recommended for playtesting; the Simulator has limited moti
 ### v0.3 — Progression
 
 - [ ] Level select: rope length, gaps, narrower rope
-- [ ] Star rating (time, max tilt, falls)
+- [ ] Star rating (time, max tilt, falls) — not implemented
+- [x] Map cleared state only (`CLEAR` chip, checkmark seal on beaten nodes — not 1–3 performance stars)
 - [ ] Local persistence (high scores, unlocked levels)
 
 ### Later (optional)
