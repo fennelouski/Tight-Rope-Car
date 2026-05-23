@@ -6,7 +6,7 @@
 import SwiftData
 import SwiftUI
 
-/// SwiftUI shell for an in-run session: SpriteKit host (later), pause menu, and results.
+/// SwiftUI shell for an in-run session: ``GameSceneView`` playfield, pause menu, results, and theme ambience.
 struct GameplayView: View {
     let courseID: String
     var onExitToMap: () -> Void = {}
@@ -35,6 +35,8 @@ struct GameplayView: View {
     @State private var hudAppeared = false
     /// Tickets collected so far in the current run; updated by the game scene.
     @State private var ticketsCollected: Int = 0
+    @StateObject private var ambiencePlayer = ThemeAmbiencePlayer()
+    @StateObject private var gameplayLoopPlayer = GameplayLoopSFXPlayer()
 
     private enum GameplayPhase: Equatable {
         case calibrating
@@ -115,6 +117,8 @@ struct GameplayView: View {
             }
         }
         .onDisappear {
+            ambiencePlayer.stop()
+            gameplayLoopPlayer.stop()
             tiltSession.endSession()
         }
         .onChange(of: scenePhase) { _, newPhase in
@@ -142,8 +146,7 @@ struct GameplayView: View {
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 24)
-            .padding(.top, 16)
-            .padding(.bottom, 32)
+            .hotWheelsScreenContentPadding()
 
             overlayForPhase
 
@@ -164,6 +167,8 @@ struct GameplayView: View {
             tiltSession.configureForAccessibility(reduceMotion: enabled, isSimulator: isSimulator)
         }
         .onChange(of: phase) { _, newPhase in
+            syncThemeAmbience()
+            syncGameplayLoops()
             if case .paused = newPhase {
                 Task { @MainActor in
                     GameSFXPlayer.shared.stopAll()
@@ -171,6 +176,34 @@ struct GameplayView: View {
                 }
             }
         }
+    }
+
+    private func syncThemeAmbience() {
+        guard let course else {
+            ambiencePlayer.stop()
+            return
+        }
+        guard case .running = phase else {
+            ambiencePlayer.stop()
+            return
+        }
+        guard let soundName = BackgroundThemeCatalog.metadata(for: course.backgroundTheme).ambienceSoundName,
+              ThemeAmbiencePlayer.isSoundAvailable(soundName)
+        else {
+            ambiencePlayer.stop()
+            return
+        }
+        if !ambiencePlayer.isPlaying(soundName: soundName) {
+            ambiencePlayer.play(soundName: soundName)
+        }
+    }
+
+    private func syncGameplayLoops() {
+        guard case .running = phase else {
+            gameplayLoopPlayer.stop()
+            return
+        }
+        gameplayLoopPlayer.playEngine(duckedForThemeAmbience: ambiencePlayer.isPlaying)
     }
 
     private var showsOnScreenBalance: Bool {
@@ -193,6 +226,7 @@ struct GameplayView: View {
             GameSceneView(
                 course: course,
                 carAppearance: appearance,
+                ticketAccentColor: profile.profileColor,
                 tiltProvider: tiltSession.tiltProvider,
                 neutralRollOffset: tiltSession.neutralRollOffset,
                 isPaused: !isRunActive,
@@ -426,7 +460,7 @@ struct GameplayView: View {
     }
 }
 
-// MARK: - Sample stats (DEBUG simulation until GameScene reports outcomes)
+// MARK: - Sample stats (#if DEBUG chips only; production uses GameScene.onOutcome)
 
 extension GameRunStats {
     static func sample(for courseID: String) -> GameRunStats {

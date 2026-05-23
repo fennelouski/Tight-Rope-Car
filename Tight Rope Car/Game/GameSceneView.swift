@@ -10,6 +10,7 @@ import SwiftUI
 struct GameSceneView: View {
     let course: Course
     let carAppearance: CarAppearance
+    var ticketAccentColor: Color = HotWheelsTheme.racingYellow
     let neutralRollOffset: Double
     var isPaused: Bool = false
     var reduceMotion: Bool = false
@@ -22,6 +23,7 @@ struct GameSceneView: View {
     init(
         course: Course,
         carAppearance: CarAppearance,
+        ticketAccentColor: Color = HotWheelsTheme.racingYellow,
         tiltProvider: TiltRollProviding,
         neutralRollOffset: Double,
         isPaused: Bool = false,
@@ -32,6 +34,7 @@ struct GameSceneView: View {
     ) {
         self.course = course
         self.carAppearance = carAppearance
+        self.ticketAccentColor = ticketAccentColor
         self.neutralRollOffset = neutralRollOffset
         self.isPaused = isPaused
         self.reduceMotion = reduceMotion
@@ -39,9 +42,16 @@ struct GameSceneView: View {
         self.onTicketCollected = onTicketCollected
         self.onOutcome = onOutcome
 
+        let carTexture = CarAppearanceTextureRenderer.texture(for: carAppearance)
+        let ticketTexture = TicketPickupTextureRenderer.texture(
+            accentColor: ticketAccentColor,
+            reduceMotion: reduceMotion
+        )
         let gameScene = GameScene(
             course: course,
             carAppearance: carAppearance,
+            carTexture: carTexture,
+            ticketTexture: ticketTexture,
             theme: course.backgroundTheme,
             tiltProvider: tiltProvider,
             reduceMotion: reduceMotion

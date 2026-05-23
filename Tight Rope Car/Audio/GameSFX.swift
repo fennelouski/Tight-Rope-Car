@@ -10,4 +10,5 @@ enum GameSFX: String, Sendable, CaseIterable {
     case fall = "fall_sting"
     case runSuccess = "run_success"
     case ticketPickup = "ticket_pickup"
+    case ropeCreak = "rope_creak"
 }

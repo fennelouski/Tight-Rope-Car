@@ -58,7 +58,30 @@ Optional `zIndex` orders draws when layers overlap.
 
 ## Ambience audio
 
-`ambienceSoundName` is a file base name (no extension), e.g. `ocean_waves`. `nil` means no loop is defined yet. Wire these in AVFoundation when SFX ships (see README v0.2).
+`ambienceSoundName` is a bundle file base name (no extension), resolved by `BundledAudioLocator` (`.caf` or `.wav` under `Tight Rope Car/Resources/Audio/`).
+
+| Theme | Sound name | Notes |
+|-------|------------|--------|
+| `ocean` | `ocean_waves` | Bundled |
+| `forest` | `forest_birds` | Bundled |
+| `city` | `city_traffic` | Bundled |
+| `bedroom` | — | Silent |
+| `toyShop` | `toy_shop_chimes` | Bundled |
+| `candyShop` | — | Silent |
+| `garden` | `garden_breeze` | Bundled |
+| `beach` | `beach_waves` | Bundled |
+
+`ThemeAmbiencePlayer` loops clips with an `.ambient` audio session (respects the hardware silent switch). Loops play in the landing **Backgrounds** gallery and during gameplay while a run is active; they stop on pause, results, and exit.
+
+### Gameplay run audio (not theme-specific)
+
+| Layer | Clip | Player | When |
+|-------|------|--------|------|
+| Theme ambience | per-table above | `ThemeAmbiencePlayer` | `.running` if theme has `ambienceSoundName` |
+| Engine | `engine_loop` | `GameplayLoopSFXPlayer` | every `.running` run (volume ~0.42, ~0.30 when theme ambience plays) |
+| Rope stress | `rope_creak` | `GameSFXPlayer` one-shot | near-fall, same cooldown as near-fall haptics |
+
+Regenerate procedural loops with `scripts/generate_*_audio.py` (see `generate_ocean_waves_audio.py` for the pattern). `BackgroundThemeAssetTests` asserts every non-`nil` catalogue name resolves in the app bundle.
 
 ## Adding a new theme
 
