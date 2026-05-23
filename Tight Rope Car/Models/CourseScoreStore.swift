@@ -47,6 +47,22 @@ enum CourseScoreStore {
         return true
     }
 
+    /// Updates best ticket count when `count` is strictly higher than the saved value.
+    @discardableResult
+    static func recordBestTicketCount(
+        _ count: Int,
+        courseID: String,
+        for profile: PlayerProfile,
+        context: ModelContext
+    ) throws -> Bool {
+        guard count > 0, CourseCatalog.course(id: courseID) != nil else { return false }
+        let entry = existingOrNew(courseID: courseID, for: profile)
+        guard isBetterTicketCount(count, than: entry.bestTicketCount) else { return false }
+        entry.bestTicketCount = count
+        try context.save()
+        return true
+    }
+
     /// Deterministic sample values for dev/testing when a course is marked complete without gameplay.
     static func seedSampleScore(
         courseID: String,
@@ -58,6 +74,9 @@ enum CourseScoreStore {
         let distance = 420.0 + Double(hash % 380)
         _ = try recordBestTime(time, courseID: courseID, for: profile, context: context)
         _ = try recordBestDistance(distance, courseID: courseID, for: profile, context: context)
+        let ticketCount = CourseCatalog.course(id: courseID)?.ticketCount ?? 3
+        let tickets = max(1, ticketCount - (hash % 2 == 0 ? 0 : 1))
+        _ = try recordBestTicketCount(tickets, courseID: courseID, for: profile, context: context)
     }
 
     static func isBetterTime(_ candidate: Double, than existing: Double?) -> Bool {
@@ -67,6 +86,11 @@ enum CourseScoreStore {
 
     static func isBetterDistance(_ candidate: Double, than existing: Double?) -> Bool {
         guard let existing else { return true }
+        return candidate > existing
+    }
+
+    static func isBetterTicketCount(_ candidate: Int, than existing: Int?) -> Bool {
+        guard let existing else { return candidate > 0 }
         return candidate > existing
     }
 

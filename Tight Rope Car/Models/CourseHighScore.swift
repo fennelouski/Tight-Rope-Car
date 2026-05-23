@@ -13,6 +13,8 @@ final class CourseHighScore {
     var bestTimeSeconds: Double?
     /// Distance along the rope; higher is better. Nil until recorded.
     var bestDistance: Double?
+    /// Most tickets collected in a single run on this course.
+    var bestTicketCount: Int?
 
     var profile: PlayerProfile?
 
@@ -20,11 +22,13 @@ final class CourseHighScore {
         courseID: String,
         bestTimeSeconds: Double? = nil,
         bestDistance: Double? = nil,
+        bestTicketCount: Int? = nil,
         profile: PlayerProfile? = nil
     ) {
         self.courseID = courseID
         self.bestTimeSeconds = bestTimeSeconds
         self.bestDistance = bestDistance
+        self.bestTicketCount = bestTicketCount
         self.profile = profile
     }
 }

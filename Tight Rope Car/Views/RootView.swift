@@ -11,6 +11,7 @@ enum AppFlow: Equatable {
     case profileSelection
     case carSelection
     case courseSelection
+    case gameplay(courseID: String)
 }
 
 private enum FlowNavigation {
@@ -21,8 +22,17 @@ private enum FlowNavigation {
 struct RootView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    @Query(sort: \PlayerProfile.createdAt, order: .reverse) private var profiles: [PlayerProfile]
+    @AppStorage(ProfileConstants.selectedProfileIDKey) private var selectedProfileID = ""
+
     @State private var flow: AppFlow = .landing
     @State private var navigation: FlowNavigation = .forward
+    @State private var gameplayRunID = UUID()
+
+    private var activeProfile: PlayerProfile? {
+        guard let uuid = UUID(uuidString: selectedProfileID) else { return nil }
+        return profiles.first { $0.id == uuid }
+    }
 
     var body: some View {
         ZStack {
@@ -47,9 +57,20 @@ struct RootView: View {
             case .courseSelection:
                 CourseSelectionView(
                     onBack: goBackToCarSelection,
-                    onGoHome: goToLanding
+                    onGoHome: goToLanding,
+                    onPlayCourse: goToGameplay
                 )
                 .transition(screenTransition)
+            case .gameplay(let courseID):
+                GameplayView(
+                    courseID: courseID,
+                    onExitToMap: goBackToCourseSelection,
+                    onExitToLanding: goToLanding,
+                    onPlayAgain: { playAgain(courseID: courseID) },
+                    onRetry: { retryGameplay(courseID: courseID) }
+                )
+                .id(gameplayRunID)
+                .transition(gameplayTransition)
             }
         }
         .animation(flowAnimation, value: flow)
@@ -83,6 +104,26 @@ struct RootView: View {
         }
     }
 
+    private var gameplayTransition: AnyTransition {
+        if reduceMotion {
+            return .opacity
+        }
+        switch navigation {
+        case .forward:
+            return .asymmetric(
+                insertion: .opacity.combined(with: .scale(scale: 0.98)),
+                removal: .opacity
+            )
+        case .backward:
+            return .asymmetric(
+                insertion: .opacity
+                    .combined(with: .scale(scale: 0.96))
+                    .combined(with: .offset(x: -56)),
+                removal: .opacity.combined(with: .scale(scale: 1.02))
+            )
+        }
+    }
+
     private var landingTransition: AnyTransition {
         if reduceMotion {
             return .opacity
@@ -104,6 +145,8 @@ struct RootView: View {
             )
         }
     }
+
+    // MARK: - Setup funnel
 
     private func goToProfileSelection() {
         navigation = .forward
@@ -133,6 +176,52 @@ struct RootView: View {
     private func goToLanding() {
         navigation = .backward
         flow = .landing
+    }
+
+    // MARK: - Gameplay
+
+    private func goToGameplay(courseID: String) {
+        guard canStartGameplay(courseID: courseID) else { return }
+        gameplayRunID = UUID()
+        navigation = .forward
+        flow = .gameplay(courseID: courseID)
+    }
+
+    private func goBackToCourseSelection() {
+        navigation = .backward
+        flow = .courseSelection
+    }
+
+    private func playAgain(courseID: String) {
+        guard canStartGameplay(courseID: courseID) else {
+            goBackToCourseSelection()
+            return
+        }
+        gameplayRunID = UUID()
+        navigation = .forward
+        flow = .gameplay(courseID: courseID)
+    }
+
+    private func retryGameplay(courseID: String) {
+        guard canStartGameplay(courseID: courseID) else {
+            goBackToCourseSelection()
+            return
+        }
+        gameplayRunID = UUID()
+        flow = .gameplay(courseID: courseID)
+    }
+
+    private func canStartGameplay(courseID: String) -> Bool {
+        guard CourseCatalog.course(id: courseID) != nil,
+              CourseMapCatalog.node(courseID: courseID) != nil,
+              let profile = activeProfile
+        else { return false }
+
+        let state = CourseUnlockEvaluator.nodeState(
+            courseID: courseID,
+            completedCourseIDs: CourseProgressStore.completedSet(for: profile)
+        )
+        return state == .available || state == .beaten
     }
 }
 

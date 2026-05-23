@@ -14,6 +14,8 @@ struct Course: Identifiable, Codable, Sendable, Equatable {
     let forwardSpeed: Double
     let maxPitchRadians: Double
     let unlockOrder: Int
+    /// Number of tickets collectible on this course. Placed evenly along the rope at 1/(n+1) arc-length intervals.
+    let ticketCount: Int
 
     init(
         id: String,
@@ -23,7 +25,8 @@ struct Course: Identifiable, Codable, Sendable, Equatable {
         ropeWidth: Double = 48,
         forwardSpeed: Double = 120,
         maxPitchRadians: Double = .pi / 4,
-        unlockOrder: Int = 0
+        unlockOrder: Int = 0,
+        ticketCount: Int = 3
     ) {
         self.id = id
         self.displayName = displayName
@@ -33,5 +36,12 @@ struct Course: Identifiable, Codable, Sendable, Equatable {
         self.forwardSpeed = forwardSpeed
         self.maxPitchRadians = maxPitchRadians
         self.unlockOrder = unlockOrder
+        self.ticketCount = ticketCount
+    }
+
+    /// Arc-length fractions [0,1] where tickets appear, evenly spaced so they're always on-path.
+    var ticketFractions: [Double] {
+        guard ticketCount > 0 else { return [] }
+        return (1 ... ticketCount).map { Double($0) / Double(ticketCount + 1) }
     }
 }

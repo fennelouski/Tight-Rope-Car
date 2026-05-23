@@ -12,13 +12,21 @@ enum CourseProgressStore {
     }
 
     /// Marks a course beaten for the profile. Idempotent; does not remove other completions.
-    static func markCompleted(courseID: String, for profile: PlayerProfile, context: ModelContext) throws {
+    /// - Parameter seedScores: When true, writes deterministic sample highs (map long-press dev tool only).
+    static func markCompleted(
+        courseID: String,
+        for profile: PlayerProfile,
+        context: ModelContext,
+        seedScores: Bool = true
+    ) throws {
         guard CourseCatalog.course(id: courseID) != nil else { return }
         guard CourseMapCatalog.node(courseID: courseID) != nil else { return }
         if !profile.completedCourseIDs.contains(courseID) {
             profile.completedCourseIDs.append(courseID)
         }
-        try CourseScoreStore.seedSampleScore(courseID: courseID, for: profile, context: context)
+        if seedScores {
+            try CourseScoreStore.seedSampleScore(courseID: courseID, for: profile, context: context)
+        }
         try context.save()
     }
 }

@@ -56,8 +56,8 @@ struct CourseSamplerTests {
         #expect(end.position.x > start.position.x + 200)
     }
 
-    @Test func catalogContainsNineteenDistinctCourses() {
-        #expect(CourseCatalog.all.count == 19)
+    @Test func catalogContainsAllDistinctCourses() {
+        #expect(CourseCatalog.all.count == 200)
         let ids = Set(CourseCatalog.all.map(\.id))
         #expect(ids.contains("narrowWire"))
         #expect(ids.contains("bigDrop"))
@@ -74,6 +74,11 @@ struct CourseSamplerTests {
         #expect(ids.contains("spiralDrift"))
         #expect(ids.contains("midnightRun"))
         #expect(ids.contains("rollerCoast"))
+        #expect(ids.contains("desertDash"))
+        #expect(ids.contains("iceShelf"))
+        #expect(ids.contains("pendulumSwing"))
+        #expect(ids.contains("launchPad"))
+        #expect(ids.contains("whisperCanyon"))
     }
 
     @Test(arguments: [
@@ -245,20 +250,22 @@ struct CourseSamplerTests {
         #expect(sampler.totalLength <= 1100)
     }
 
-    @Test func spiralDriftPathSwingsLeftAndRightOfStart() {
+    @Test func spiralDriftPathOscillatesAboveAndBelowStart() {
+        // spiralDrift alternates control-point y above/below the chord, producing a wave.
+        // The path should swing both above and below the starting y by at least 10 points.
         let sampler = CourseSampler(course: CourseCatalog.spiralDrift)
-        let startX = sampler.sample(at: 0).position.x
-        let sampleCount = 24
-        var minX = Double.infinity
-        var maxX = -Double.infinity
+        let startY = sampler.sample(at: 0).position.y
+        let sampleCount = 200
+        var minY = Double.infinity
+        var maxY = -Double.infinity
         for index in 0 ... sampleCount {
             let s = sampler.totalLength * Double(index) / Double(sampleCount)
-            let x = sampler.sample(at: s).position.x
-            minX = min(minX, x)
-            maxX = max(maxX, x)
+            let y = sampler.sample(at: s).position.y
+            minY = min(minY, y)
+            maxY = max(maxY, y)
         }
-        #expect(minX < startX - 15)
-        #expect(maxX > startX + 15)
+        #expect(maxY > startY + 10)
+        #expect(minY < startY - 10)
     }
 
     @Test func midnightRunUsesFastSpeedAndDarkSkySpans() {
@@ -277,5 +284,80 @@ struct CourseSamplerTests {
             minY = min(minY, sampler.sample(at: s).position.y)
         }
         #expect(minY < -25)
+    }
+
+    // MARK: - Batch 4 courses
+
+    @Test(arguments: [
+        CourseCatalog.desertDash,
+        CourseCatalog.iceShelf,
+        CourseCatalog.pendulumSwing,
+        CourseCatalog.launchPad,
+        CourseCatalog.whisperCanyon,
+    ])
+    func batch4CourseHasPositiveLengthAndEndpointSamples(course: Course) {
+        let sampler = CourseSampler(course: course)
+        #expect(sampler.totalLength > 0)
+
+        let start = sampler.sample(at: 0)
+        let end = sampler.sample(at: sampler.totalLength)
+        #expect(abs(start.position.x - course.waypoints[0].position.x) < epsilon)
+        #expect(abs(start.position.y - course.waypoints[0].position.y) < epsilon)
+        #expect(abs(end.position.x - course.waypoints.last!.position.x) < epsilon)
+        #expect(abs(end.position.y - course.waypoints.last!.position.y) < epsilon)
+    }
+
+    @Test func desertDashLongerThanTutorialAndFinishesFarForward() {
+        let tutorialSampler = CourseSampler(course: CourseCatalog.tutorial)
+        let sampler = CourseSampler(course: CourseCatalog.desertDash)
+        let start = sampler.sample(at: 0)
+        let end = sampler.sample(at: sampler.totalLength)
+        #expect(sampler.totalLength > tutorialSampler.totalLength)
+        #expect(end.position.x > start.position.x + 400)
+    }
+
+    @Test func iceShelfSlowDescentWithCoolPace() {
+        let course = CourseCatalog.iceShelf
+        let sampler = CourseSampler(course: course)
+        let start = sampler.sample(at: 0)
+        let mid = sampler.sample(at: sampler.totalLength * 0.5)
+        #expect(course.forwardSpeed < 100)
+        #expect(mid.position.y < start.position.y - 20)
+    }
+
+    @Test func pendulumSwingPathSwingsBothSidesOfStart() {
+        let sampler = CourseSampler(course: CourseCatalog.pendulumSwing)
+        let startX = sampler.sample(at: 0).position.x
+        let sampleCount = 24
+        var minX = Double.infinity
+        var maxX = -Double.infinity
+        for index in 0 ... sampleCount {
+            let s = sampler.totalLength * Double(index) / Double(sampleCount)
+            let x = sampler.sample(at: s).position.x
+            minX = min(minX, x)
+            maxX = max(maxX, x)
+        }
+        #expect(minX < startX - 15)
+        #expect(maxX > startX + 15)
+    }
+
+    @Test func launchPadMidCourseClimbsAboveStart() {
+        let sampler = CourseSampler(course: CourseCatalog.launchPad)
+        let start = sampler.sample(at: 0)
+        let mid = sampler.sample(at: sampler.totalLength * 0.48)
+        #expect(mid.position.y > start.position.y + 25)
+    }
+
+    @Test func whisperCanyonShallowSagWithNarrowMidSection() {
+        let sampler = CourseSampler(course: CourseCatalog.whisperCanyon)
+        let mid = sampler.sample(at: sampler.totalLength * 0.48)
+        let sampleCount = 28
+        var minY = Double.infinity
+        for index in 1 ..< sampleCount {
+            let s = sampler.totalLength * Double(index) / Double(sampleCount)
+            minY = min(minY, sampler.sample(at: s).position.y)
+        }
+        #expect(mid.ropeWidth < 40)
+        #expect(minY < -15)
     }
 }

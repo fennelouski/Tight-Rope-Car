@@ -9,6 +9,7 @@ import SwiftUI
 struct CourseSelectionView: View {
     var onBack: () -> Void = {}
     var onGoHome: () -> Void = {}
+    var onPlayCourse: (String) -> Void = { _ in }
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -229,7 +230,7 @@ struct CourseSelectionView: View {
 
     private var playButton: some View {
         Button {
-            // Gameplay scene coming later
+            onPlayCourse(selectedCourseID)
         } label: {
             Text("Play")
         }
@@ -245,7 +246,7 @@ struct CourseSelectionView: View {
         .accessibilityLabel("Play")
         .accessibilityHint(
             hasPlayableSelection
-                ? "Start the selected course when gameplay is available"
+                ? "Start the selected course"
                 : "Select an unlocked course first"
         )
     }

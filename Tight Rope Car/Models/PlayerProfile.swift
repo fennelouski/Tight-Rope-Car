@@ -17,6 +17,8 @@ final class PlayerProfile {
     var selectedCarID: String?
     /// Course ids beaten at least once (see ``CourseMapCatalog`` for unlock graph).
     var completedCourseIDs: [String]
+    /// Cumulative tickets collected across all runs on all courses.
+    var totalTickets: Int
     @Relationship(deleteRule: .cascade, inverse: \CourseHighScore.profile)
     var highScores: [CourseHighScore]
 
@@ -28,6 +30,7 @@ final class PlayerProfile {
         createdAt: Date = Date(),
         selectedCarID: String? = nil,
         completedCourseIDs: [String] = [],
+        totalTickets: Int = 0,
         highScores: [CourseHighScore] = []
     ) {
         self.id = id
@@ -37,6 +40,7 @@ final class PlayerProfile {
         self.createdAt = createdAt
         self.selectedCarID = selectedCarID
         self.completedCourseIDs = completedCourseIDs
+        self.totalTickets = totalTickets
         self.highScores = highScores
     }
 

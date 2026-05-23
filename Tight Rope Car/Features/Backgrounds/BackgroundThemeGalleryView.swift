@@ -30,7 +30,7 @@ struct BackgroundThemeGalleryView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Done", action: dismiss.callAsFunction)
+                    Button("Done") { dismiss() }
                 }
             }
             .fullScreenCover(item: $selectedTheme) { theme in
