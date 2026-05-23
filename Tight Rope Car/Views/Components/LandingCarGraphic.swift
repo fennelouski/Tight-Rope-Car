@@ -15,90 +15,159 @@ struct LandingCarGraphic: View {
 
     var body: some View {
         ZStack {
+            carShadow
             ropeAndSupports
+            heroTicket
             car
         }
-        .frame(height: 200)
+        .frame(height: 220)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Car balancing on a tight rope")
         .onAppear(perform: startIdleAnimations)
+    }
+
+    private var carShadow: some View {
+        Ellipse()
+            .fill(HotWheelsTheme.trackBlack.opacity(0.35))
+            .frame(width: 110, height: 18)
+            .offset(y: 52)
+            .blur(radius: 2)
     }
 
     private var ropeAndSupports: some View {
         ZStack {
             supportTower
-                .offset(x: -120, y: 40)
+                .offset(x: -120, y: 44)
 
             supportTower
-                .offset(x: 120, y: 40)
+                .offset(x: 120, y: 44)
+
+            AnimatedRopeShape(sagAmount: ropeSag)
+                .stroke(
+                    HotWheelsTheme.trackBlack.opacity(0.55),
+                    style: StrokeStyle(lineWidth: 9, lineCap: .round)
+                )
+                .frame(width: 270, height: 84)
+                .offset(y: 22)
+
+            AnimatedRopeShape(sagAmount: ropeSag)
+                .stroke(
+                    HotWheelsTheme.hotRed.opacity(0.35),
+                    style: StrokeStyle(lineWidth: 6, lineCap: .round)
+                )
+                .frame(width: 270, height: 84)
+                .offset(y: 21)
 
             AnimatedRopeShape(sagAmount: ropeSag)
                 .stroke(
                     HotWheelsTheme.trackBlack,
                     style: StrokeStyle(lineWidth: 5, lineCap: .round)
                 )
-                .frame(width: 260, height: 80)
+                .frame(width: 270, height: 84)
                 .offset(y: 20)
 
             AnimatedRopeShape(sagAmount: ropeSag)
                 .stroke(
-                    Color(white: 0.55),
+                    HotWheelsTheme.racingYellow.opacity(0.75),
+                    style: StrokeStyle(lineWidth: 2, lineCap: .round)
+                )
+                .frame(width: 270, height: 84)
+                .offset(y: 18)
+
+            AnimatedRopeShape(sagAmount: ropeSag)
+                .stroke(
+                    Color.white.opacity(0.45),
                     style: StrokeStyle(
-                        lineWidth: 2,
+                        lineWidth: 1.5,
                         lineCap: .round,
-                        dash: [6, 4],
+                        dash: [5, 5],
                         dashPhase: dashPhase
                     )
                 )
-                .frame(width: 260, height: 80)
-                .offset(y: 18)
+                .frame(width: 270, height: 84)
+                .offset(y: 17)
         }
+    }
+
+    private var heroTicket: some View {
+        TicketPickupView(displaySize: .compact)
+            .offset(y: 8)
+            .shadow(color: HotWheelsTheme.trackBlack.opacity(0.4), radius: 0, x: 0, y: 2)
     }
 
     private var supportTower: some View {
         VStack(spacing: 0) {
-            Rectangle()
-                .fill(HotWheelsTheme.electricBlue)
-                .frame(width: 8, height: 50)
-            Rectangle()
+            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [HotWheelsTheme.electricBlue, HotWheelsTheme.electricBlue.opacity(0.7)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .frame(width: 8, height: 54)
+            RoundedRectangle(cornerRadius: 2, style: .continuous)
                 .fill(HotWheelsTheme.trackBlack)
-                .frame(width: 24, height: 8)
+                .frame(width: 28, height: 10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 2, style: .continuous)
+                        .strokeBorder(HotWheelsTheme.racingYellow.opacity(0.6), lineWidth: 1)
+                )
         }
+        .shadow(color: HotWheelsTheme.trackBlack.opacity(0.4), radius: 0, x: 0, y: 3)
     }
 
     private var car: some View {
         ZStack {
             Circle()
                 .fill(HotWheelsTheme.trackBlack)
-                .frame(width: 22, height: 22)
-                .offset(x: -28, y: 18)
+                .frame(width: 24, height: 24)
+                .offset(x: -30, y: 20)
 
             Circle()
                 .fill(HotWheelsTheme.trackBlack)
-                .frame(width: 22, height: 22)
-                .offset(x: 28, y: 18)
+                .frame(width: 24, height: 24)
+                .offset(x: 30, y: 20)
 
             Circle()
-                .fill(Color(white: 0.75))
+                .fill(Color.white.opacity(0.85))
                 .frame(width: 10, height: 10)
-                .offset(x: -28, y: 18)
+                .offset(x: -30, y: 20)
 
             Circle()
-                .fill(Color(white: 0.75))
+                .fill(Color.white.opacity(0.85))
                 .frame(width: 10, height: 10)
-                .offset(x: 28, y: 18)
+                .offset(x: 30, y: 20)
 
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .fill(HotWheelsTheme.hotRed)
-                .frame(width: 90, height: 36)
+                .frame(width: 94, height: 38)
                 .offset(y: 4)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.35), Color.clear],
+                                startPoint: .top,
+                                endPoint: .center
+                            )
+                        )
+                        .offset(y: 4)
+                }
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(HotWheelsTheme.trackBlack, lineWidth: 2)
+                        .offset(y: 4)
+                )
 
-            RoundedRectangle(cornerRadius: 6)
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
                 .fill(HotWheelsTheme.electricBlue)
-                .frame(width: 40, height: 22)
+                .frame(width: 42, height: 24)
                 .offset(x: -8, y: -6)
 
-            RoundedRectangle(cornerRadius: 4)
-                .fill(HotWheelsTheme.racingYellow.opacity(0.8))
-                .frame(width: 18, height: 10)
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(HotWheelsTheme.racingYellow.opacity(0.9))
+                .frame(width: 20, height: 11)
                 .offset(x: -14, y: -8)
 
             FlameAccent()
@@ -107,17 +176,17 @@ struct LandingCarGraphic: View {
                         colors: [
                             HotWheelsTheme.racingYellow,
                             HotWheelsTheme.flameOrange,
-                            HotWheelsTheme.hotRed
+                            HotWheelsTheme.hotRed,
                         ],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .frame(width: 16 * flameScale, height: 14 * flameScale)
-                .offset(x: 38, y: 2)
+                .offset(x: 40, y: 2)
                 .opacity(0.75 + flameScale * 0.25)
         }
-        .offset(y: -8)
+        .offset(y: -10)
         .rotationEffect(.degrees(balance * 5))
         .offset(x: balance * 6, y: balance * 2)
     }
@@ -175,7 +244,8 @@ private struct FlameAccent: Shape {
 }
 
 #Preview {
-    LandingCarGraphic()
-        .padding()
-        .background(HotWheelsTheme.trackBlack)
+    ZStack {
+        RacingStripeBackground()
+        LandingCarGraphic()
+    }
 }

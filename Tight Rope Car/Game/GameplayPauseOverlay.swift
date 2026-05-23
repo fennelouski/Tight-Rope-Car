@@ -10,43 +10,38 @@ struct GameplayPauseOverlay: View {
     var onQuitToMap: () -> Void
     var onMainMenu: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showQuitConfirmation = false
     @State private var showMainMenuConfirmation = false
+    @State private var contentAppeared = false
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.55)
-                .ignoresSafeArea()
+            RunFlowOverlayBackdrop(accentColor: HotWheelsTheme.electricBlue)
 
-            VStack(spacing: 16) {
-                Text("Paused")
-                    .font(HotWheelsTheme.sectionTitleFont)
-                    .foregroundStyle(.white)
-                    .hotWheelsTitleShadow()
+            RunFlowOverlayCard(borderColor: HotWheelsTheme.racingYellow) {
+                VStack(spacing: 18) {
+                    header
 
-                pauseButton("Resume", fillColor: HotWheelsTheme.racingYellow) {
-                    onResume()
-                }
+                    pauseButton("Resume", fillColor: HotWheelsTheme.racingYellow) {
+                        onResume()
+                    }
 
-                pauseButton("Quit to Map", fillColor: .white.opacity(0.92)) {
-                    showQuitConfirmation = true
-                }
+                    pauseButton("Quit to Map", fillColor: .white.opacity(0.92)) {
+                        showQuitConfirmation = true
+                    }
 
-                pauseButton("Main Menu", fillColor: HotWheelsTheme.hotRed.opacity(0.9)) {
-                    showMainMenuConfirmation = true
+                    pauseButton("Main Menu", fillColor: HotWheelsTheme.hotRed.opacity(0.9)) {
+                        showMainMenuConfirmation = true
+                    }
                 }
             }
-            .padding(28)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(HotWheelsTheme.trackBlack.opacity(0.92))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .strokeBorder(HotWheelsTheme.racingYellow, lineWidth: 3)
-                    )
-            )
-            .padding(.horizontal, 32)
+            .padding(.horizontal, 28)
+            .hotWheelsContentWidth()
+            .opacity(contentAppeared ? 1 : 0)
+            .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 16))
         }
+        .onAppear(perform: runEntranceAnimation)
         .alert("Leave this run?", isPresented: $showQuitConfirmation) {
             Button("Keep Playing", role: .cancel) {}
             Button("Quit to Map", role: .destructive) {
@@ -65,6 +60,26 @@ struct GameplayPauseOverlay: View {
         }
     }
 
+    private var header: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "pause.circle.fill")
+                .font(.system(size: 52, weight: .bold))
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(HotWheelsTheme.racingYellow, HotWheelsTheme.trackBlack.opacity(0.35))
+                .accessibilityHidden(true)
+
+            Text("Paused")
+                .font(HotWheelsTheme.sectionTitleFont)
+                .foregroundStyle(.white)
+                .hotWheelsTitleShadow()
+
+            Text("Take a breather — your run is waiting")
+                .font(HotWheelsTheme.captionFont)
+                .foregroundStyle(HotWheelsTheme.electricBlue.opacity(0.95))
+                .multilineTextAlignment(.center)
+        }
+    }
+
     private func pauseButton(
         _ title: String,
         fillColor: Color,
@@ -75,5 +90,22 @@ struct GameplayPauseOverlay: View {
         }
         .buttonStyle(HotWheelsAccentButtonStyle(fillColor: fillColor))
         .frame(maxWidth: .infinity)
+    }
+
+    private func runEntranceAnimation() {
+        if reduceMotion {
+            contentAppeared = true
+            return
+        }
+        withAnimation(.easeOut(duration: 0.32)) {
+            contentAppeared = true
+        }
+    }
+}
+
+#Preview {
+    ZStack {
+        Color.gray
+        GameplayPauseOverlay(onResume: {}, onQuitToMap: {}, onMainMenu: {})
     }
 }

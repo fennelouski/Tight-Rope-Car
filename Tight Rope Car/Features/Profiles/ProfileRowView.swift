@@ -9,59 +9,133 @@ struct ProfileRowView: View {
     let profile: PlayerProfile
     let isSelected: Bool
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var completedCount: Int {
+        PlayerProgressMetrics.completedMapCourseCount(for: profile)
+    }
+
+    private var totalCourses: Int {
+        PlayerProgressMetrics.mapCourseCount
+    }
+
+    private var hasProgress: Bool {
+        profile.totalTickets > 0 || completedCount > 0
+    }
+
     var body: some View {
-        HStack(spacing: 16) {
-            ProfileAvatarView(avatarJPEGData: profile.avatarJPEGData, size: 56)
-                .overlay(
-                    Circle()
-                        .strokeBorder(
-                            isSelected ? HotWheelsTheme.racingYellow : Color.white.opacity(0.4),
-                            lineWidth: isSelected ? 3 : 2
-                        )
+        HotWheelsSelectableRowCard(
+            isSelected: isSelected,
+            accentColor: profile.profileColor,
+            reduceMotion: reduceMotion
+        ) {
+            HStack(spacing: 16) {
+                ProfileAvatarView(
+                    avatarJPEGData: profile.avatarJPEGData,
+                    size: 56,
+                    borderColor: profile.profileColor,
+                    isHighlighted: isSelected
                 )
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(profile.displayName)
-                    .font(HotWheelsTheme.headlineFont)
-                    .foregroundStyle(.white)
-                Text("Age \(profile.age)")
-                    .font(HotWheelsTheme.captionFont)
-                    .foregroundStyle(.white.opacity(0.85))
-            }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(profile.displayName)
+                        .font(HotWheelsTheme.headlineFont)
+                        .foregroundStyle(.white)
 
-            Spacer()
+                    Text("Age \(profile.age)")
+                        .font(HotWheelsTheme.captionFont)
+                        .foregroundStyle(.white.opacity(0.85))
 
-            if isSelected {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.title2)
-                    .foregroundStyle(HotWheelsTheme.racingYellow)
-                    .shadow(color: HotWheelsTheme.trackBlack.opacity(0.5), radius: 0, x: 1, y: 2)
+                    if hasProgress {
+                        HStack(spacing: 14) {
+                            if profile.totalTickets > 0 {
+                                HotWheelsInlineStat(
+                                    systemImage: "ticket.fill",
+                                    text: "\(profile.totalTickets)",
+                                    accent: HotWheelsTheme.flameOrange
+                                )
+                            }
+
+                            if completedCount > 0 {
+                                HotWheelsInlineStat(
+                                    systemImage: "flag.checkered",
+                                    text: "\(completedCount)/\(totalCourses)",
+                                    accent: HotWheelsTheme.electricBlue
+                                )
+                            }
+                        }
+                    } else {
+                        Text("New racer — no runs yet")
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.55))
+                    }
+                }
+
+                Spacer(minLength: 8)
+
+                if isSelected {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.title3.weight(.black))
+                        .foregroundStyle(HotWheelsTheme.racingYellow)
+                        .shadow(color: HotWheelsTheme.trackBlack.opacity(0.5), radius: 0, x: 1, y: 2)
+                        .accessibilityHidden(true)
+                }
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(HotWheelsTheme.trackBlack.opacity(isSelected ? 0.55 : 0.4))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(
-                    isSelected ? HotWheelsTheme.racingYellow : HotWheelsTheme.hotRed.opacity(0.6),
-                    lineWidth: isSelected ? 3 : 2
-                )
-        )
-        .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(rowAccessibilityLabel)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityHint(isSelected ? "Selected racer" : "Double tap to select")
+    }
+
+    private var rowAccessibilityLabel: String {
+        var parts = ["\(profile.displayName)", "age \(profile.age)"]
+        if profile.totalTickets > 0 {
+            parts.append("\(profile.totalTickets) tickets")
+        }
+        if completedCount > 0 {
+            parts.append("\(completedCount) of \(totalCourses) courses beaten")
+        } else if !hasProgress {
+            parts.append("no runs yet")
+        }
+        return parts.joined(separator: ", ")
     }
 }
 
-#Preview {
+#Preview("Selected") {
     ZStack {
         HotWheelsTheme.backgroundGradient
         ProfileRowView(
-            profile: PlayerProfile(name: "Speed Racer", age: 9),
+            profile: PlayerProfile(
+                name: "Speed Racer",
+                age: 9,
+                completedCourseIDs: ["tutorial", "bumps", "narrowWire"],
+                totalTickets: 27,
+                profileColorIndex: 4
+            ),
             isSelected: true
+        )
+        .padding()
+    }
+}
+
+#Preview("Unselected") {
+    ZStack {
+        HotWheelsTheme.backgroundGradient
+        ProfileRowView(
+            profile: PlayerProfile(name: "Jordan", age: 12, profileColorIndex: 13),
+            isSelected: false
+        )
+        .padding()
+    }
+}
+
+#Preview("New racer") {
+    ZStack {
+        HotWheelsTheme.backgroundGradient
+        ProfileRowView(
+            profile: PlayerProfile(name: "Sam", age: 8, profileColorIndex: 6),
+            isSelected: false
         )
         .padding()
     }

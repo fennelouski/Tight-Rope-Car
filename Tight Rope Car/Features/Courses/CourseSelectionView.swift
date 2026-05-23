@@ -36,11 +36,9 @@ struct CourseSelectionView: View {
         return CourseScoreStore.scoresByCourseID(for: profile)
     }
 
-    private var shareText: String {
-        guard let profile = activeProfile else {
-            return "Tight Rope Car — pick a profile to share progress."
-        }
-        return ProgressShareBuilder.shareText(
+    private var shareExport: ProgressShareExport? {
+        guard let profile = activeProfile else { return nil }
+        return ProgressShareBuilder.makeExport(
             profile: profile,
             scoresByCourseID: scoresByCourseID
         )
@@ -61,17 +59,23 @@ struct CourseSelectionView: View {
         return state == .available || state == .beaten
     }
 
+    private var selectedCourseState: CourseMapNodeState? {
+        guard !selectedCourseID.isEmpty else { return nil }
+        return nodeStates[selectedCourseID]
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             header
                 .opacity(headerAppeared ? 1 : 0)
                 .offset(y: headerAppeared ? 0 : (reduceMotion ? 0 : 12))
 
-            mapScroll
+            mapSection
                 .opacity(contentAppeared ? 1 : 0)
                 .scaleEffect(contentAppeared ? 1 : (reduceMotion ? 1 : 0.96))
 
-            selectedCourseCaption
+            selectedCourseCard
+                .padding(.top, 12)
 
             Spacer(minLength: 12)
 
@@ -119,83 +123,101 @@ struct CourseSelectionView: View {
     // MARK: - Header
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                CourseMapToolbarButton(
-                    systemImage: "chevron.left",
-                    accessibilityLabel: "Back",
-                    accessibilityHint: "Return to car selection"
-                ) {
-                    onBack()
-                }
-
-                CourseMapToolbarButton(
-                    systemImage: "house.fill",
-                    accessibilityLabel: "Main menu",
-                    accessibilityHint: "Return to the landing screen"
-                ) {
-                    showGoHomeConfirmation = true
-                }
-
-                Spacer(minLength: 0)
-
-                CourseMapToolbarButton(
-                    systemImage: "trophy.fill",
-                    accessibilityLabel: "High scores",
-                    accessibilityHint: "View best times and distances for this profile"
-                ) {
-                    showHighScores = true
-                }
-                .disabled(activeProfile == nil)
-
-                if activeProfile != nil {
-                    ShareLink(item: shareText) {
-                        toolbarShareLabel
-                    }
-                    .accessibilityLabel("Share progress")
-                    .accessibilityHint("Share this profile's course progress and high scores")
-                } else {
-                    toolbarShareLabel
-                        .opacity(0.4)
-                        .accessibilityLabel("Share progress")
-                        .accessibilityHint("Select a profile to share progress")
-                        .accessibilityAddTraits(.isButton)
-                        .allowsHitTesting(false)
+        VStack(alignment: .leading, spacing: 14) {
+            HotWheelsScreenHeader(
+                eyebrow: "Track Map",
+                eyebrowSystemImage: "map.fill",
+                title: "Pick Your Course",
+                subtitle: headerSubtitle
+            ) {
+                if let profile = activeProfile {
+                    HotWheelsRacerChip(profile: profile)
                 }
             }
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Pick Your Course")
-                    .font(HotWheelsTheme.sectionTitleFont)
-                    .foregroundStyle(.white)
-                    .hotWheelsTitleShadow()
+            HotWheelsToolbarRail {
+                HStack(spacing: 8) {
+                    CourseMapToolbarButton(
+                        systemImage: "chevron.left",
+                        accessibilityLabel: "Back",
+                        accessibilityHint: "Return to car selection",
+                        action: onBack
+                    )
 
-                Text("Follow the rope road — beat levels to open new paths")
-                    .font(HotWheelsTheme.captionFont)
-                    .foregroundStyle(.white.opacity(0.9))
+                    CourseMapToolbarButton(
+                        systemImage: "house.fill",
+                        accessibilityLabel: "Main menu",
+                        accessibilityHint: "Return to the landing screen",
+                        action: { showGoHomeConfirmation = true }
+                    )
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Navigation")
+            } trailing: {
+                HStack(spacing: 8) {
+                    CourseMapToolbarButton(
+                        systemImage: "trophy.fill",
+                        accessibilityLabel: "High scores",
+                        accessibilityHint: "View best times and distances for this profile",
+                        style: .accent,
+                        isEnabled: activeProfile != nil,
+                        action: { showHighScores = true }
+                    )
+
+                    shareControl
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Map actions")
+            }
+
+            if let profile = activeProfile {
+                PlayerProgressStripView(profile: profile)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.bottom, 16)
+        .padding(.bottom, 12)
     }
 
-    private var toolbarShareLabel: some View {
-        Image(systemName: "square.and.arrow.up")
-            .font(.body.weight(.black))
-            .foregroundStyle(HotWheelsTheme.trackBlack)
-            .frame(width: 40, height: 40)
-            .background(
-                Circle()
-                    .fill(HotWheelsTheme.racingYellow)
-                    .shadow(color: HotWheelsTheme.trackBlack.opacity(0.35), radius: 0, x: 0, y: 2)
-            )
-            .overlay(
-                Circle()
-                    .strokeBorder(HotWheelsTheme.hotRed, lineWidth: 2)
-            )
+    private var headerSubtitle: String {
+        guard let profile = activeProfile else {
+            return "Scroll the map · tap an open node · play below"
+        }
+        return progressSubtitle(for: profile)
+    }
+
+    @ViewBuilder
+    private var shareControl: some View {
+        if let shareExport {
+            ShareLink(
+                item: shareExport,
+                preview: SharePreview("Tight Rope Car progress", image: Image(systemName: "map.fill"))
+            ) {
+                CourseMapToolbarIcon(systemImage: "square.and.arrow.up")
+            }
+            .accessibilityLabel("Share progress")
+            .accessibilityHint("Share progress summary, course IDs, and a JSON backup file")
+        } else {
+            CourseMapToolbarIcon(systemImage: "square.and.arrow.up", isEnabled: false)
+                .accessibilityLabel("Share progress")
+                .accessibilityHint("Select a profile to share progress")
+                .accessibilityAddTraits(.isButton)
+                .allowsHitTesting(false)
+        }
     }
 
     // MARK: - Map
+
+    private var mapSection: some View {
+        HotWheelsContentPanel(
+            title: "Rope Road",
+            trailingCaption: "Pinch & drag to explore",
+            trailingCaptionColor: .white.opacity(0.55),
+            accessibilityLabel: "Course map",
+            accessibilityHint: "Scroll to explore tracks. Double tap an unlocked node to select it."
+        ) {
+            mapScroll
+        }
+    }
 
     private var mapScroll: some View {
         ScrollView([.horizontal, .vertical], showsIndicators: true) {
@@ -207,22 +229,25 @@ struct CourseSelectionView: View {
             )
             .padding(20)
         }
+        .scrollIndicatorsFlash(onAppear: false)
         .frame(maxHeight: horizontalSizeClass == .regular ? 620 : 480)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.black.opacity(0.15))
-        )
     }
 
     @ViewBuilder
-    private var selectedCourseCaption: some View {
+    private var selectedCourseCard: some View {
         if let course = CourseCatalog.course(id: selectedCourseID),
+           let state = selectedCourseState,
            hasPlayableSelection {
-            Text(course.displayName)
-                .font(HotWheelsTheme.headlineFont)
-                .foregroundStyle(HotWheelsTheme.racingYellow)
-                .padding(.top, 12)
-                .transition(.opacity)
+            HotWheelsSelectionCard(
+                overline: "Ready to race",
+                title: course.displayName,
+                detail: selectionStatusText(state: state),
+                detailColor: selectionStatusColor(state: state),
+                systemImage: "flag.checkered.circle.fill",
+                accentColor: HotWheelsTheme.hotRed,
+                accessibilityLabel: "Selected track \(course.displayName), \(selectionStatusText(state: state))"
+            )
+            .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
         }
     }
 
@@ -232,7 +257,10 @@ struct CourseSelectionView: View {
         Button {
             onPlayCourse(selectedCourseID)
         } label: {
-            Text("Play")
+            Label(
+                hasPlayableSelection ? "Play Track" : "Select a Track",
+                systemImage: hasPlayableSelection ? "play.fill" : "hand.tap.fill"
+            )
         }
         .buttonStyle(HotWheelsAccentButtonStyle(
             fillColor: hasPlayableSelection
@@ -243,19 +271,55 @@ struct CourseSelectionView: View {
                 : HotWheelsTheme.hotRed.opacity(0.35)
         ))
         .disabled(!hasPlayableSelection)
-        .accessibilityLabel("Play")
+        .accessibilityLabel(hasPlayableSelection ? "Play track" : "Select a track")
         .accessibilityHint(
             hasPlayableSelection
                 ? "Start the selected course"
-                : "Select an unlocked course first"
+                : "Select an unlocked course on the map first"
         )
+    }
+
+    private func selectionStatusText(state: CourseMapNodeState) -> String {
+        switch state {
+        case .beaten:
+            return "Track cleared — race again for a better run"
+        case .available:
+            return "Open track — tap Play when you're ready"
+        case .locked:
+            return "Locked"
+        }
+    }
+
+    private func selectionStatusColor(state: CourseMapNodeState) -> Color {
+        switch state {
+        case .beaten:
+            return HotWheelsTheme.racingYellow
+        case .available:
+            return HotWheelsTheme.electricBlue.opacity(0.95)
+        case .locked:
+            return .white.opacity(0.6)
+        }
+    }
+
+    private func progressSubtitle(for profile: PlayerProfile) -> String {
+        let completed = PlayerProgressMetrics.completedMapCourseCount(for: profile)
+        let total = PlayerProgressMetrics.mapCourseCount
+        if profile.totalTickets > 0 || completed > 0 {
+            return "\(profile.totalTickets) tickets · \(completed)/\(total) tracks cleared"
+        }
+        return "Scroll the map · tap an open node · play below"
     }
 
     // MARK: - Actions
 
     private func selectCourse(_ courseID: String) {
         guard let state = nodeStates[courseID], state != .locked else { return }
-        selectedCourseID = courseID
+        let animation: Animation? = reduceMotion
+            ? nil
+            : .spring(response: 0.32, dampingFraction: 0.78)
+        withAnimation(animation) {
+            selectedCourseID = courseID
+        }
     }
 
     private func markCompleteForTesting(_ courseID: String) {
@@ -326,7 +390,8 @@ struct CourseSelectionView: View {
     let profile = PlayerProfile(
         name: "Riley",
         age: 10,
-        completedCourseIDs: ["tutorial", "bumps", "narrowWire"]
+        completedCourseIDs: ["tutorial", "bumps", "narrowWire"],
+        totalTickets: 18
     )
     container.mainContext.insert(profile)
     UserDefaults.standard.set(profile.id.uuidString, forKey: ProfileConstants.selectedProfileIDKey)
@@ -336,4 +401,21 @@ struct CourseSelectionView: View {
         CourseSelectionView()
     }
     .modelContainer(container)
+}
+
+#Preview("Shell — iPad width") {
+    let container = try! ModelContainer(
+        for: PlayerProfile.self, CourseHighScore.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    let profile = PlayerProfile(name: "Jordan", age: 12, totalTickets: 9)
+    container.mainContext.insert(profile)
+    UserDefaults.standard.set(profile.id.uuidString, forKey: ProfileConstants.selectedProfileIDKey)
+
+    return ZStack {
+        RacingStripeBackground()
+        CourseSelectionView()
+    }
+    .modelContainer(container)
+    .environment(\.horizontalSizeClass, .regular)
 }

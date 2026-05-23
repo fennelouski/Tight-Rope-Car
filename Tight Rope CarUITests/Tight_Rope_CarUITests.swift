@@ -24,18 +24,46 @@ final class Tight_Rope_CarUITests: XCTestCase {
 
     @MainActor
     func testExample() throws {
-        // UI tests must launch the application that they test.
+        let app = XCUIApplication()
+        app.launch()
+    }
+
+    /// Navigates to the Create Profile sheet and verifies the color picker is present.
+    @MainActor
+    func testProfileColorPickerVisible() throws {
         let app = XCUIApplication()
         app.launch()
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
+        // Tap PLAY on the landing screen (accessibilityLabel is "Play")
+        let playButton = app.buttons["Play"]
+        XCTAssertTrue(playButton.waitForExistence(timeout: 5), "Play button should exist")
+        playButton.tap()
+
+        // Profile selection screen — tap + to create a profile
+        let addButton = app.buttons["Add profile"]
+        XCTAssertTrue(addButton.waitForExistence(timeout: 5), "Add profile button should exist")
+        addButton.tap()
+
+        // Create Profile sheet — verify "Profile color" section header exists
+        let colorHeader = app.staticTexts["Profile color"]
+        XCTAssertTrue(colorHeader.waitForExistence(timeout: 5), "Profile color section should be visible")
+
+        // Tap a color (Electric Blue is default/selected, tap Crimson at index 0)
+        let crimson = app.buttons["Crimson"]
+        XCTAssertTrue(crimson.waitForExistence(timeout: 3), "Crimson color button should exist")
+        crimson.tap()
+
+        // Verify color picker has 32 buttons total (all palette entries)
+        let colorButtons = app.buttons.matching(NSPredicate(format: "label IN %@",
+            ["Crimson","Hot Pink","Coral","Salmon","Flame","Orange","Amber","Yellow",
+             "Lime","Emerald","Teal","Cyan","Sky","Electric","Royal","Navy",
+             "Violet","Purple","Lavender","Magenta","Gold","Bronze","Silver","White",
+             "Charcoal","Midnight","Forest","Maroon","Neon","Turquoise","Rose","Mint"]))
+        XCTAssertEqual(colorButtons.count, 32, "Palette should have exactly 32 color buttons")
     }
 
     @MainActor
     func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             XCUIApplication().launch()
         }

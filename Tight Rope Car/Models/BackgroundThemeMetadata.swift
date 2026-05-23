@@ -35,4 +35,13 @@ struct BackgroundThemeMetadata: Codable, Equatable, Sendable {
     let ambienceSoundName: String?
     /// Level-select ordering (lower appears first).
     let sortOrder: Int
+
+    /// Far parallax strip used for gallery list thumbnails.
+    var galleryThumbnailAssetName: String {
+        if let farLayer = parallaxLayers.first(where: { $0.assetName.hasSuffix("_far") }) {
+            return farLayer.assetName
+        }
+        let sorted = parallaxLayers.sorted { ($0.zIndex ?? 0) < ($1.zIndex ?? 0) }
+        return sorted.first?.assetName ?? ""
+    }
 }

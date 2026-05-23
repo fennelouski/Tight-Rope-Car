@@ -74,7 +74,8 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .pickup,
                 bodyAspectRatio: 1.2,
                 wheelSpacingMultiplier: 1.05,
-                wheelSizeMultiplier: 1.0
+                wheelSizeMultiplier: 1.0,
+                renderVersion: .v2
             )
         case .sports:
             CarAppearance(
@@ -84,7 +85,8 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .sports,
                 bodyAspectRatio: 1.55,
                 wheelSpacingMultiplier: 1.28,
-                wheelSizeMultiplier: 1.0
+                wheelSizeMultiplier: 1.0,
+                renderVersion: .v2
             )
         case .van:
             CarAppearance(
@@ -94,7 +96,8 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .van,
                 bodyAspectRatio: 0.92,
                 wheelSpacingMultiplier: 0.95,
-                wheelSizeMultiplier: 1.0
+                wheelSizeMultiplier: 1.0,
+                renderVersion: .v2
             )
         case .micro:
             CarAppearance(
@@ -104,7 +107,8 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .micro,
                 bodyAspectRatio: 1.1,
                 wheelSpacingMultiplier: 0.82,
-                wheelSizeMultiplier: 0.78
+                wheelSizeMultiplier: 0.78,
+                renderVersion: .v2
             )
         case .convertible:
             CarAppearance(
@@ -114,7 +118,8 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .convertible,
                 bodyAspectRatio: 1.25,
                 wheelSpacingMultiplier: 0.95,
-                wheelSizeMultiplier: 0.95
+                wheelSizeMultiplier: 0.95,
+                renderVersion: .v2
             )
         case .suv:
             CarAppearance(
@@ -124,7 +129,8 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .suv,
                 bodyAspectRatio: 0.95,
                 wheelSpacingMultiplier: 0.98,
-                wheelSizeMultiplier: 1.05
+                wheelSizeMultiplier: 1.05,
+                renderVersion: .v2
             )
         case .raceCar:
             CarAppearance(
@@ -145,7 +151,8 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .iceCreamTruck,
                 bodyAspectRatio: 0.9,
                 wheelSpacingMultiplier: 0.92,
-                wheelSizeMultiplier: 1.0
+                wheelSizeMultiplier: 1.0,
+                renderVersion: .v2
             )
         case .taxi:
             CarAppearance(
@@ -155,7 +162,8 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .taxi,
                 bodyAspectRatio: 1.3,
                 wheelSpacingMultiplier: 1.05,
-                wheelSizeMultiplier: 1.0
+                wheelSizeMultiplier: 1.0,
+                renderVersion: .v2
             )
         case .fireTruck:
             CarAppearance(
@@ -165,7 +173,8 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .fireTruck,
                 bodyAspectRatio: 1.1,
                 wheelSpacingMultiplier: 0.9,
-                wheelSizeMultiplier: 1.0
+                wheelSizeMultiplier: 1.0,
+                renderVersion: .v2
             )
         case .schoolBus:
             CarAppearance(
@@ -175,7 +184,8 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .schoolBus,
                 bodyAspectRatio: 1.45,
                 wheelSpacingMultiplier: 1.22,
-                wheelSizeMultiplier: 1.0
+                wheelSizeMultiplier: 1.0,
+                renderVersion: .v2
             )
         case .policeCar:
             CarAppearance(
@@ -185,7 +195,8 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .policeCar,
                 bodyAspectRatio: 1.28,
                 wheelSpacingMultiplier: 1.02,
-                wheelSizeMultiplier: 1.0
+                wheelSizeMultiplier: 1.0,
+                renderVersion: .v2
             )
         case .ambulance:
             CarAppearance(
@@ -195,7 +206,8 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .ambulance,
                 bodyAspectRatio: 1.05,
                 wheelSpacingMultiplier: 0.96,
-                wheelSizeMultiplier: 1.0
+                wheelSizeMultiplier: 1.0,
+                renderVersion: .v2
             )
         case .motorcycle:
             CarAppearance(
@@ -205,7 +217,8 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 silhouette: .motorcycle,
                 bodyAspectRatio: 0.55,
                 wheelSpacingMultiplier: 0.58,
-                wheelSizeMultiplier: 0.88
+                wheelSizeMultiplier: 0.88,
+                renderVersion: .v2
             )
         }
     }

@@ -9,29 +9,63 @@ struct RunResultsView: View {
     let outcome: GameRunOutcome
     let recordResult: GameRunRecordResult
     let courseDisplayName: String
+    var profileColor: Color = HotWheelsTheme.racingYellow
     var onMap: () -> Void
     var onPlayAgain: () -> Void
     var onRetry: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var contentAppeared = false
+    @State private var celebratePulse = false
 
     private var stats: GameRunStats { outcome.stats }
 
+    private var accentColor: Color {
+        outcome.isSuccess ? HotWheelsTheme.racingYellow : HotWheelsTheme.hotRed
+    }
+
+    private var badgeItems: [(text: String, style: HotWheelsAchievementBanner.Style)] {
+        var items: [(String, HotWheelsAchievementBanner.Style)] = []
+        if outcome.isSuccess {
+            if recordResult.unlockedCourseNow {
+                items.append(("New course unlocked on the map!", .unlock))
+            }
+            if recordResult.isNewBestTime {
+                items.append(("New best time!", .record))
+            }
+            if recordResult.isNewBestDistance {
+                items.append(("New best distance!", .record))
+            }
+            if recordResult.isNewBestTicketCount {
+                items.append(("New ticket record!", .record))
+            }
+        } else {
+            if recordResult.isNewBestDistance {
+                items.append(("New best distance!", .record))
+            }
+            if recordResult.isNewBestTicketCount {
+                items.append(("New ticket record!", .record))
+            }
+        }
+        return items
+    }
+
     var body: some View {
         ZStack {
-            Color.black.opacity(0.6)
-                .ignoresSafeArea()
+            RunFlowOverlayBackdrop(accentColor: accentColor)
 
-            VStack(spacing: 20) {
-                header
-                statsSection
-                badgesSection
-                actionButtons
+            RunFlowOverlayCard(borderColor: accentColor) {
+                VStack(spacing: 18) {
+                    header
+                    statsSection
+                    if !badgeItems.isEmpty {
+                        badgesSection
+                    }
+                    actionButtons
+                }
             }
-            .padding(28)
-            .background(cardBackground)
             .padding(.horizontal, 24)
+            .hotWheelsContentWidth()
             .opacity(contentAppeared ? 1 : 0)
             .scaleEffect(contentAppeared ? 1 : (reduceMotion ? 1 : 0.94))
         }
@@ -39,80 +73,76 @@ struct RunResultsView: View {
     }
 
     private var header: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 10) {
+            Image(systemName: outcome.isSuccess ? "flag.checkered.2.crossed" : "exclamationmark.triangle.fill")
+                .font(.system(size: 44, weight: .bold))
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(
+                    outcome.isSuccess ? HotWheelsTheme.racingYellow : HotWheelsTheme.flameOrange,
+                    outcome.isSuccess ? HotWheelsTheme.hotRed : HotWheelsTheme.trackBlack.opacity(0.4)
+                )
+                .scaleEffect(outcome.isSuccess && celebratePulse && !reduceMotion ? 1.08 : 1)
+                .accessibilityHidden(true)
+
             Text(outcome.isSuccess ? "Course Clear!" : "Fell Off!")
                 .font(HotWheelsTheme.sectionTitleFont)
-                .foregroundStyle(outcome.isSuccess ? HotWheelsTheme.racingYellow : HotWheelsTheme.hotRed)
+                .foregroundStyle(accentColor)
                 .hotWheelsTitleShadow()
 
             Text(courseDisplayName)
                 .font(HotWheelsTheme.headlineFont)
                 .foregroundStyle(.white.opacity(0.95))
+
+            Text(outcome.isSuccess ? "You made it across!" : "Try again — you've got this!")
+                .font(HotWheelsTheme.captionFont)
+                .foregroundStyle(.white.opacity(0.75))
+                .multilineTextAlignment(.center)
         }
         .multilineTextAlignment(.center)
     }
 
     private var statsSection: some View {
-        VStack(spacing: 10) {
-            statRow(
-                label: "Time",
-                value: CourseScoreStore.formattedTime(stats.elapsedSeconds)
-            )
-            statRow(
-                label: "Distance",
-                value: CourseScoreStore.formattedDistance(stats.distanceMeters)
-            )
-            ticketStatRow
+        VStack(spacing: 8) {
+            HStack(spacing: 8) {
+                HotWheelsMetricTile(
+                    systemImage: "clock.fill",
+                    label: "Time",
+                    value: CourseScoreStore.formattedTime(stats.elapsedSeconds),
+                    accent: HotWheelsTheme.electricBlue
+                )
+                HotWheelsMetricTile(
+                    systemImage: "point.topleft.down.to.point.bottomright.curvepath.fill",
+                    label: "Distance",
+                    value: CourseScoreStore.formattedDistance(stats.distanceMeters),
+                    accent: HotWheelsTheme.flameOrange
+                )
+            }
+
+            ticketMetricTile
         }
     }
 
-    private var ticketStatRow: some View {
-        HStack {
-            HStack(spacing: 4) {
-                Image(systemName: "ticket.fill")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(HotWheelsTheme.racingYellow)
-                Text("Tickets")
-                    .font(HotWheelsTheme.bodyFont)
-                    .foregroundStyle(.white.opacity(0.85))
-            }
-            Spacer()
-            VStack(alignment: .trailing, spacing: 2) {
-                Text("+\(recordResult.ticketsCollected)")
-                    .font(HotWheelsTheme.headlineFont)
-                    .foregroundStyle(HotWheelsTheme.racingYellow)
-                Text("Total: \(recordResult.newTotalTickets)")
-                    .font(HotWheelsTheme.captionFont)
-                    .foregroundStyle(.white.opacity(0.65))
-            }
-        }
+    private var ticketMetricTile: some View {
+        HotWheelsMetricTile(
+            systemImage: "ticket.fill",
+            label: "Tickets",
+            value: "+\(recordResult.ticketsCollected)",
+            accent: profileColor,
+            detail: "Total: \(recordResult.newTotalTickets)",
+            isFeatured: recordResult.ticketsCollected > 0
+        )
     }
 
-    @ViewBuilder
     private var badgesSection: some View {
-        if outcome.isSuccess {
-            VStack(spacing: 6) {
-                if recordResult.unlockedCourseNow {
-                    badge("New course unlocked on the map!")
-                }
-                if recordResult.isNewBestTime {
-                    badge("New best time!")
-                }
-                if recordResult.isNewBestDistance {
-                    badge("New best distance!")
-                }
-                if recordResult.isNewBestTicketCount {
-                    badge("New ticket record!")
-                }
-            }
-        } else {
-            VStack(spacing: 6) {
-                if recordResult.isNewBestDistance {
-                    badge("New best distance!")
-                }
-                if recordResult.isNewBestTicketCount {
-                    badge("New ticket record!")
-                }
+        VStack(spacing: 8) {
+            ForEach(Array(badgeItems.enumerated()), id: \.offset) { index, item in
+                HotWheelsAchievementBanner(text: item.text, style: item.style)
+                    .opacity(contentAppeared ? 1 : 0)
+                    .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 8))
+                    .animation(
+                        reduceMotion ? nil : .easeOut(duration: 0.35).delay(0.12 + Double(index) * 0.06),
+                        value: contentAppeared
+                    )
             }
         }
     }
@@ -127,42 +157,7 @@ struct RunResultsView: View {
                 resultsButton("Course Map", fillColor: .white.opacity(0.92), action: onMap)
             }
         }
-    }
-
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .fill(HotWheelsTheme.trackBlack.opacity(0.94))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .strokeBorder(
-                        outcome.isSuccess ? HotWheelsTheme.racingYellow : HotWheelsTheme.hotRed,
-                        lineWidth: 3
-                    )
-            )
-    }
-
-    private func statRow(label: String, value: String) -> some View {
-        HStack {
-            Text(label)
-                .font(HotWheelsTheme.bodyFont)
-                .foregroundStyle(.white.opacity(0.85))
-            Spacer()
-            Text(value)
-                .font(HotWheelsTheme.headlineFont)
-                .foregroundStyle(.white)
-        }
-    }
-
-    private func badge(_ text: String) -> some View {
-        Text(text)
-            .font(HotWheelsTheme.captionFont.weight(.bold))
-            .foregroundStyle(HotWheelsTheme.trackBlack)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(
-                Capsule()
-                    .fill(HotWheelsTheme.racingYellow)
-            )
+        .padding(.top, 4)
     }
 
     private func resultsButton(
@@ -185,5 +180,51 @@ struct RunResultsView: View {
         withAnimation(.easeOut(duration: 0.35)) {
             contentAppeared = true
         }
+        guard outcome.isSuccess else { return }
+        withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+            celebratePulse = true
+        }
     }
+}
+
+#Preview("Success") {
+    RunResultsView(
+        outcome: .success(
+            GameRunStats(elapsedSeconds: 42.5, distanceMeters: 520, ticketsCollected: 3)
+        ),
+        recordResult: GameRunRecordResult(
+            unlockedCourseNow: true,
+            isNewBestTime: true,
+            isNewBestDistance: false,
+            ticketsCollected: 3,
+            isNewBestTicketCount: true,
+            newTotalTickets: 12,
+            ticketsCreditedToProfile: 3
+        ),
+        courseDisplayName: "First Steps",
+        onMap: {},
+        onPlayAgain: {},
+        onRetry: {}
+    )
+}
+
+#Preview("Failure") {
+    RunResultsView(
+        outcome: .failure(
+            GameRunStats(elapsedSeconds: 18.2, distanceMeters: 210, ticketsCollected: 1)
+        ),
+        recordResult: GameRunRecordResult(
+            unlockedCourseNow: false,
+            isNewBestTime: false,
+            isNewBestDistance: true,
+            ticketsCollected: 1,
+            isNewBestTicketCount: false,
+            newTotalTickets: 8,
+            ticketsCreditedToProfile: 1
+        ),
+        courseDisplayName: "Roller Rope",
+        onMap: {},
+        onPlayAgain: {},
+        onRetry: {}
+    )
 }

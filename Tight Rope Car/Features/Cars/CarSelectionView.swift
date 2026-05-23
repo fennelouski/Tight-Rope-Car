@@ -28,8 +28,12 @@ struct CarSelectionView: View {
         return profiles.first { $0.id == uuid }
     }
 
+    private var selectedCar: SelectableCar? {
+        CarCatalog.car(id: selectedCarID)
+    }
+
     private var hasSelection: Bool {
-        !selectedCarID.isEmpty
+        selectedCar != nil
     }
 
     var body: some View {
@@ -38,9 +42,12 @@ struct CarSelectionView: View {
                 .opacity(headerAppeared ? 1 : 0)
                 .offset(y: headerAppeared ? 0 : (reduceMotion ? 0 : 12))
 
-            carGrid
+            garageSection
                 .opacity(contentAppeared ? 1 : 0)
                 .scaleEffect(contentAppeared ? 1 : (reduceMotion ? 1 : 0.96))
+
+            selectedCarCard
+                .padding(.top, 12)
 
             Spacer(minLength: 16)
 
@@ -68,56 +75,90 @@ struct CarSelectionView: View {
     // MARK: - Header
 
     private var header: some View {
-        HStack(alignment: .top, spacing: 12) {
-            CourseMapToolbarButton(
-                systemImage: "chevron.left",
-                accessibilityLabel: "Back",
-                accessibilityHint: "Return to profile selection"
+        VStack(alignment: .leading, spacing: 14) {
+            HotWheelsScreenHeader(
+                eyebrow: "Garage",
+                eyebrowSystemImage: "car.fill",
+                title: "Choose Your Car",
+                subtitle: headerSubtitle
             ) {
-                onBack()
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Choose Your Car")
-                    .font(HotWheelsTheme.sectionTitleFont)
-                    .foregroundStyle(.white)
-                    .hotWheelsTitleShadow()
-
-                Text("Tap a ride to select it")
-                    .font(HotWheelsTheme.captionFont)
-                    .foregroundStyle(.white.opacity(0.9))
-            }
-
-            Spacer(minLength: 0)
-        }
-        .padding(.bottom, 20)
-    }
-
-    // MARK: - Grid
-
-    private var carGrid: some View {
-        ScrollView {
-            LazyVGrid(columns: gridColumns, spacing: 16) {
-                ForEach(CarCatalog.all) { car in
-                    Button {
-                        selectCar(car)
-                    } label: {
-                        CarRowView(
-                            car: car,
-                            isSelected: selectedCarID == car.id
-                        )
-                    }
-                    .buttonStyle(.plain)
+                if let profile = activeProfile {
+                    HotWheelsRacerChip(profile: profile)
                 }
             }
-            .padding(.vertical, 4)
+
+            HotWheelsToolbarRail(centerHint: "Swipe the lot below") {
+                CourseMapToolbarButton(
+                    systemImage: "chevron.left",
+                    accessibilityLabel: "Back",
+                    accessibilityHint: "Return to profile selection",
+                    action: onBack
+                )
+            }
         }
-        .scrollIndicators(.hidden)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.bottom, 12)
+    }
+
+    private var headerSubtitle: String {
+        let count = CarCatalog.all.count
+        let rideWord = count == 1 ? "ride" : "rides"
+        if hasSelection {
+            return "\(count) \(rideWord) in the garage — yours is locked in"
+        }
+        return "\(count) \(rideWord) — tap one to claim it"
+    }
+
+    // MARK: - Garage grid
+
+    private var garageSection: some View {
+        HotWheelsContentPanel(
+            title: "The Lot",
+            trailingCaption: selectedCar?.displayName,
+            accessibilityLabel: "Car garage",
+            accessibilityHint: "Scroll to browse rides. Double tap a car to select it."
+        ) {
+            ScrollView {
+                LazyVGrid(columns: gridColumns, spacing: 16) {
+                    ForEach(CarCatalog.all) { car in
+                        Button {
+                            selectCar(car)
+                        } label: {
+                            CarRowView(
+                                car: car,
+                                isSelected: selectedCarID == car.id
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.vertical, 8)
+                .padding(.horizontal, 4)
+            }
+            .frame(maxHeight: horizontalSizeClass == .regular ? 520 : 400)
+        }
     }
 
     private var gridColumns: [GridItem] {
         let minimum: CGFloat = horizontalSizeClass == .regular ? 200 : 150
         return [GridItem(.adaptive(minimum: minimum), spacing: 16)]
+    }
+
+    // MARK: - Selection card
+
+    @ViewBuilder
+    private var selectedCarCard: some View {
+        if let car = selectedCar {
+            HotWheelsSelectionCard(
+                overline: "Your ride",
+                title: car.displayName,
+                detail: car.tagline,
+                systemImage: "checkmark.seal.fill",
+                accentColor: HotWheelsTheme.electricBlue,
+                accessibilityLabel: "Selected car \(car.displayName)\(car.tagline.map { ", \($0)" } ?? "")"
+            )
+            .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
+        }
     }
 
     // MARK: - Continue
@@ -126,21 +167,29 @@ struct CarSelectionView: View {
         Button {
             onContinue()
         } label: {
-            Text("Continue")
+            Label(
+                hasSelection ? "Head to Track Map" : "Pick a Car",
+                systemImage: hasSelection ? "map.fill" : "hand.tap.fill"
+            )
         }
         .buttonStyle(HotWheelsAccentButtonStyle(
             fillColor: hasSelection ? HotWheelsTheme.racingYellow : HotWheelsTheme.racingYellow.opacity(0.35),
             strokeColor: hasSelection ? HotWheelsTheme.hotRed : HotWheelsTheme.hotRed.opacity(0.35)
         ))
         .disabled(!hasSelection)
-        .accessibilityLabel("Continue")
-        .accessibilityHint(hasSelection ? "Continue to course map" : "Select a car first")
+        .accessibilityLabel(hasSelection ? "Head to track map" : "Pick a car")
+        .accessibilityHint(hasSelection ? "Continue to course selection" : "Select a car from the garage first")
     }
 
     // MARK: - Actions
 
     private func selectCar(_ car: SelectableCar) {
-        selectedCarID = car.id
+        let animation: Animation? = reduceMotion
+            ? nil
+            : .spring(response: 0.32, dampingFraction: 0.78)
+        withAnimation(animation) {
+            selectedCarID = car.id
+        }
         activeProfile?.selectedCarID = car.id
         try? modelContext.save()
     }
@@ -204,4 +253,21 @@ struct CarSelectionView: View {
         CarSelectionView()
     }
     .modelContainer(container)
+}
+
+#Preview("Garage — iPad width") {
+    let container = try! ModelContainer(
+        for: PlayerProfile.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    let profile = PlayerProfile(name: "Jordan", age: 12, selectedCarID: "blaze")
+    container.mainContext.insert(profile)
+    UserDefaults.standard.set(profile.id.uuidString, forKey: ProfileConstants.selectedProfileIDKey)
+
+    return ZStack {
+        RacingStripeBackground()
+        CarSelectionView()
+    }
+    .modelContainer(container)
+    .environment(\.horizontalSizeClass, .regular)
 }

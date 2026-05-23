@@ -9,6 +9,7 @@ import SwiftUI
 /// SwiftUI host for scroll-parallax background preview (simulator / dev).
 struct ParallaxBackgroundPreviewView: View {
     var theme: BackgroundTheme = .ocean
+    var isScrollingEnabled: Bool = true
 
     @State private var scene = ParallaxBackgroundPreviewScene()
 
@@ -17,10 +18,14 @@ struct ParallaxBackgroundPreviewView: View {
             .ignoresSafeArea()
             .onAppear {
                 scene.previewTheme = theme
+                scene.isScrollingEnabled = isScrollingEnabled
                 scene.scaleMode = .resizeFill
             }
             .onChange(of: theme) { _, newTheme in
                 scene.setTheme(newTheme)
+            }
+            .onChange(of: isScrollingEnabled) { _, enabled in
+                scene.isScrollingEnabled = enabled
             }
     }
 }

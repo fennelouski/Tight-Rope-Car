@@ -5,12 +5,25 @@
 //  Created by Nathan Fennel on 5/22/26.
 //
 
+import CoreGraphics
 import SwiftData
 import Foundation
 import Testing
 @testable import Tight_Rope_Car
 
 struct Tight_Rope_CarTests {
+
+    @Test func appFlowDepthOrdersSetupFunnel() {
+        #expect(AppFlow.landing.depth == 0)
+        #expect(AppFlow.profileSelection.depth < AppFlow.carSelection.depth)
+        #expect(AppFlow.carSelection.depth < AppFlow.courseSelection.depth)
+        #expect(AppFlow.courseSelection.depth < AppFlow.gameplay(courseID: "tutorial").depth)
+    }
+
+    @Test func appFlowScreenKeySeparatesCourses() {
+        #expect(AppFlow.gameplay(courseID: "tutorial").screenKey != AppFlow.gameplay(courseID: "bumps").screenKey)
+        #expect(AppFlow.profileSelection.screenKey == AppFlow.profileSelection.screenKey)
+    }
 
     @Test func carDefaultsAreNeutral() {
         let car = Car()
@@ -81,6 +94,18 @@ struct Tight_Rope_CarTests {
         #expect(decoded == original)
     }
 
+    @Test func ticketPickupSpriteKitSizeMatchesLayout() {
+        #expect(TicketPickupLayout.spriteKitSize.width == 44)
+        #expect(TicketPickupLayout.spriteKitSize.height == 56)
+        #expect(TicketPickupLayout.spriteKitAnchor == CGPoint(x: 0.5, y: 0.5))
+    }
+
+    @Test func courseTicketFractionsAreEvenlySpaced() throws {
+        let course = try #require(CourseCatalog.course(id: "tutorial"))
+        #expect(course.ticketFractions.count == course.ticketCount)
+        #expect(course.ticketFractions == [0.25, 0.5, 0.75])
+    }
+
     @Test func carDesignCaseIterableCountIsFifteen() {
         #expect(CarDesign.allCases.count == 15)
         #expect(CarDesign.allDesigns.count == 15)
@@ -137,16 +162,10 @@ struct Tight_Rope_CarTests {
         }
     }
 
-    @Test func v2RenderVersionOnlyOnUpgradedDesigns() {
-        let v2Designs: Set<CarDesign> = [.raceCar, .classicBug]
+    @Test func allCarDesignsUseV2RenderVersion() {
         for design in CarDesign.allDesigns {
-            if v2Designs.contains(design) {
-                #expect(design.renderVersion == .v2)
-                #expect(design.appearance.renderVersion == .v2)
-            } else {
-                #expect(design.renderVersion == .v1)
-                #expect(design.appearance.renderVersion == .v1)
-            }
+            #expect(design.renderVersion == .v2)
+            #expect(design.appearance.renderVersion == .v2)
         }
     }
 

@@ -58,4 +58,37 @@ struct CourseMapUnlockTests {
             #expect(CourseCatalog.course(id: node.courseID) != nil)
         }
     }
+
+    @Test func edgeFromTutorialToBumpsIsFrontierWhenTutorialBeaten() {
+        let states = CourseUnlockEvaluator.nodeStates(completedCourseIDs: ["tutorial"])
+        let edge = CourseMapEdge(fromCourseID: "tutorial", toCourseID: "bumps")
+        let style = CourseMapEdgeStyling.visualStyle(
+            for: edge,
+            nodeStates: states,
+            selectedCourseID: nil
+        )
+        #expect(style == .frontier)
+    }
+
+    @Test func edgeBetweenBeatenCoursesIsCompleted() {
+        let states = CourseUnlockEvaluator.nodeStates(completedCourseIDs: ["tutorial", "bumps"])
+        let edge = CourseMapEdge(fromCourseID: "tutorial", toCourseID: "bumps")
+        let style = CourseMapEdgeStyling.visualStyle(
+            for: edge,
+            nodeStates: states,
+            selectedCourseID: nil
+        )
+        #expect(style == .completed)
+    }
+
+    @Test func selectedEdgeUsesSelectionStyle() {
+        let states = CourseUnlockEvaluator.nodeStates(completedCourseIDs: [])
+        let edge = CourseMapEdge(fromCourseID: "tutorial", toCourseID: "bumps")
+        let style = CourseMapEdgeStyling.visualStyle(
+            for: edge,
+            nodeStates: states,
+            selectedCourseID: "tutorial"
+        )
+        #expect(style == .selection)
+    }
 }

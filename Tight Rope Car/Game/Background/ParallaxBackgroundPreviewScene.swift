@@ -13,6 +13,8 @@ final class ParallaxBackgroundPreviewScene: SKScene {
     private var lastUpdateTime: TimeInterval?
 
     var previewTheme: BackgroundTheme = .ocean
+    /// When false, parallax layers stay fixed (e.g. Reduce Motion during gameplay shell).
+    var isScrollingEnabled = true
 
     override func didMove(to view: SKView) {
         backgroundColor = .black
@@ -26,6 +28,7 @@ final class ParallaxBackgroundPreviewScene: SKScene {
     }
 
     override func update(_ currentTime: TimeInterval) {
+        guard isScrollingEnabled else { return }
         let dt: TimeInterval
         if let last = lastUpdateTime {
             dt = currentTime - last

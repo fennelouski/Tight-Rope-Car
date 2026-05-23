@@ -24,9 +24,20 @@ enum CourseProgressStore {
         if !profile.completedCourseIDs.contains(courseID) {
             profile.completedCourseIDs.append(courseID)
         }
+        deduplicateCompletedCourses(for: profile)
         if seedScores {
             try CourseScoreStore.seedSampleScore(courseID: courseID, for: profile, context: context)
         }
         try context.save()
+    }
+
+    /// Removes duplicate entries while preserving first-seen order.
+    static func deduplicateCompletedCourses(for profile: PlayerProfile) {
+        var seen = Set<String>()
+        profile.completedCourseIDs = profile.completedCourseIDs.filter { courseID in
+            guard !seen.contains(courseID) else { return false }
+            seen.insert(courseID)
+            return true
+        }
     }
 }

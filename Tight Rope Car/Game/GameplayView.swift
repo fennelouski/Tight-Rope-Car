@@ -21,23 +21,45 @@ struct GameplayView: View {
     @Query(sort: \PlayerProfile.createdAt, order: .reverse) private var profiles: [PlayerProfile]
     @AppStorage(ProfileConstants.selectedProfileIDKey) private var selectedProfileID = ""
 
-    @State private var phase: GameplayPhase = .running
+    @State private var phase: GameplayPhase = .calibrating
+    @State private var tiltSession = GameplayTiltSession()
     @State private var recordResult = GameRunRecordResult(
         unlockedCourseNow: false,
         isNewBestTime: false,
         isNewBestDistance: false,
         ticketsCollected: 0,
         isNewBestTicketCount: false,
-        newTotalTickets: 0
+        newTotalTickets: 0,
+        ticketsCreditedToProfile: 0
     )
     @State private var hudAppeared = false
     /// Tickets collected so far in the current run; updated by the game scene.
     @State private var ticketsCollected: Int = 0
 
     private enum GameplayPhase: Equatable {
+        case calibrating
         case running
         case paused
         case results(GameRunOutcome)
+    }
+
+    private var isRunActive: Bool {
+        if case .running = phase { return true }
+        return false
+    }
+
+    private var balanceHintText: String {
+        if !isRunActive { return "Hold device level" }
+        if showsOnScreenBalance { return "Use balance buttons" }
+        return "Tilt to balance"
+    }
+
+    private var isSimulator: Bool {
+        #if targetEnvironment(simulator)
+        true
+        #else
+        false
+        #endif
     }
 
     private var activeProfile: PlayerProfile? {
@@ -78,14 +100,22 @@ struct GameplayView: View {
             if !isPlayableCourse {
                 onExitToMap()
             } else {
+                tiltSession.configureForAccessibility(reduceMotion: reduceMotion, isSimulator: isSimulator)
+                beginSessionIfNeeded()
                 runHUDEntranceAnimation()
             }
         }
+        .onDisappear {
+            tiltSession.endSession()
+        }
         .onChange(of: scenePhase) { _, newPhase in
-            guard isPlayableCourse, case .running = phase else { return }
+            guard isPlayableCourse, isRunActive else { return }
             if newPhase == .background {
                 phase = .paused
             }
+        }
+        .task(id: phase) {
+            await runCalibrationLoop()
         }
     }
 
@@ -107,24 +137,62 @@ struct GameplayView: View {
             .padding(.bottom, 32)
 
             overlayForPhase
-        }
-        .hotWheelsContentWidth()
-    }
 
-    private var gameLayer: some View {
-        ZStack {
-            Color.black.opacity(0.35)
-            VStack(spacing: 12) {
-                Image(systemName: "car.side")
-                    .font(.system(size: 48, weight: .bold))
-                    .foregroundStyle(HotWheelsTheme.racingYellow.opacity(0.85))
-                Text("SpriteKit scene coming soon")
-                    .font(HotWheelsTheme.captionFont)
-                    .foregroundStyle(.white.opacity(0.75))
+            if showsOnScreenBalance, let course {
+                VStack {
+                    Spacer(minLength: 0)
+                    GameplayOnScreenBalanceControls(
+                        maxRollRadians: course.maxPitchRadians,
+                        onNudgeLeft: { nudgeOnScreenBalance(left: true) },
+                        onNudgeRight: { nudgeOnScreenBalance(left: false) },
+                        onCenter: { tiltSession.centerOnScreenBalance() }
+                    )
+                }
+                .allowsHitTesting(isRunActive)
+                .opacity(isRunActive ? 1 : 0.35)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .accessibilityHidden(true)
+        .hotWheelsContentWidth()
+        .onChange(of: reduceMotion) { _, enabled in
+            tiltSession.configureForAccessibility(reduceMotion: enabled, isSimulator: isSimulator)
+        }
+        .onChange(of: phase) { _, newPhase in
+            if case .paused = newPhase {
+                Task { @MainActor in
+                    GameSFXPlayer.shared.stopAll()
+                    GameplayHaptics.shared.resetNearFallCooldown()
+                }
+            }
+        }
+    }
+
+    private var showsOnScreenBalance: Bool {
+        tiltSession.preferOnScreenBalance
+    }
+
+    private func nudgeOnScreenBalance(left: Bool) {
+        guard let course else { return }
+        tiltSession.nudgeOnScreenBalance(left: left, maxRoll: course.maxPitchRadians)
+    }
+
+    @ViewBuilder
+    private var gameLayer: some View {
+        if let course = course, let profile = activeProfile {
+            let appearance = CarCatalog.car(id: profile.resolvedCarID)?.appearance ?? .default
+            GameSceneView(
+                course: course,
+                carAppearance: appearance,
+                tiltProvider: tiltSession.tiltProvider,
+                neutralRollOffset: tiltSession.neutralRollOffset,
+                isPaused: !isRunActive,
+                reduceMotion: reduceMotion,
+                onScreenBalanceActive: tiltSession.preferOnScreenBalance,
+                onTicketCollected: { total in ticketsCollected = total },
+                onOutcome: { outcome in finishRun(outcome: outcome) }
+            )
+        } else {
+            Color.black
+        }
     }
 
     private var runHUD: some View {
@@ -134,7 +202,7 @@ struct GameplayView: View {
                 accessibilityLabel: "Pause",
                 accessibilityHint: "Pause the run"
             ) {
-                guard case .running = phase else { return }
+                guard isRunActive else { return }
                 phase = .paused
             }
 
@@ -144,7 +212,7 @@ struct GameplayView: View {
                     .foregroundStyle(.white)
                     .hotWheelsTitleShadow()
 
-                Text("Tilt to balance")
+                Text(balanceHintText)
                     .font(HotWheelsTheme.captionFont)
                     .foregroundStyle(.white.opacity(0.9))
             }
@@ -161,27 +229,44 @@ struct GameplayView: View {
     }
 
     private var ticketHUD: some View {
-        VStack(alignment: .trailing, spacing: 2) {
-            HStack(spacing: 4) {
-                Image(systemName: "ticket.fill")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(HotWheelsTheme.racingYellow)
+        let accentColor = activeProfile?.profileColor ?? HotWheelsTheme.racingYellow
+        return HStack(spacing: 6) {
+            TicketPickupView(
+                state: .available,
+                accentColor: accentColor,
+                displaySize: .compact
+            )
+
+            VStack(alignment: .leading, spacing: 0) {
+                Text("TICKETS")
+                    .font(.system(size: 9, weight: .black, design: .rounded))
+                    .foregroundStyle(HotWheelsTheme.racingYellow.opacity(0.9))
                 Text("\(ticketsCollected)/\(courseTicketCount)")
                     .font(HotWheelsTheme.headlineFont)
                     .foregroundStyle(.white)
                     .monospacedDigit()
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(
-                Capsule()
-                    .fill(Color.black.opacity(0.5))
-                    .overlay(
-                        Capsule()
-                            .strokeBorder(HotWheelsTheme.racingYellow.opacity(0.6), lineWidth: 1)
-                    )
-            )
         }
+        .padding(.leading, 8)
+        .padding(.trailing, 12)
+        .padding(.vertical, 6)
+        .background(
+            Capsule()
+                .fill(HotWheelsTheme.trackBlack.opacity(0.72))
+                .overlay(
+                    Capsule()
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [accentColor, HotWheelsTheme.racingYellow],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ),
+                            lineWidth: 2
+                        )
+                )
+                .shadow(color: HotWheelsTheme.trackBlack.opacity(0.5), radius: 0, x: 0, y: 3)
+        )
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel("Tickets: \(ticketsCollected) of \(courseTicketCount)")
     }
 
@@ -215,6 +300,13 @@ struct GameplayView: View {
     @ViewBuilder
     private var overlayForPhase: some View {
         switch phase {
+        case .calibrating:
+            GameplayCalibrationOverlay(
+                progress: tiltSession.calibrationProgress,
+                showsSkipControl: reduceMotion || isSimulator,
+                onSkip: skipCalibrationAndStartRun
+            )
+            .transition(.opacity)
         case .running:
             EmptyView()
         case .paused:
@@ -229,6 +321,7 @@ struct GameplayView: View {
                 outcome: outcome,
                 recordResult: recordResult,
                 courseDisplayName: courseDisplayName,
+                profileColor: activeProfile?.profileColor ?? HotWheelsTheme.racingYellow,
                 onMap: onExitToMap,
                 onPlayAgain: onPlayAgain,
                 onRetry: onRetry
@@ -271,6 +364,46 @@ struct GameplayView: View {
         }
         withAnimation(.easeOut(duration: 0.35)) {
             hudAppeared = true
+        }
+    }
+
+    private func beginSessionIfNeeded() {
+        guard case .calibrating = phase else { return }
+        if reduceMotion {
+            skipCalibrationAndStartRun()
+            return
+        }
+        tiltSession.beginCalibration()
+    }
+
+    private func skipCalibrationAndStartRun() {
+        tiltSession.skipCalibration(using: activeProfile?.tiltNeutralRollRadians)
+        finishCalibrationAndStartRun()
+    }
+
+    private func finishCalibrationAndStartRun() {
+        guard case .calibrating = phase else { return }
+        tiltSession.commitCalibration()
+        if let profile = activeProfile {
+            profile.tiltNeutralRollRadians = tiltSession.neutralRollOffset
+            try? modelContext.save()
+        }
+        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.25)) {
+            phase = .running
+        }
+    }
+
+    private func runCalibrationLoop() async {
+        guard case .calibrating = phase else { return }
+        let interval = GameBalanceConstants.calibrationSampleInterval
+        while !Task.isCancelled {
+            guard case .calibrating = phase else { return }
+            tiltSession.ingestCalibrationSample()
+            if tiltSession.isCalibrationComplete {
+                finishCalibrationAndStartRun()
+                return
+            }
+            try? await Task.sleep(for: .seconds(interval))
         }
     }
 }

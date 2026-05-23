@@ -33,10 +33,38 @@ struct CarView: View {
                     RaceCarV2View(appearance: appearance, size: s)
                 case .classicBug:
                     ClassicBugV2View(appearance: appearance, size: s)
+                case .sports:
+                    SportsV2View(appearance: appearance, size: s)
+                case .pickup:
+                    PickupV2View(appearance: appearance, size: s)
+                case .van:
+                    VanV2View(appearance: appearance, size: s)
+                case .micro:
+                    MicroV2View(appearance: appearance, size: s)
+                case .convertible:
+                    ConvertibleV2View(appearance: appearance, size: s)
+                case .suv:
+                    SUVV2View(appearance: appearance, size: s)
+                case .iceCreamTruck:
+                    IceCreamTruckV2View(appearance: appearance, size: s)
+                case .taxi:
+                    TaxiV2View(appearance: appearance, size: s)
+                case .fireTruck:
+                    FireTruckV2View(appearance: appearance, size: s)
+                case .schoolBus:
+                    SchoolBusV2View(appearance: appearance, size: s)
+                case .policeCar:
+                    PoliceCarV2View(appearance: appearance, size: s)
+                case .ambulance:
+                    AmbulanceV2View(appearance: appearance, size: s)
+                case .motorcycle:
+                    MotorcycleV2View(appearance: appearance, size: s)
                 default:
-                    wheelRow(size: s, defaultDiameter: wheelDiameter, defaultSpacing: wheelSpacing)
-                    carBody(in: s, wheelDiameter: wheelDiameter)
-                        .offset(y: -wheelDiameter * bodyVerticalOffsetFactor)
+                    legacyV2Fallback(
+                        size: s,
+                        wheelDiameter: wheelDiameter,
+                        wheelSpacing: wheelSpacing
+                    )
                 }
             } else {
                 wheelRow(size: s, defaultDiameter: wheelDiameter, defaultSpacing: wheelSpacing)
@@ -48,6 +76,17 @@ struct CarView: View {
         .frame(width: s.width, height: s.height)
         .offset(x: car.lateralOffset * s.width, y: 0)
         .rotationEffect(car.tiltAngle, anchor: .bottom)
+    }
+
+    @ViewBuilder
+    private func legacyV2Fallback(
+        size: CGSize,
+        wheelDiameter: CGFloat,
+        wheelSpacing: CGFloat
+    ) -> some View {
+        wheelRow(size: size, defaultDiameter: wheelDiameter, defaultSpacing: wheelSpacing)
+        carBody(in: size, wheelDiameter: wheelDiameter)
+            .offset(y: -wheelDiameter * bodyVerticalOffsetFactor)
     }
 
     private func wheelRow(size: CGSize, defaultDiameter: CGFloat, defaultSpacing: CGFloat) -> some View {
@@ -512,6 +551,330 @@ private struct TaxiCheckerStripeShape: Shape {
     .padding()
 }
 
+#Preview("Ambulance v1 vs v2") {
+    let frame = CGSize(width: 96, height: 48)
+    let v1Appearance = CarAppearance(
+        bodyColor: .white,
+        accentColor: Color(red: 0.9, green: 0.15, blue: 0.18),
+        scale: 1.05,
+        silhouette: .ambulance,
+        bodyAspectRatio: 1.05,
+        wheelSpacingMultiplier: 0.96,
+        wheelSizeMultiplier: 1.0,
+        renderVersion: .v1
+    )
+    HStack(spacing: 28) {
+        VStack(spacing: 6) {
+            CarView(car: Car(appearance: v1Appearance), size: frame)
+            Text("Ambulance v1")
+                .font(.caption)
+        }
+        VStack(spacing: 6) {
+            CarView(car: CarDesign.ambulance.makeCar(), size: frame)
+            Text("Ambulance v2")
+                .font(.caption)
+        }
+    }
+    .padding()
+}
+
+#Preview("Police car v1 vs v2") {
+    let frame = CGSize(width: 96, height: 48)
+    let v1Appearance = CarAppearance(
+        bodyColor: Color(red: 0.12, green: 0.28, blue: 0.62),
+        accentColor: .white,
+        scale: 1.0,
+        silhouette: .policeCar,
+        bodyAspectRatio: 1.28,
+        wheelSpacingMultiplier: 1.02,
+        wheelSizeMultiplier: 1.0,
+        renderVersion: .v1
+    )
+    HStack(spacing: 28) {
+        VStack(spacing: 6) {
+            CarView(car: Car(appearance: v1Appearance), size: frame)
+            Text("Police v1")
+                .font(.caption)
+        }
+        VStack(spacing: 6) {
+            CarView(car: CarDesign.policeCar.makeCar(), size: frame)
+            Text("Police v2")
+                .font(.caption)
+        }
+    }
+    .padding()
+}
+
+#Preview("School bus v1 vs v2") {
+    let frame = CGSize(width: 96, height: 48)
+    let v1Appearance = CarAppearance(
+        bodyColor: Color(red: 0.92, green: 0.78, blue: 0.12),
+        accentColor: .black,
+        scale: 1.1,
+        silhouette: .schoolBus,
+        bodyAspectRatio: 1.45,
+        wheelSpacingMultiplier: 1.22,
+        wheelSizeMultiplier: 1.0,
+        renderVersion: .v1
+    )
+    HStack(spacing: 28) {
+        VStack(spacing: 6) {
+            CarView(car: Car(appearance: v1Appearance), size: frame)
+            Text("School Bus v1")
+                .font(.caption)
+        }
+        VStack(spacing: 6) {
+            CarView(car: CarDesign.schoolBus.makeCar(), size: frame)
+            Text("School Bus v2")
+                .font(.caption)
+        }
+    }
+    .padding()
+}
+
+#Preview("Fire truck v1 vs v2") {
+    let frame = CGSize(width: 96, height: 48)
+    let v1Appearance = CarAppearance(
+        bodyColor: Color(red: 0.88, green: 0.14, blue: 0.12),
+        accentColor: .black,
+        scale: 1.15,
+        silhouette: .fireTruck,
+        bodyAspectRatio: 1.1,
+        wheelSpacingMultiplier: 0.9,
+        wheelSizeMultiplier: 1.0,
+        renderVersion: .v1
+    )
+    HStack(spacing: 28) {
+        VStack(spacing: 6) {
+            CarView(car: Car(appearance: v1Appearance), size: frame)
+            Text("Fire Truck v1")
+                .font(.caption)
+        }
+        VStack(spacing: 6) {
+            CarView(car: CarDesign.fireTruck.makeCar(), size: frame)
+            Text("Fire Truck v2")
+                .font(.caption)
+        }
+    }
+    .padding()
+}
+
+#Preview("Taxi v1 vs v2") {
+    let frame = CGSize(width: 96, height: 48)
+    let v1Appearance = CarAppearance(
+        bodyColor: Color(red: 0.95, green: 0.82, blue: 0.12),
+        accentColor: .black,
+        scale: 1.0,
+        silhouette: .taxi,
+        bodyAspectRatio: 1.3,
+        wheelSpacingMultiplier: 1.05,
+        wheelSizeMultiplier: 1.0,
+        renderVersion: .v1
+    )
+    HStack(spacing: 28) {
+        VStack(spacing: 6) {
+            CarView(car: Car(appearance: v1Appearance), size: frame)
+            Text("Taxi v1")
+                .font(.caption)
+        }
+        VStack(spacing: 6) {
+            CarView(car: CarDesign.taxi.makeCar(), size: frame)
+            Text("Taxi v2")
+                .font(.caption)
+        }
+    }
+    .padding()
+}
+
+#Preview("Ice cream truck v1 vs v2") {
+    let frame = CGSize(width: 96, height: 48)
+    let v1Appearance = CarAppearance(
+        bodyColor: Color(red: 0.95, green: 0.55, blue: 0.72),
+        accentColor: .white,
+        scale: 1.1,
+        silhouette: .iceCreamTruck,
+        bodyAspectRatio: 0.9,
+        wheelSpacingMultiplier: 0.92,
+        wheelSizeMultiplier: 1.0,
+        renderVersion: .v1
+    )
+    HStack(spacing: 28) {
+        VStack(spacing: 6) {
+            CarView(car: Car(appearance: v1Appearance), size: frame)
+            Text("Ice Cream v1")
+                .font(.caption)
+        }
+        VStack(spacing: 6) {
+            CarView(car: CarDesign.iceCreamTruck.makeCar(), size: frame)
+            Text("Ice Cream v2")
+                .font(.caption)
+        }
+    }
+    .padding()
+}
+
+#Preview("SUV v1 vs v2") {
+    let frame = CGSize(width: 96, height: 48)
+    let v1Appearance = CarAppearance(
+        bodyColor: Color(red: 0.18, green: 0.42, blue: 0.24),
+        accentColor: .black,
+        scale: 1.2,
+        silhouette: .suv,
+        bodyAspectRatio: 0.95,
+        wheelSpacingMultiplier: 0.98,
+        wheelSizeMultiplier: 1.05,
+        renderVersion: .v1
+    )
+    HStack(spacing: 28) {
+        VStack(spacing: 6) {
+            CarView(car: Car(appearance: v1Appearance), size: frame)
+            Text("SUV v1")
+                .font(.caption)
+        }
+        VStack(spacing: 6) {
+            CarView(car: CarDesign.suv.makeCar(), size: frame)
+            Text("SUV v2")
+                .font(.caption)
+        }
+    }
+    .padding()
+}
+
+#Preview("Convertible v1 vs v2") {
+    let frame = CGSize(width: 96, height: 48)
+    let v1Appearance = CarAppearance(
+        bodyColor: Color(red: 0.95, green: 0.42, blue: 0.38),
+        accentColor: Color(red: 0.72, green: 0.74, blue: 0.76),
+        scale: 0.95,
+        silhouette: .convertible,
+        bodyAspectRatio: 1.25,
+        wheelSpacingMultiplier: 0.95,
+        wheelSizeMultiplier: 0.95,
+        renderVersion: .v1
+    )
+    HStack(spacing: 28) {
+        VStack(spacing: 6) {
+            CarView(car: Car(appearance: v1Appearance), size: frame)
+            Text("Convertible v1")
+                .font(.caption)
+        }
+        VStack(spacing: 6) {
+            CarView(car: CarDesign.convertible.makeCar(), size: frame)
+            Text("Convertible v2")
+                .font(.caption)
+        }
+    }
+    .padding()
+}
+
+#Preview("Micro v1 vs v2") {
+    let frame = CGSize(width: 96, height: 48)
+    let v1Appearance = CarAppearance(
+        bodyColor: Color(red: 0.45, green: 0.88, blue: 0.72),
+        accentColor: Color(red: 0.2, green: 0.35, blue: 0.3),
+        scale: 0.7,
+        silhouette: .micro,
+        bodyAspectRatio: 1.1,
+        wheelSpacingMultiplier: 0.82,
+        wheelSizeMultiplier: 0.78,
+        renderVersion: .v1
+    )
+    HStack(spacing: 28) {
+        VStack(spacing: 6) {
+            CarView(car: Car(appearance: v1Appearance), size: frame)
+            Text("Micro v1")
+                .font(.caption)
+        }
+        VStack(spacing: 6) {
+            CarView(car: CarDesign.micro.makeCar(), size: frame)
+            Text("Micro v2")
+                .font(.caption)
+        }
+    }
+    .padding()
+}
+
+#Preview("Van v1 vs v2") {
+    let frame = CGSize(width: 96, height: 48)
+    let v1Appearance = CarAppearance(
+        bodyColor: .white,
+        accentColor: Color(red: 0.28, green: 0.3, blue: 0.32),
+        scale: 1.15,
+        silhouette: .van,
+        bodyAspectRatio: 0.92,
+        wheelSpacingMultiplier: 0.95,
+        wheelSizeMultiplier: 1.0,
+        renderVersion: .v1
+    )
+    HStack(spacing: 28) {
+        VStack(spacing: 6) {
+            CarView(car: Car(appearance: v1Appearance), size: frame)
+            Text("Van v1")
+                .font(.caption)
+        }
+        VStack(spacing: 6) {
+            CarView(car: CarDesign.van.makeCar(), size: frame)
+            Text("Van v2")
+                .font(.caption)
+        }
+    }
+    .padding()
+}
+
+#Preview("Pickup v1 vs v2") {
+    let frame = CGSize(width: 96, height: 48)
+    let v1Appearance = CarAppearance(
+        bodyColor: Color(red: 0.2, green: 0.45, blue: 0.78),
+        accentColor: Color(red: 0.45, green: 0.48, blue: 0.52),
+        scale: 1.1,
+        silhouette: .pickup,
+        bodyAspectRatio: 1.2,
+        wheelSpacingMultiplier: 1.05,
+        wheelSizeMultiplier: 1.0,
+        renderVersion: .v1
+    )
+    HStack(spacing: 28) {
+        VStack(spacing: 6) {
+            CarView(car: Car(appearance: v1Appearance), size: frame)
+            Text("Pickup v1")
+                .font(.caption)
+        }
+        VStack(spacing: 6) {
+            CarView(car: CarDesign.pickup.makeCar(), size: frame)
+            Text("Pickup v2")
+                .font(.caption)
+        }
+    }
+    .padding()
+}
+
+#Preview("Sports car v1 vs v2") {
+    let frame = CGSize(width: 96, height: 48)
+    let v1Appearance = CarAppearance(
+        bodyColor: Color(red: 0.95, green: 0.82, blue: 0.1),
+        accentColor: .black,
+        scale: 1.0,
+        silhouette: .sports,
+        bodyAspectRatio: 1.55,
+        wheelSpacingMultiplier: 1.28,
+        wheelSizeMultiplier: 1.0,
+        renderVersion: .v1
+    )
+    HStack(spacing: 28) {
+        VStack(spacing: 6) {
+            CarView(car: Car(appearance: v1Appearance), size: frame)
+            Text("Sports v1")
+                .font(.caption)
+        }
+        VStack(spacing: 6) {
+            CarView(car: CarDesign.sports.makeCar(), size: frame)
+            Text("Sports v2")
+                .font(.caption)
+        }
+    }
+    .padding()
+}
+
 #Preview("Race car v1 vs v2") {
     let frame = CGSize(width: 96, height: 48)
     let v1Appearance = CarAppearance(
@@ -533,6 +896,33 @@ private struct TaxiCheckerStripeShape: Shape {
         VStack(spacing: 6) {
             CarView(car: CarDesign.raceCar.makeCar(), size: frame)
             Text("Race Car v2")
+                .font(.caption)
+        }
+    }
+    .padding()
+}
+
+#Preview("Motorcycle v1 vs v2") {
+    let frame = CGSize(width: 96, height: 48)
+    let v1Appearance = CarAppearance(
+        bodyColor: Color(red: 0.22, green: 0.24, blue: 0.28),
+        accentColor: Color(red: 0.55, green: 0.58, blue: 0.62),
+        scale: 0.75,
+        silhouette: .motorcycle,
+        bodyAspectRatio: 0.55,
+        wheelSpacingMultiplier: 0.58,
+        wheelSizeMultiplier: 0.88,
+        renderVersion: .v1
+    )
+    HStack(spacing: 28) {
+        VStack(spacing: 6) {
+            CarView(car: Car(appearance: v1Appearance), size: frame)
+            Text("Motorcycle v1")
+                .font(.caption)
+        }
+        VStack(spacing: 6) {
+            CarView(car: CarDesign.motorcycle.makeCar(), size: frame)
+            Text("Motorcycle v2")
                 .font(.caption)
         }
     }

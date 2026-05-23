@@ -16,6 +16,10 @@ struct Course: Identifiable, Codable, Sendable, Equatable {
     let unlockOrder: Int
     /// Number of tickets collectible on this course. Placed evenly along the rope at 1/(n+1) arc-length intervals.
     let ticketCount: Int
+    /// Parallax environment for gameplay (`BackgroundTheme.rawValue` in persistence).
+    let backgroundTheme: BackgroundTheme
+    /// Lateral wind preset (`WindProfile.rawValue`); `.calm` on most courses.
+    let windProfile: WindProfile
 
     init(
         id: String,
@@ -26,7 +30,9 @@ struct Course: Identifiable, Codable, Sendable, Equatable {
         forwardSpeed: Double = 120,
         maxPitchRadians: Double = .pi / 4,
         unlockOrder: Int = 0,
-        ticketCount: Int = 3
+        ticketCount: Int = 3,
+        backgroundTheme: BackgroundTheme = .ocean,
+        windProfile: WindProfile = .calm
     ) {
         self.id = id
         self.displayName = displayName
@@ -37,6 +43,8 @@ struct Course: Identifiable, Codable, Sendable, Equatable {
         self.maxPitchRadians = maxPitchRadians
         self.unlockOrder = unlockOrder
         self.ticketCount = ticketCount
+        self.backgroundTheme = backgroundTheme
+        self.windProfile = windProfile
     }
 
     /// Arc-length fractions [0,1] where tickets appear, evenly spaced so they're always on-path.

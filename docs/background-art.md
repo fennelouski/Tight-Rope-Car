@@ -59,7 +59,7 @@ All **8 themes × 3 layers = 24** imagesets are populated from `Graphics/`.
 2. **Style** — Bold silhouettes, high contrast, cartoony flats; palette should sit near the theme’s catalog colors.
 3. **Export** — PNG with alpha into `Graphics/` using the naming convention above.
 4. **Import** — `./scripts/import_parallax_graphics.sh`
-5. **Regenerate placeholders (optional)** — `python3 scripts/generate_parallax_backgrounds.py` overwrites ocean/forest/beach only; prefer `Graphics/` + import for production art.
+5. **Regenerate placeholders (optional)** — `python3 scripts/generate_parallax_backgrounds.py` writes ocean/forest/beach @1x canvases into Assets; for widescreen strips use `generate_ocean_parallax_graphics.py` or `generate_bedroom_parallax_graphics.py` → `Graphics/bg_*_*.png` then import.
 6. **Verify** — Run unit tests (`BackgroundThemeAssetTests`), open **Backgrounds** on the landing screen, or use `ParallaxBackgroundPreviewView` / `BackgroundThemeGalleryView` previews in Xcode.
 
 ## Rendering
@@ -69,3 +69,21 @@ All **8 themes × 3 layers = 24** imagesets are populated from `Graphics/`.
 - **In-app gallery:** Landing → **Backgrounds** → `BackgroundThemeGalleryView` → full-screen `ParallaxBackgroundPreviewView`.
 
 See also [background-themes.md](background-themes.md) for scroll-factor conventions and theme list.
+
+## Ambience audio
+
+Catalog field `ambienceSoundName` maps to `Tight Rope Car/Resources/Audio/{name}.caf` (also accepts `.wav` / `.m4a`).
+
+**Ocean (shipped):** `ocean_waves.caf` — regenerate with:
+
+```bash
+python3 scripts/generate_ocean_waves_audio.py
+```
+
+**Forest (shipped):** `forest_birds.caf` — regenerate with:
+
+```bash
+python3 scripts/generate_forest_birds_audio.py
+```
+
+Preview playback: Landing → **Backgrounds** → open a theme with bundled audio → speaker control (loops while preview is open).

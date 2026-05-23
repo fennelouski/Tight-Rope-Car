@@ -6231,7 +6231,9 @@ enum CourseCatalog {
         styleDefinitions: [StyleDefinition],
         ropeWidth: Double = 48,
         forwardSpeed: Double = 120,
-        maxPitchRadians: Double = .pi / 4
+        maxPitchRadians: Double = .pi / 4,
+        backgroundTheme: BackgroundTheme? = nil,
+        windProfile: WindProfile? = nil
     ) -> Course {
         let ticketCount: Int
         switch unlockOrder {
@@ -6239,6 +6241,9 @@ enum CourseCatalog {
         case 25 ..< 75: ticketCount = 4
         default:        ticketCount = 5
         }
+
+        let resolvedTheme = backgroundTheme ?? CourseBackgroundThemeResolver.theme(forCourseID: id)
+        let resolvedWind = windProfile ?? CourseWindResolver.profile(forCourseID: id)
 
         let provisional = Course(
             id: id,
@@ -6249,7 +6254,9 @@ enum CourseCatalog {
             forwardSpeed: forwardSpeed,
             maxPitchRadians: maxPitchRadians,
             unlockOrder: unlockOrder,
-            ticketCount: ticketCount
+            ticketCount: ticketCount,
+            backgroundTheme: resolvedTheme,
+            windProfile: resolvedWind
         )
         let totalLength = CourseSampler(course: provisional).totalLength
         let styleSpans = styleDefinitions.map { definition in
@@ -6270,7 +6277,9 @@ enum CourseCatalog {
             forwardSpeed: forwardSpeed,
             maxPitchRadians: maxPitchRadians,
             unlockOrder: unlockOrder,
-            ticketCount: ticketCount
+            ticketCount: ticketCount,
+            backgroundTheme: resolvedTheme,
+            windProfile: resolvedWind
         )
     }
 }

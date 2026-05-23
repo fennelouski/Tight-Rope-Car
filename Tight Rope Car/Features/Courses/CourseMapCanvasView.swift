@@ -15,26 +15,17 @@ struct CourseMapCanvasView: View {
         CourseMapLayout.positions(in: CourseMapLayout.canvasSize)
     }
 
-    private var highlightIDs: Set<String> {
-        guard let selectedCourseID else { return [] }
-        return [selectedCourseID]
-    }
-
     var body: some View {
         let size = CourseMapLayout.canvasSize
 
         ZStack {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(HotWheelsTheme.trackBlack.opacity(0.42))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(HotWheelsTheme.hotRed.opacity(0.5), lineWidth: 2)
-                )
+            mapBoardBackground
 
             CourseMapPathView(
                 edges: CourseMapCatalog.edges,
                 nodePositions: positions,
-                highlightCourseIDs: highlightIDs
+                nodeStates: nodeStates,
+                selectedCourseID: selectedCourseID
             )
             .frame(width: size.width, height: size.height)
 
@@ -43,6 +34,55 @@ struct CourseMapCanvasView: View {
             }
         }
         .frame(width: size.width, height: size.height)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    private var mapBoardBackground: some View {
+        RoundedRectangle(cornerRadius: 20, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        HotWheelsTheme.trackBlack.opacity(0.52),
+                        HotWheelsTheme.trackBlack.opacity(0.38),
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .overlay {
+                Canvas { context, canvasSize in
+                    drawProgressGlows(in: &context, canvasSize: canvasSize)
+
+                    let laneSpacing: CGFloat = 28
+                    var y: CGFloat = laneSpacing * 0.5
+                    while y < canvasSize.height {
+                        var path = Path()
+                        path.move(to: CGPoint(x: 16, y: y))
+                        path.addLine(to: CGPoint(x: canvasSize.width - 16, y: y))
+                        context.stroke(
+                            path,
+                            with: .color(Color.white.opacity(0.04)),
+                            style: StrokeStyle(lineWidth: 1, dash: [4, 12])
+                        )
+                        y += laneSpacing
+                    }
+                }
+                .allowsHitTesting(false)
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                HotWheelsTheme.hotRed.opacity(0.65),
+                                HotWheelsTheme.flameOrange.opacity(0.45),
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 2.5
+                    )
+            )
     }
 
     @ViewBuilder
@@ -64,6 +104,7 @@ struct CourseMapCanvasView: View {
             .buttonStyle(.plain)
             .disabled(state == .locked)
             .position(center)
+            .zIndex(nodeZIndex(state: state, courseID: node.courseID))
             .simultaneousGesture(
                 LongPressGesture(minimumDuration: 0.8)
                     .onEnded { _ in
@@ -75,6 +116,35 @@ struct CourseMapCanvasView: View {
             .accessibilityLabel(accessibilityLabel(displayName: displayName, state: state))
             .accessibilityHint(accessibilityHint(state: state))
             .accessibilityAddTraits(selectedCourseID == node.courseID ? .isSelected : [])
+        }
+    }
+
+    private func drawProgressGlows(in context: inout GraphicsContext, canvasSize: CGSize) {
+        let glowRadius = CourseMapLayout.nodeDiameter * 0.62
+        for node in CourseMapCatalog.nodes {
+            guard nodeStates[node.courseID] == .beaten,
+                  let center = positions[node.courseID]
+            else { continue }
+
+            let rect = CGRect(
+                x: center.x - glowRadius,
+                y: center.y - glowRadius,
+                width: glowRadius * 2,
+                height: glowRadius * 2
+            )
+            context.fill(
+                Path(ellipseIn: rect),
+                with: .color(HotWheelsTheme.racingYellow.opacity(0.07))
+            )
+        }
+    }
+
+    private func nodeZIndex(state: CourseMapNodeState, courseID: String) -> Double {
+        if selectedCourseID == courseID { return 3 }
+        switch state {
+        case .available: return 2
+        case .beaten: return 1
+        case .locked: return 0
         }
     }
 
@@ -104,6 +174,19 @@ struct CourseMapCanvasView: View {
         CourseMapCanvasView(
             nodeStates: CourseUnlockEvaluator.nodeStates(completedCourseIDs: []),
             selectedCourseID: "tutorial"
+        )
+        .padding()
+    }
+    .background(Color.gray.opacity(0.3))
+}
+
+#Preview("Progress trail") {
+    ScrollView {
+        CourseMapCanvasView(
+            nodeStates: CourseUnlockEvaluator.nodeStates(
+                completedCourseIDs: ["tutorial", "bumps", "narrowWire"]
+            ),
+            selectedCourseID: "switchbacks"
         )
         .padding()
     }

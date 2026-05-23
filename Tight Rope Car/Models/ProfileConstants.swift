@@ -14,4 +14,6 @@ enum ProfileConstants {
     static let avatarMaxDimension: CGFloat = 512
     static let avatarJPEGQuality: CGFloat = 0.8
     static let selectedProfileIDKey = "selectedProfileID"
+    /// Electric Blue — matches the default avatar placeholder icon color.
+    static let defaultProfileColorIndex = 13
 }

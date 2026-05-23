@@ -5,6 +5,7 @@
 
 import Foundation
 import SwiftData
+import SwiftUI
 
 @Model
 final class PlayerProfile {
@@ -19,6 +20,10 @@ final class PlayerProfile {
     var completedCourseIDs: [String]
     /// Cumulative tickets collected across all runs on all courses.
     var totalTickets: Int
+    /// Index into ``PlayerColorPalette/all``; defaults to Electric Blue (13).
+    var profileColorIndex: Int
+    /// Last calibrated device roll (radians) used as neutral tilt; updated at run start.
+    var tiltNeutralRollRadians: Double?
     @Relationship(deleteRule: .cascade, inverse: \CourseHighScore.profile)
     var highScores: [CourseHighScore]
 
@@ -31,6 +36,8 @@ final class PlayerProfile {
         selectedCarID: String? = nil,
         completedCourseIDs: [String] = [],
         totalTickets: Int = 0,
+        profileColorIndex: Int = ProfileConstants.defaultProfileColorIndex,
+        tiltNeutralRollRadians: Double? = nil,
         highScores: [CourseHighScore] = []
     ) {
         self.id = id
@@ -41,6 +48,8 @@ final class PlayerProfile {
         self.selectedCarID = selectedCarID
         self.completedCourseIDs = completedCourseIDs
         self.totalTickets = totalTickets
+        self.profileColorIndex = profileColorIndex
+        self.tiltNeutralRollRadians = tiltNeutralRollRadians
         self.highScores = highScores
     }
 
@@ -50,6 +59,10 @@ final class PlayerProfile {
 
     var hasAvatar: Bool {
         avatarJPEGData != nil
+    }
+
+    var profileColor: Color {
+        PlayerColorPalette.color(at: profileColorIndex)
     }
 
     /// Saved catalog id when valid; otherwise ``CarConstants/defaultCarID``.

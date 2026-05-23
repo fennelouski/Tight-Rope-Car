@@ -13,6 +13,8 @@ struct GameRunRecordResult: Equatable {
     var ticketsCollected: Int
     var isNewBestTicketCount: Bool
     var newTotalTickets: Int
+    /// Tickets added to ``PlayerProfile/totalTickets`` this run (delta over prior best on course).
+    var ticketsCreditedToProfile: Int
 }
 
 enum GameRunRecorder {
@@ -23,7 +25,12 @@ enum GameRunRecorder {
         for profile: PlayerProfile,
         context: ModelContext
     ) throws -> GameRunRecordResult {
-        let stats = outcome.stats
+        guard let course = validatedCourse(id: courseID) else {
+            throw GameRunRecordError.invalidCourse(courseID)
+        }
+
+        let stats = sanitizedStats(outcome.stats, for: course)
+        let priorBestTickets = CourseScoreStore.score(for: courseID, on: profile)?.bestTicketCount
 
         let isNewBestTicketCount = try CourseScoreStore.recordBestTicketCount(
             stats.ticketsCollected,
@@ -31,7 +38,11 @@ enum GameRunRecorder {
             for: profile,
             context: context
         )
-        profile.totalTickets += stats.ticketsCollected
+        let ticketsCredited = ticketCreditDelta(
+            collected: stats.ticketsCollected,
+            priorBestOnCourse: priorBestTickets
+        )
+        profile.totalTickets += ticketsCredited
 
         switch outcome {
         case .success:
@@ -60,7 +71,8 @@ enum GameRunRecorder {
                 isNewBestDistance: isNewBestDistance,
                 ticketsCollected: stats.ticketsCollected,
                 isNewBestTicketCount: isNewBestTicketCount,
-                newTotalTickets: profile.totalTickets
+                newTotalTickets: profile.totalTickets,
+                ticketsCreditedToProfile: ticketsCredited
             )
 
         case .failure:
@@ -77,7 +89,8 @@ enum GameRunRecorder {
                 isNewBestDistance: isNewBestDistance,
                 ticketsCollected: stats.ticketsCollected,
                 isNewBestTicketCount: isNewBestTicketCount,
-                newTotalTickets: profile.totalTickets
+                newTotalTickets: profile.totalTickets,
+                ticketsCreditedToProfile: ticketsCredited
             )
         }
     }

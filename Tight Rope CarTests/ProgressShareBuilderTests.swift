@@ -43,4 +43,30 @@ struct ProgressShareBuilderTests {
         #expect(!text.contains("High scores:"))
         #expect(text.contains("Courses beaten: 0"))
     }
+
+    @Test func shareTextIncludesMapSummaryAndCourseIDs() {
+        let profile = PlayerProfile(
+            name: "Alex",
+            age: 8,
+            completedCourseIDs: ["tutorial"],
+            totalTickets: 5
+        )
+        let text = ProgressShareBuilder.shareText(profile: profile, scoresByCourseID: [:])
+
+        #expect(text.contains("Map:"))
+        #expect(text.contains("5 tickets"))
+        #expect(text.contains("Beat course IDs (map order):"))
+        #expect(text.contains("tutorial"))
+    }
+
+    @Test func completedCourseIDsInMapOrderIgnoresUnknownIDs() {
+        let profile = PlayerProfile(
+            name: "Test",
+            age: 6,
+            completedCourseIDs: ["not_on_map", "tutorial"]
+        )
+        let ordered = ProgressShareBuilder.completedCourseIDsInMapOrder(profile: profile)
+
+        #expect(ordered == ["tutorial"])
+    }
 }
