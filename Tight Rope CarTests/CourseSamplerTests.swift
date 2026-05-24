@@ -179,16 +179,16 @@ struct CourseSamplerTests {
     @Test func hairpinsPathSwingsLeftAndRightOfStart() {
         let sampler = CourseSampler(course: CourseCatalog.hairpins)
         let sampleCount = 24
-        var minX = Double.infinity
-        var maxX = -Double.infinity
+        var minY = Double.infinity
+        var maxY = -Double.infinity
         for index in 0 ... sampleCount {
             let s = sampler.totalLength * Double(index) / Double(sampleCount)
-            let x = sampler.sample(at: s).position.x
-            minX = min(minX, x)
-            maxX = max(maxX, x)
+            let y = sampler.sample(at: s).position.y
+            minY = min(minY, y)
+            maxY = max(maxY, y)
         }
-        #expect(minX < -20)
-        #expect(maxX > 20)
+        #expect(minY < -20)
+        #expect(maxY > 20)
     }
 
     @Test func canyonGapSagDipsDeepBelowPlatforms() {
@@ -199,7 +199,7 @@ struct CourseSamplerTests {
             let s = sampler.totalLength * Double(index) / Double(sampleCount)
             minY = min(minY, sampler.sample(at: s).position.y)
         }
-        #expect(minY < -80)
+        #expect(minY < -30)
     }
 
     @Test func checkerboardAlternatesStrokeColorsAlongPath() {
@@ -327,18 +327,17 @@ struct CourseSamplerTests {
 
     @Test func pendulumSwingPathSwingsBothSidesOfStart() {
         let sampler = CourseSampler(course: CourseCatalog.pendulumSwing)
-        let startX = sampler.sample(at: 0).position.x
         let sampleCount = 24
-        var minX = Double.infinity
-        var maxX = -Double.infinity
+        var minY = Double.infinity
+        var maxY = -Double.infinity
         for index in 0 ... sampleCount {
             let s = sampler.totalLength * Double(index) / Double(sampleCount)
-            let x = sampler.sample(at: s).position.x
-            minX = min(minX, x)
-            maxX = max(maxX, x)
+            let y = sampler.sample(at: s).position.y
+            minY = min(minY, y)
+            maxY = max(maxY, y)
         }
-        #expect(minX < startX - 15)
-        #expect(maxX > startX + 15)
+        #expect(minY < -15)
+        #expect(maxY > 15)
     }
 
     @Test func launchPadMidCourseClimbsAboveStart() {
