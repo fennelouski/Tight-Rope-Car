@@ -25,7 +25,7 @@ struct ClassicBugView: View {
     }
 
     private var bodyHeight: CGFloat {
-        size.height * 0.55
+        size.height * 0.93
     }
 
     var body: some View {
@@ -304,7 +304,7 @@ struct ClassicBugView: View {
                     )
                 )
         }
-        .frame(width: bodyWidth, height: bodyHeight)
+        .frame(width: bodyWidth, height: bodyHeight * 0.92)
     }
 
     private var windowGradient: LinearGradient {

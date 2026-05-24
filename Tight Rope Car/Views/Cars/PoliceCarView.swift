@@ -25,7 +25,7 @@ struct PoliceCarView: View {
     }
 
     private var bodyHeight: CGFloat {
-        size.height * 0.54
+        size.height * 0.94
     }
 
     var body: some View {
@@ -264,7 +264,7 @@ struct PoliceCarView: View {
             PoliceCarWheelArchShape()
                 .stroke(appearance.accentColor.opacity(0.38), lineWidth: 0.4)
         }
-        .frame(width: bodyWidth, height: bodyHeight * 0.8)
+        .frame(width: bodyWidth, height: bodyHeight * 0.91)
     }
 
     private var windowGradient: LinearGradient {

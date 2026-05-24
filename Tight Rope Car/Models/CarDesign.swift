@@ -57,7 +57,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 accentColor: Color(red: 0.15, green: 0.12, blue: 0.12),
                 scale: 0.85,
                 silhouette: .classicBug,
-                bodyAspectRatio: 1.35,
+                bodyAspectRatio: 0.78,
                 wheelSpacingMultiplier: 0.88,
                 wheelSizeMultiplier: 0.95
             )
@@ -76,7 +76,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 accentColor: .black,
                 scale: 1.0,
                 silhouette: .sports,
-                bodyAspectRatio: 1.55,
+                bodyAspectRatio: 0.9,
                 wheelSpacingMultiplier: 1.28,
                 wheelSizeMultiplier: 1.0            )
         case .van:
@@ -121,7 +121,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 accentColor: HotWheelsTheme.trackBlack,
                 scale: 1.0,
                 silhouette: .raceCar,
-                bodyAspectRatio: 1.6,
+                bodyAspectRatio: 0.9,
                 wheelSpacingMultiplier: 0.78,
                 wheelSizeMultiplier: 1.0            )
         case .iceCreamTruck:
@@ -139,7 +139,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 accentColor: .black,
                 scale: 1.0,
                 silhouette: .taxi,
-                bodyAspectRatio: 1.3,
+                bodyAspectRatio: 0.78,
                 wheelSpacingMultiplier: 1.05,
                 wheelSizeMultiplier: 1.0            )
         case .fireTruck:
@@ -157,7 +157,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 accentColor: .black,
                 scale: 1.1,
                 silhouette: .schoolBus,
-                bodyAspectRatio: 1.45,
+                bodyAspectRatio: 1.15,
                 wheelSpacingMultiplier: 1.22,
                 wheelSizeMultiplier: 1.0            )
         case .policeCar:
@@ -166,7 +166,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 accentColor: .white,
                 scale: 1.0,
                 silhouette: .policeCar,
-                bodyAspectRatio: 1.28,
+                bodyAspectRatio: 0.78,
                 wheelSpacingMultiplier: 1.02,
                 wheelSizeMultiplier: 1.0            )
         case .ambulance:
@@ -184,7 +184,7 @@ enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
                 accentColor: Color(red: 0.55, green: 0.58, blue: 0.62),
                 scale: 0.75,
                 silhouette: .motorcycle,
-                bodyAspectRatio: 0.55,
+                bodyAspectRatio: 0.80,
                 wheelSpacingMultiplier: 0.58,
                 wheelSizeMultiplier: 0.88            )
         }

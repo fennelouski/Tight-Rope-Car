@@ -25,7 +25,7 @@ struct SportsView: View {
     }
 
     private var bodyHeight: CGFloat {
-        size.height * 0.5
+        size.height * 0.84
     }
 
     var body: some View {
@@ -290,7 +290,7 @@ struct SportsView: View {
                     )
                 )
         }
-        .frame(width: bodyWidth, height: bodyHeight * 0.68)
+        .frame(width: bodyWidth, height: bodyHeight * 0.91)
     }
 }
 

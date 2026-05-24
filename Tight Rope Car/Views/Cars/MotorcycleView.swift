@@ -25,7 +25,7 @@ struct MotorcycleView: View {
     }
 
     private var bodyHeight: CGFloat {
-        size.height * 0.38
+        size.height * 0.80
     }
 
     var body: some View {
@@ -279,7 +279,7 @@ struct MotorcycleView: View {
                     )
                 )
         }
-        .frame(width: bodyWidth, height: bodyHeight * 0.82)
+        .frame(width: bodyWidth, height: bodyHeight * 0.95)
     }
 }
 

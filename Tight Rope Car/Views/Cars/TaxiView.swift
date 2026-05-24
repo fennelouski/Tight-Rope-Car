@@ -25,7 +25,7 @@ struct TaxiView: View {
     }
 
     private var bodyHeight: CGFloat {
-        size.height * 0.56
+        size.height * 0.94
     }
 
     var body: some View {
@@ -255,7 +255,7 @@ struct TaxiView: View {
             TaxiWheelArchShape()
                 .stroke(appearance.accentColor.opacity(0.32), lineWidth: 0.4)
         }
-        .frame(width: bodyWidth, height: bodyHeight * 0.82)
+        .frame(width: bodyWidth, height: bodyHeight * 0.91)
     }
 
     private var windowGradient: LinearGradient {

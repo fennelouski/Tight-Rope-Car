@@ -25,7 +25,7 @@ struct SchoolBusView: View {
     }
 
     private var bodyHeight: CGFloat {
-        size.height * 0.54
+        size.height * 0.86
     }
 
     var body: some View {
@@ -261,7 +261,7 @@ struct SchoolBusView: View {
             SchoolBusWheelArchShape()
                 .stroke(appearance.accentColor.opacity(0.35), lineWidth: 0.42)
         }
-        .frame(width: bodyWidth, height: bodyHeight * 0.95)
+        .frame(width: bodyWidth, height: bodyHeight * 0.90)
     }
 
     private var windowGradient: LinearGradient {
