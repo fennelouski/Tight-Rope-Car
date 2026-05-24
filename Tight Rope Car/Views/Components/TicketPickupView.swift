@@ -2,11 +2,10 @@
 //  TicketPickupView.swift
 //  Tight Rope Car
 //
-//  Reusable collectible ticket illustration for SwiftUI and future SpriteKit placement.
+//  Reusable collectible ticket illustration for SwiftUI and SpriteKit.
 //
-//  SpriteKit: add an `SKSpriteNode` with `size = TicketPickupLayout.spriteKitSize` (44×56 pt),
-//  `anchorPoint = TicketPickupLayout.spriteKitAnchor` (0.5, 0.5), zPosition above the rope.
-//  Export art at @2x/@3x from a 44×56 pt artboard, or rasterize this view via `ImageRenderer`.
+//  In-run pickups rasterize via ``TicketPickupTextureRenderer`` at
+//  ``TicketPickupLayout/spriteKitSize`` (44×56 pt) with ``TicketPickupLayout/spriteKitAnchor``.
 //  Place nodes at rope arc-length fractions from `Course.ticketFractions`.
 //
 
@@ -45,6 +44,8 @@ struct TicketPickupView: View {
     var state: TicketPickupState = .available
     var accentColor: Color = HotWheelsTheme.racingYellow
     var displaySize: TicketPickupDisplaySize = .playfield
+    /// When false, sparkle and shimmer are suppressed (e.g. SpriteKit rasterization with reduce motion).
+    var allowsMotionEffects: Bool = true
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var shimmer = false
@@ -72,15 +73,21 @@ struct TicketPickupView: View {
         }
     }
 
+    private var motionReduced: Bool {
+        !allowsMotionEffects || reduceMotion
+    }
+
     private var shimmerScale: CGFloat {
-        guard state == .available, shimmer, !reduceMotion, displaySize == .playfield else {
+        guard state == .available, shimmer, !motionReduced, displaySize == .playfield else {
             return 1
         }
         return 1.06
     }
 
     private var showsSparkle: Bool {
-        state == .available && displaySize == .playfield
+        state == .available
+            && !motionReduced
+            && (displaySize == .playfield || displaySize == .standard)
     }
 
     private var ticketBody: some View {
@@ -144,7 +151,7 @@ struct TicketPickupView: View {
             .font(.system(size: dimensions.width * 0.22, weight: .bold))
             .foregroundStyle(HotWheelsTheme.flameOrange)
             .offset(x: dimensions.width * 0.34, y: -dimensions.height * 0.36)
-            .opacity(shimmer && !reduceMotion ? 1 : 0.65)
+            .opacity(shimmer && !motionReduced ? 1 : 0.65)
             .accessibilityHidden(true)
     }
 
@@ -158,7 +165,7 @@ struct TicketPickupView: View {
     }
 
     private func runShimmerAnimation() {
-        guard state == .available, !reduceMotion, displaySize == .playfield else { return }
+        guard state == .available, !motionReduced, displaySize == .playfield else { return }
         withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
             shimmer = true
         }

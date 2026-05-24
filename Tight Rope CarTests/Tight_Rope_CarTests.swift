@@ -187,7 +187,26 @@ struct Tight_Rope_CarTests {
     }
 
     @Test func catalogDefaultCarUsesClassicBugSilhouette() {
+        #expect(CarCatalog.defaultCarID == "classicBug")
         #expect(CarCatalog.defaultCar.appearance.silhouette == .classicBug)
         #expect(CarAppearance.default.silhouette == .classicBug)
+    }
+
+    @Test func catalogHasFifteenUniqueSilhouettes() {
+        #expect(CarCatalog.all.count == 15)
+        let silhouettes = Set(CarCatalog.all.map(\.appearance.silhouette))
+        #expect(silhouettes.count == 15)
+    }
+
+    @Test func legacyCarIDResolvesToCatalogEntry() {
+        #expect(CarCatalog.car(id: "blaze")?.id == "classicBug")
+        #expect(CarCatalog.car(id: "volt")?.id == "raceCar")
+        #expect(CarCatalog.canonicalCarID("blaze") == "classicBug")
+    }
+
+    @Test func resolvedCarIDMigratesLegacyBlaze() {
+        let profile = PlayerProfile(name: "Test", age: 8, selectedCarID: "blaze")
+        #expect(profile.resolvedCarID == "classicBug")
+        #expect(CarCatalog.car(id: profile.resolvedCarID)?.appearance.silhouette == .classicBug)
     }
 }

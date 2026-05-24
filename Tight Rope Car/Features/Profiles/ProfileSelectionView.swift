@@ -46,16 +46,21 @@ struct ProfileSelectionView: View {
             selectedRacerCard
                 .padding(.top, 12)
 
-            Spacer(minLength: 16)
-
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, horizontalPadding)
+        .hotWheelsScreenContentPadding()
+        .hotWheelsContentWidth()
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             continueButton
+                .padding(.horizontal, horizontalPadding)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
+                .frame(maxWidth: .infinity)
+                .hotWheelsContentWidth()
                 .opacity(footerAppeared ? 1 : 0)
                 .offset(y: footerAppeared ? 0 : (reduceMotion ? 0 : 16))
         }
-        .padding(.horizontal, horizontalPadding)
-        .padding(.top, 16)
-        .padding(.bottom, 32)
-        .hotWheelsContentWidth()
         .sheet(isPresented: $showCreateProfile) {
             CreateProfileView()
         }

@@ -6,18 +6,27 @@
 import SwiftUI
 
 struct CourseMapCanvasView: View {
+    var canvasSize: CGSize = CourseMapLayout.canvasSize
     let nodeStates: [String: CourseMapNodeState]
     let selectedCourseID: String?
     var onSelect: (String) -> Void = { _ in }
     var onMarkComplete: (String) -> Void = { _ in }
 
     private var positions: [String: CGPoint] {
-        CourseMapLayout.positions(in: CourseMapLayout.canvasSize)
+        CourseMapLayout.positions(in: canvasSize)
+    }
+
+    private var isFullWidth: Bool {
+        canvasSize.width > CourseMapLayout.minimumCanvasWidth + 1
     }
 
     var body: some View {
-        let size = CourseMapLayout.canvasSize
+        mapContent
+            .frame(width: canvasSize.width, height: canvasSize.height)
+            .modifier(CourseMapCanvasClipModifier(isFullWidth: isFullWidth))
+    }
 
+    private var mapContent: some View {
         ZStack {
             mapBoardBackground
 
@@ -27,18 +36,16 @@ struct CourseMapCanvasView: View {
                 nodeStates: nodeStates,
                 selectedCourseID: selectedCourseID
             )
-            .frame(width: size.width, height: size.height)
+            .frame(width: canvasSize.width, height: canvasSize.height)
 
             ForEach(CourseMapCatalog.nodes) { node in
                 nodeButton(for: node)
             }
         }
-        .frame(width: size.width, height: size.height)
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
     private var mapBoardBackground: some View {
-        RoundedRectangle(cornerRadius: 20, style: .continuous)
+        MapBoardBackgroundShape(isFullWidth: isFullWidth)
             .fill(
                 LinearGradient(
                     colors: [
@@ -69,20 +76,34 @@ struct CourseMapCanvasView: View {
                 }
                 .allowsHitTesting(false)
             }
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [
-                                HotWheelsTheme.hotRed.opacity(0.65),
-                                HotWheelsTheme.flameOrange.opacity(0.45),
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 2.5
-                    )
+            .overlay {
+                mapBorderStroke
+            }
+    }
+
+    @ViewBuilder
+    private var mapBorderStroke: some View {
+        let borderGradient = LinearGradient(
+            colors: [
+                HotWheelsTheme.hotRed.opacity(0.65),
+                HotWheelsTheme.flameOrange.opacity(0.45),
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        if isFullWidth {
+            UnevenRoundedRectangle(
+                topLeadingRadius: 16,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: 0,
+                topTrailingRadius: 16,
+                style: .continuous
             )
+            .strokeBorder(borderGradient, lineWidth: 2.5)
+        } else {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(borderGradient, lineWidth: 2.5)
+        }
     }
 
     @ViewBuilder
@@ -105,6 +126,7 @@ struct CourseMapCanvasView: View {
             .disabled(state == .locked)
             .position(center)
             .zIndex(nodeZIndex(state: state, courseID: node.courseID))
+            #if DEBUG
             .simultaneousGesture(
                 LongPressGesture(minimumDuration: 0.8)
                     .onEnded { _ in
@@ -113,6 +135,7 @@ struct CourseMapCanvasView: View {
                         }
                     }
             )
+            #endif
             .accessibilityLabel(accessibilityLabel(displayName: displayName, state: state))
             .accessibilityHint(accessibilityHint(state: state))
             .accessibilityAddTraits(selectedCourseID == node.courseID ? .isSelected : [])
@@ -153,9 +176,9 @@ struct CourseMapCanvasView: View {
         case .locked:
             return "\(displayName), locked"
         case .available:
-            return "\(displayName), available"
+            return "\(displayName), open track"
         case .beaten:
-            return "\(displayName), completed"
+            return "\(displayName), track cleared"
         }
     }
 
@@ -164,7 +187,49 @@ struct CourseMapCanvasView: View {
         case .locked:
             return "Complete a prerequisite course to unlock"
         case .available, .beaten:
+            #if DEBUG
             return "Double tap to select. Long press to mark complete for testing."
+            #else
+            return "Double tap to select"
+            #endif
+        }
+    }
+}
+
+private struct MapBoardBackgroundShape: Shape {
+    let isFullWidth: Bool
+
+    func path(in rect: CGRect) -> Path {
+        if isFullWidth {
+            UnevenRoundedRectangle(
+                topLeadingRadius: 16,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: 0,
+                topTrailingRadius: 16,
+                style: .continuous
+            ).path(in: rect)
+        } else {
+            RoundedRectangle(cornerRadius: 20, style: .continuous).path(in: rect)
+        }
+    }
+}
+
+private struct CourseMapCanvasClipModifier: ViewModifier {
+    let isFullWidth: Bool
+
+    func body(content: Content) -> some View {
+        if isFullWidth {
+            content.clipShape(
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 16,
+                    bottomLeadingRadius: 0,
+                    bottomTrailingRadius: 0,
+                    topTrailingRadius: 16,
+                    style: .continuous
+                )
+            )
+        } else {
+            content.clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
     }
 }

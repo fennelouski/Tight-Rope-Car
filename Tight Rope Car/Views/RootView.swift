@@ -65,8 +65,8 @@ struct RootView: View {
             flowContent
                 .id(flow.screenKey)
                 .transition(activeTransition)
+                .clipped()
         }
-        .clipped()
         .animation(flowAnimation, value: flow.screenKey)
         .animation(flowAnimation, value: navigation)
     }

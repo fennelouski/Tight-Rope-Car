@@ -7,7 +7,16 @@ import CoreGraphics
 import Foundation
 
 enum CourseMapLayout {
-    static let canvasSize = CGSize(width: 340, height: 10000)
+    static let minimumCanvasWidth: CGFloat = 340
+    static let canvasHeight: CGFloat = 10_000
+
+    /// Default canvas for previews and tests.
+    static let canvasSize = CGSize(width: minimumCanvasWidth, height: canvasHeight)
+
+    static func canvasSize(containerWidth: CGFloat) -> CGSize {
+        CGSize(width: max(minimumCanvasWidth, containerWidth), height: canvasHeight)
+    }
+
     static let nodeDiameter: CGFloat = 72
 
     static func positions(in canvasSize: CGSize) -> [String: CGPoint] {

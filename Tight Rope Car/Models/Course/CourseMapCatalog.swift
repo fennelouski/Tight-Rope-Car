@@ -6,7 +6,7 @@
 import CoreGraphics
 import Foundation
 
-// Map layout: canvas 340×4000, row spacing 0.022 (≈87 px), three columns at x=0.18/0.50/0.82.
+// Map layout: canvas width follows container (min 340pt), height 10_000pt; row spacing 0.022 (≈87 px), three columns at x=0.18/0.50/0.82.
 // Row y values: 0.020 + row_index × 0.022.
 enum CourseMapCatalog {
     static let nodes: [CourseMapNode] = [

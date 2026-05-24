@@ -5,34 +5,71 @@
 
 import SwiftUI
 
-/// Dev/review screen: browse all catalog themes and open full-screen parallax preview.
+/// Player-facing theme gallery: browse catalog themes and preview parallax + ambience.
 struct BackgroundThemeGalleryView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var selectedTheme: BackgroundTheme?
+    @State private var contentAppeared = false
 
     private var themes: [BackgroundThemeMetadata] {
         BackgroundThemeCatalog.sortedForDisplay
     }
 
+    private var ambienceThemeCount: Int {
+        themes.filter { entry in
+            guard let soundName = entry.ambienceSoundName else { return false }
+            return ThemeAmbiencePlayer.isSoundAvailable(soundName)
+        }.count
+    }
+
     var body: some View {
         NavigationStack {
-            List(themes, id: \.theme) { entry in
-                Button {
-                    selectedTheme = entry.theme
-                } label: {
-                    themeRow(entry)
+            ZStack {
+                HotWheelsTheme.backgroundGradient
+                    .ignoresSafeArea()
+
+                ScrollView {
+                    VStack(spacing: 16) {
+                        summaryHeader
+                            .opacity(contentAppeared ? 1 : 0)
+                            .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 8))
+
+                        HotWheelsContentPanel(
+                            title: "Theme Library",
+                            trailingCaption: "\(themes.count) worlds",
+                            accessibilityLabel: "Theme library",
+                            accessibilityHint: "Tap a theme to open full-screen preview"
+                        ) {
+                            LazyVStack(spacing: 12) {
+                                ForEach(Array(themes.enumerated()), id: \.element.theme) { index, entry in
+                                    themeRowButton(entry)
+                                        .opacity(contentAppeared ? 1 : 0)
+                                        .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 10))
+                                        .animation(
+                                            reduceMotion ? nil : .easeOut(duration: 0.35).delay(Double(index) * 0.03),
+                                            value: contentAppeared
+                                        )
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
                 }
-                .buttonStyle(.plain)
-                .accessibilityHint("Opens parallax preview")
             }
-            .listStyle(.insetGrouped)
             .navigationTitle("Backgrounds")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(HotWheelsTheme.trackBlack.opacity(0.85), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
-                        .font(HotWheelsTheme.bodyFont)
+                        .font(HotWheelsTheme.bodyFont.weight(.bold))
+                        .foregroundStyle(HotWheelsTheme.racingYellow)
+                        .accessibilityHint("Close background gallery")
                 }
             }
             .fullScreenCover(item: $selectedTheme) { theme in
@@ -41,43 +78,133 @@ struct BackgroundThemeGalleryView: View {
                 }
             }
         }
+        .onAppear {
+            if reduceMotion {
+                contentAppeared = true
+            } else {
+                withAnimation(.easeOut(duration: 0.4)) {
+                    contentAppeared = true
+                }
+            }
+        }
+    }
+
+    private var summaryHeader: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HotWheelsScreenHeader(
+                eyebrow: "Art Direction",
+                eyebrowSystemImage: "photo.on.rectangle.angled",
+                title: "Backgrounds",
+                subtitle: "Parallax worlds used across the course map"
+            )
+
+            HStack(spacing: 12) {
+                HotWheelsStatPill(
+                    systemImage: "square.stack.3d.up.fill",
+                    value: "\(themes.count)",
+                    title: "Themes",
+                    accent: HotWheelsTheme.electricBlue,
+                    isEmphasized: true,
+                    size: .compact
+                )
+                HotWheelsStatPill(
+                    systemImage: "speaker.wave.2.fill",
+                    value: "\(ambienceThemeCount)",
+                    title: "Ambience",
+                    accent: HotWheelsTheme.flameOrange,
+                    isEmphasized: ambienceThemeCount > 0,
+                    size: .compact
+                )
+            }
+        }
+    }
+
+    private func themeRowButton(_ entry: BackgroundThemeMetadata) -> some View {
+        Button {
+            selectedTheme = entry.theme
+        } label: {
+            themeRow(entry)
+        }
+         .buttonStyle(.plain)
+        .accessibilityHint("Opens parallax preview")
     }
 
     private func themeRow(_ entry: BackgroundThemeMetadata) -> some View {
-        HStack(spacing: 14) {
-            BackgroundThemeThumbnailView(entry: entry)
+        let accent = themeAccent(for: entry)
+        let hasAmbience = entry.ambienceSoundName.map(ThemeAmbiencePlayer.isSoundAvailable) ?? false
 
-            VStack(alignment: .leading, spacing: 4) {
+        return HStack(spacing: 14) {
+            BackgroundThemeThumbnailView(entry: entry, size: 64, accentColor: accent)
+
+            VStack(alignment: .leading, spacing: 6) {
                 Text(entry.displayName)
                     .font(HotWheelsTheme.headlineFont)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.white)
+
                 Text(entry.tagline)
                     .font(HotWheelsTheme.captionFont)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.78))
                     .lineLimit(2)
-            }
+                    .fixedSize(horizontal: false, vertical: true)
 
-            Spacer(minLength: 0)
+                HStack(spacing: 12) {
+                    HotWheelsInlineStat(
+                        systemImage: "square.3.layers.3d",
+                        text: "\(entry.parallaxLayers.count) layers",
+                        accent: HotWheelsTheme.electricBlue
+                    )
 
-            HStack(spacing: 8) {
-                if let soundName = entry.ambienceSoundName,
-                   ThemeAmbiencePlayer.isSoundAvailable(soundName) {
-                    Image(systemName: "speaker.wave.2.fill")
-                        .font(.subheadline.weight(.bold))
-                        .foregroundStyle(HotWheelsTheme.electricBlue)
-                        .accessibilityLabel("Has ambience sound")
+                    if hasAmbience {
+                        HotWheelsInlineStat(
+                            systemImage: "speaker.wave.2.fill",
+                            text: "Ambience",
+                            accent: HotWheelsTheme.flameOrange
+                        )
+                    }
                 }
-
-                Image(systemName: "play.circle.fill")
-                    .font(.title2)
-                    .symbolRenderingMode(.palette)
-                    .foregroundStyle(HotWheelsTheme.racingYellow, HotWheelsTheme.hotRed.opacity(0.85))
-                    .accessibilityHidden(true)
             }
+
+            Spacer(minLength: 8)
+
+            Image(systemName: "play.circle.fill")
+                .font(.title2.weight(.black))
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(HotWheelsTheme.racingYellow, accent.opacity(0.85))
+                .accessibilityHidden(true)
         }
-        .padding(.vertical, 6)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            HotWheelsTheme.trackBlack.opacity(0.55),
+                            accent.opacity(0.14),
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(accent.opacity(0.65), lineWidth: 2)
+        )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(entry.displayName). \(entry.tagline)")
+        .accessibilityLabel(themeRowAccessibilityLabel(entry, hasAmbience: hasAmbience))
+    }
+
+    private func themeAccent(for entry: BackgroundThemeMetadata) -> Color {
+        entry.skyGradient.first?.swiftUIColor ?? HotWheelsTheme.electricBlue
+    }
+
+    private func themeRowAccessibilityLabel(_ entry: BackgroundThemeMetadata, hasAmbience: Bool) -> String {
+        var parts = [entry.displayName, entry.tagline, "\(entry.parallaxLayers.count) parallax layers"]
+        if hasAmbience {
+            parts.append("includes ambience sound")
+        }
+        return parts.joined(separator: ". ")
     }
 }
 
@@ -108,7 +235,13 @@ private struct BackgroundThemePreviewScreen: View {
                         ambienceButton(soundName: soundName)
                     }
                     Spacer()
-                    closeButton
+                    HotWheelsProminentIconButton(
+                        systemImage: "xmark",
+                        accessibilityLabel: "Close preview",
+                        accessibilityHint: "Return to background gallery"
+                    ) {
+                        onClose()
+                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
@@ -131,63 +264,32 @@ private struct BackgroundThemePreviewScreen: View {
             ambiencePlayer.toggle(soundName: soundName)
         } label: {
             Image(systemName: isPlaying ? "speaker.wave.3.fill" : "speaker.wave.2.fill")
-                .font(.system(size: 22, weight: .bold))
-                .symbolRenderingMode(.palette)
-                .foregroundStyle(
-                    HotWheelsTheme.racingYellow,
-                    HotWheelsTheme.trackBlack.opacity(0.5)
-                )
-                .padding(10)
+                .font(.system(size: 20, weight: .black))
+                .foregroundStyle(HotWheelsTheme.trackBlack)
+                .frame(width: 48, height: 48)
                 .background(
                     Circle()
-                        .fill(HotWheelsTheme.trackBlack.opacity(0.65))
-                        .overlay(
-                            Circle()
-                                .strokeBorder(
-                                    isPlaying ? HotWheelsTheme.electricBlue : HotWheelsTheme.racingYellow,
-                                    lineWidth: 2
-                                )
-                        )
+                        .fill(isPlaying ? HotWheelsTheme.electricBlue : HotWheelsTheme.racingYellow)
+                        .shadow(color: HotWheelsTheme.trackBlack.opacity(0.35), radius: 0, x: 0, y: 3)
+                )
+                .overlay(
+                    Circle()
+                        .strokeBorder(HotWheelsTheme.hotRed, lineWidth: 3)
                 )
         }
         .accessibilityLabel(isPlaying ? "Stop ambience" : "Play ambience")
         .accessibilityHint("Loops background sound for this theme")
     }
 
-    private var closeButton: some View {
-        Button(action: onClose) {
-            Image(systemName: "xmark.circle.fill")
-                .font(.system(size: 32, weight: .bold))
-                .symbolRenderingMode(.palette)
-                .foregroundStyle(.white, HotWheelsTheme.trackBlack.opacity(0.55))
-        }
-        .accessibilityLabel("Close preview")
-    }
-
     private var previewCaption: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(metadata.displayName)
-                .font(HotWheelsTheme.sectionTitleFont)
-                .foregroundStyle(.white)
-                .hotWheelsTitleShadow()
-
-            Text(metadata.tagline)
-                .font(HotWheelsTheme.bodyFont)
-                .foregroundStyle(.white.opacity(0.92))
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(HotWheelsTheme.trackBlack.opacity(0.78))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(HotWheelsTheme.racingYellow, lineWidth: 3)
-                )
+        HotWheelsSelectionCard(
+            overline: "Parallax preview",
+            title: metadata.displayName,
+            detail: metadata.tagline,
+            systemImage: "play.circle.fill",
+            accentColor: metadata.skyGradient.first?.swiftUIColor ?? HotWheelsTheme.electricBlue,
+            accessibilityLabel: "\(metadata.displayName). \(metadata.tagline)"
         )
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(metadata.displayName). \(metadata.tagline)")
     }
 }
 

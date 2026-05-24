@@ -9,6 +9,7 @@ struct LandingView: View {
     var onPlay: () -> Void = {}
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @StateObject private var stillnessMonitor = DeviceStillnessMonitor()
 
     @State private var titleAppeared = false
     @State private var taglineAppeared = false
@@ -16,11 +17,19 @@ struct LandingView: View {
     @State private var buttonAppeared = false
     @State private var titlePulse = false
     @State private var playButtonPulse = false
-    @State private var showsBackgroundGallery = false
 #if DEBUG
     @State private var showsCarDesignGallery = false
     @State private var previewCarDesign: CarDesign = .classicBug
 #endif
+
+    private var showsTiltHint: Bool {
+        guard !reduceMotion else { return false }
+        #if targetEnvironment(simulator)
+        return true
+        #else
+        return stillnessMonitor.isDeviceStill
+        #endif
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -28,10 +37,12 @@ struct LandingView: View {
                 .opacity(titleAppeared ? 1 : 0)
                 .scaleEffect(titleAppeared ? (titlePulse ? 1.02 : 1.0) : 0.96)
 
-            taglineSection
-                .padding(.top, 10)
-                .opacity(taglineAppeared ? 1 : 0)
-                .scaleEffect(taglineAppeared ? 1 : 0.96)
+            if showsTiltHint {
+                taglineSection
+                    .padding(.top, 10)
+                    .opacity(taglineAppeared ? 1 : 0)
+                    .scaleEffect(taglineAppeared ? 1 : 0.96)
+            }
 
             Spacer()
 
@@ -41,17 +52,14 @@ struct LandingView: View {
 
             Spacer()
 
-            playButton
-                .padding(.bottom, 8)
-                .opacity(buttonAppeared ? 1 : 0)
-                .scaleEffect(
-                    buttonAppeared
-                        ? (playButtonPulse ? 1.06 : 1.0)
-                        : 0.96
-                )
-
-            VStack(spacing: 8) {
-                backgroundsLink
+            VStack(spacing: 24) {
+                playButton
+                    .opacity(buttonAppeared ? 1 : 0)
+                    .scaleEffect(
+                        buttonAppeared
+                            ? (playButtonPulse ? 1.06 : 1.0)
+                            : 0.96
+                    )
 #if DEBUG
                 carDesignsLink
 #endif
@@ -62,43 +70,25 @@ struct LandingView: View {
         .padding(.horizontal, 24)
         .hotWheelsScreenContentPadding()
         .hotWheelsContentWidth()
-        .sheet(isPresented: $showsBackgroundGallery) {
-            BackgroundThemeGalleryView()
-        }
 #if DEBUG
         .sheet(isPresented: $showsCarDesignGallery) {
             CarDesignPickerView(selectedDesign: $previewCarDesign)
         }
 #endif
         .onAppear {
+            stillnessMonitor.start()
             runEntranceAnimation()
         }
-    }
-
-    private var backgroundsLink: some View {
-        Button {
-            showsBackgroundGallery = true
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "photo.on.rectangle.angled")
-                    .font(.system(size: 14, weight: .bold))
-                Text("Backgrounds")
-                    .font(HotWheelsTheme.taglineFont)
-            }
-            .foregroundStyle(.white.opacity(0.92))
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(
-                Capsule()
-                    .fill(HotWheelsTheme.trackBlack.opacity(0.45))
-                    .overlay(
-                        Capsule()
-                            .strokeBorder(HotWheelsTheme.electricBlue.opacity(0.7), lineWidth: 2)
-                    )
-            )
+        .onDisappear {
+            stillnessMonitor.stop()
         }
-        .accessibilityLabel("Background themes")
-        .accessibilityHint("Opens parallax background gallery")
+        .onChange(of: showsTiltHint) { _, isVisible in
+            if isVisible {
+                animateTaglineAppearance()
+            } else {
+                taglineAppeared = false
+            }
+        }
     }
 
 #if DEBUG
@@ -182,6 +172,7 @@ struct LandingView: View {
                     .fill(HotWheelsTheme.trackBlack.opacity(0.35))
             )
             .hotWheelsTitleShadow()
+            .accessibilityLabel("Tilt to balance. Don't fall.")
     }
 
     private var playButton: some View {
@@ -211,10 +202,8 @@ struct LandingView: View {
             titleAppeared = true
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
-            withAnimation(.easeOut(duration: 0.45)) {
-                taglineAppeared = true
-            }
+        if showsTiltHint {
+            animateTaglineAppearance(delay: 0.08)
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) {
@@ -228,6 +217,19 @@ struct LandingView: View {
                 buttonAppeared = true
             }
             startIdleAnimations()
+        }
+    }
+
+    private func animateTaglineAppearance(delay: TimeInterval = 0) {
+        let work = {
+            withAnimation(.easeOut(duration: 0.45)) {
+                taglineAppeared = true
+            }
+        }
+        if delay > 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+        } else {
+            work()
         }
     }
 

@@ -5,99 +5,90 @@
 
 import SwiftUI
 
-/// Static registry of every selectable car.
+/// Static registry of every selectable car in the garage.
+///
+/// IDs match ``CarDesign`` raw values. Legacy color-car IDs (`blaze`, `volt`, …) resolve via ``legacyIDMap``.
 enum CarCatalog {
     /// Used when a profile has no saved car or the saved id is invalid.
-    static let defaultCarID = "blaze"
+    static let defaultCarID = "classicBug"
 
-    static let all: [SelectableCar] = [
-        blaze,
-        volt,
-        sunset,
-        midnight,
-        citrus,
-        glacier,
-    ].sorted { $0.sortOrder < $1.sortOrder }
+    /// Maps pre–15-car catalog IDs to current catalog IDs (SwiftData migration).
+    static let legacyIDMap: [String: String] = [
+        "blaze": "classicBug",
+        "volt": "raceCar",
+        "sunset": "sports",
+        "midnight": "pickup",
+        "citrus": "micro",
+        "glacier": "suv",
+    ]
+
+    static let all: [SelectableCar] = CarDesign.allDesigns.enumerated().map { index, design in
+        entry(for: design, sortOrder: index)
+    }
 
     static var defaultCar: SelectableCar {
         car(id: defaultCarID) ?? all[0]
     }
 
-    static func car(id: String) -> SelectableCar? {
-        all.first { $0.id == id }
+    /// Resolves legacy garage IDs to current catalog IDs.
+    static func canonicalCarID(_ id: String) -> String {
+        legacyIDMap[id] ?? id
     }
 
-    // MARK: - Cars
+    static func car(id: String) -> SelectableCar? {
+        let canonical = canonicalCarID(id)
+        return all.first { $0.id == canonical }
+    }
 
-    private static let blaze = SelectableCar(
-        id: "blaze",
-        displayName: "Blaze Runner",
-        tagline: "Classic flame red speed",
-        appearance: CarAppearance(
-            bodyColor: HotWheelsTheme.hotRed,
-            accentColor: HotWheelsTheme.trackBlack,
-            scale: 1.0
-        ),
-        sortOrder: 0
-    )
+    // MARK: - Entries
 
-    private static let volt = SelectableCar(
-        id: "volt",
-        displayName: "Volt Strike",
-        tagline: "Electric blue on the wire",
-        appearance: CarAppearance(
-            bodyColor: HotWheelsTheme.electricBlue,
-            accentColor: HotWheelsTheme.racingYellow,
-            scale: 1.05
-        ),
-        sortOrder: 1
-    )
+    private static func entry(for design: CarDesign, sortOrder: Int) -> SelectableCar {
+        SelectableCar(
+            id: design.rawValue,
+            displayName: displayName(for: design),
+            tagline: tagline(for: design),
+            appearance: design.appearance,
+            sortOrder: sortOrder
+        )
+    }
 
-    private static let sunset = SelectableCar(
-        id: "sunset",
-        displayName: "Sunset Drift",
-        tagline: "Orange glow, golden wheels",
-        appearance: CarAppearance(
-            bodyColor: HotWheelsTheme.flameOrange,
-            accentColor: HotWheelsTheme.racingYellow,
-            scale: 1.0
-        ),
-        sortOrder: 2
-    )
+    private static func displayName(for design: CarDesign) -> String {
+        switch design {
+        case .classicBug: "Blaze Runner"
+        case .pickup: "Midnight Hauler"
+        case .sports: "Sunset Drift"
+        case .van: "Cloud Cruiser"
+        case .micro: "Citrus Bolt"
+        case .convertible: "Coral Coast"
+        case .suv: "Glacier Edge"
+        case .raceCar: "Volt Strike"
+        case .iceCreamTruck: "Sprinkle Express"
+        case .taxi: "Checker Champ"
+        case .fireTruck: "Ladder Flash"
+        case .schoolBus: "Hall Pass"
+        case .policeCar: "Badge Pursuit"
+        case .ambulance: "Rescue Rush"
+        case .motorcycle: "Wire Rider"
+        }
+    }
 
-    private static let midnight = SelectableCar(
-        id: "midnight",
-        displayName: "Midnight Flash",
-        tagline: "Stealth black, red trim",
-        appearance: CarAppearance(
-            bodyColor: HotWheelsTheme.trackBlack,
-            accentColor: HotWheelsTheme.hotRed,
-            scale: 0.95
-        ),
-        sortOrder: 3
-    )
-
-    private static let citrus = SelectableCar(
-        id: "citrus",
-        displayName: "Citrus Bolt",
-        tagline: "Yellow body, red accents",
-        appearance: CarAppearance(
-            bodyColor: HotWheelsTheme.racingYellow,
-            accentColor: HotWheelsTheme.hotRed,
-            scale: 1.08
-        ),
-        sortOrder: 4
-    )
-
-    private static let glacier = SelectableCar(
-        id: "glacier",
-        displayName: "Glacier Edge",
-        tagline: "Cool blue, silver wheels",
-        appearance: CarAppearance(
-            bodyColor: Color(red: 0.75, green: 0.92, blue: 1.0),
-            accentColor: Color(red: 0.55, green: 0.6, blue: 0.65),
-            scale: 1.0
-        ),
-        sortOrder: 5
-    )
+    private static func tagline(for design: CarDesign) -> String {
+        switch design {
+        case .classicBug: "Classic flame red speed"
+        case .pickup: "Stealth hauler, red trim"
+        case .sports: "Orange glow, golden wheels"
+        case .van: "Room to roll on the wire"
+        case .micro: "Small body, big nerve"
+        case .convertible: "Top down, wind up"
+        case .suv: "Cool blue, silver wheels"
+        case .raceCar: "Electric blue on the wire"
+        case .iceCreamTruck: "Sweet wheels, cold nerves"
+        case .taxi: "Fare game, fair balance"
+        case .fireTruck: "Hot red, steady line"
+        case .schoolBus: "Yellow convoy, tight turns"
+        case .policeCar: "Blue lights, tight rope"
+        case .ambulance: "White coat, red cross"
+        case .motorcycle: "Two wheels, one rope"
+        }
+    }
 }

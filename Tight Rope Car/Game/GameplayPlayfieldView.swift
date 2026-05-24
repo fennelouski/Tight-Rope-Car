@@ -5,7 +5,8 @@
 
 import SwiftUI
 
-/// Placeholder playfield: scrolling parallax for the course theme plus a SwiftUI rope/car mock.
+/// Preview / parity reference only — not used in production (`GameplayView` uses `GameSceneView`).
+/// SwiftUI parallax + rope/car mock for canvas previews; behavior reference for `RopePathBuilder`.
 struct GameplayPlayfieldView: View {
     let course: Course?
     var profileColor: Color = HotWheelsTheme.racingYellow

@@ -34,6 +34,17 @@ enum GameBalanceConstants {
     /// Poll interval while calibrating (seconds).
     static let calibrationSampleInterval: TimeInterval = 1.0 / 30.0
 
+    // MARK: - Landing stillness hint
+
+    /// User-acceleration magnitude (m/s²) at or below this counts as “not moving” for the landing tilt hint.
+    static let landingStillnessAccelerationThreshold: Double = 0.05
+
+    /// Consecutive still motion samples required before showing the landing tilt hint (~0.5 s at 60 Hz).
+    static let landingStillnessRequiredSamples: Int = 30
+
+    /// Device-motion poll rate (Hz) for landing stillness detection.
+    static let landingStillnessUpdateHz: Double = 60
+
     /// Lateral acceleration from filtered tilt (points per second²).
     static let lateralAccelerationFromTilt: Double = 200
 
@@ -48,6 +59,46 @@ enum GameBalanceConstants {
 
     /// Minimum seconds between near-fall haptic pulses.
     static let nearFallHapticCooldownSeconds: TimeInterval = 0.45
+
+    // MARK: - Simulation loop
+
+    /// Maximum `update` delta (seconds) to avoid spiral-of-death after a hitch.
+    static let maxSimulationDeltaTime: TimeInterval = 1.0 / 30.0
+
+    /// Arc length behind the car included in the visible rope window (points).
+    static let ropeVisibleArcLengthBehind: Double = 300
+
+    /// Arc length ahead of the car included in the visible rope window (points).
+    static let ropeVisibleArcLengthAhead: Double = 700
+
+    /// Polyline samples along the visible rope window.
+    static let ropePathSampleCount: Int = 60
+
+    /// Collect a ticket when the car is within this arc length of the pickup (points).
+    static let ticketCollectionLookaheadArcLength: Double = 25
+
+    // MARK: - Rope visuals (cosmetic; does not affect fall hitbox)
+
+    /// Perpendicular sway amplitude for the drawn rope (points).
+    static let ropeVisualSwayAmplitudePoints: Double = 3
+
+    /// Sway oscillation frequency (Hz).
+    static let ropeVisualSwayFrequencyHz: Double = 0.25
+
+    /// Phase advance per arc-length unit along the rope (radians per point).
+    static let ropeVisualSwayPhasePerArcLength: Double = 0.004
+
+    /// Highlight stroke width as a fraction of the main rope width.
+    static let ropeHighlightLineWidthFactor: Double = 0.18
+
+    /// Extra width added to the underlay stroke beyond the main rope width (points).
+    static let ropeUnderlayWidthPadding: Double = 6
+
+    /// Underlay stroke opacity (main stroke uses full opacity).
+    static let ropeUnderlayStrokeOpacity: Double = 0.55
+
+    /// Start a new rope micro-segment when width changes by more than this (points).
+    static let ropeVisualWidthChangeThreshold: Double = 1
 
     static func ropeHalfWidth(at ropeWidth: Double) -> Double {
         (ropeWidth / 2) * lateralFallThresholdOfHalfWidth

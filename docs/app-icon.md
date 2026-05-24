@@ -19,14 +19,16 @@ From the repo root:
 
 The script copies `Graphics/Icon.png` into the app icon imageset and resizes with `sips` if the source is not already 1024×1024.
 
-## Placeholder (no art yet)
+## Placeholder (no master art yet)
+
+If `Graphics/Icon.png` is missing, generate a temporary icon:
 
 ```bash
 python3 scripts/generate_app_icon_placeholder.py
 ./scripts/import_app_icon.sh
 ```
 
-Produces a simple Hot Wheels–striped placeholder with a car-on-rope motif.
+Produces a simple Hot Wheels–striped placeholder with a car-on-rope motif. When `Graphics/Icon.png` is present, run `./scripts/import_app_icon.sh` only.
 
 ## Design notes
 

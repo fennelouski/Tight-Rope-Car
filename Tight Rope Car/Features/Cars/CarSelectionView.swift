@@ -49,19 +49,27 @@ struct CarSelectionView: View {
             selectedCarCard
                 .padding(.top, 12)
 
-            Spacer(minLength: 16)
-
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, horizontalPadding)
+        .hotWheelsScreenContentPadding()
+        .hotWheelsContentWidth()
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             continueButton
+                .padding(.horizontal, horizontalPadding)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
+                .frame(maxWidth: .infinity)
+                .hotWheelsContentWidth()
                 .opacity(footerAppeared ? 1 : 0)
                 .offset(y: footerAppeared ? 0 : (reduceMotion ? 0 : 16))
         }
-        .padding(.horizontal, horizontalPadding)
-        .padding(.top, 16)
-        .padding(.bottom, 32)
-        .hotWheelsContentWidth()
         .onAppear {
             syncSelectionFromProfile()
             runEntranceAnimation()
+            if let car = selectedCar {
+                CarAppearanceTextureRenderer.prewarm(appearance: car.appearance)
+            }
         }
         .onChange(of: selectedProfileID) { _, _ in
             syncSelectionFromProfile()
@@ -135,7 +143,7 @@ struct CarSelectionView: View {
                 .padding(.vertical, 8)
                 .padding(.horizontal, 4)
             }
-            .frame(maxHeight: horizontalSizeClass == .regular ? 520 : 400)
+            .frame(maxHeight: horizontalSizeClass == .regular ? 560 : 440)
         }
     }
 
@@ -191,6 +199,7 @@ struct CarSelectionView: View {
             selectedCarID = car.id
         }
         activeProfile?.selectedCarID = car.id
+        CarAppearanceTextureRenderer.prewarm(appearance: car.appearance)
         try? modelContext.save()
     }
 
@@ -202,7 +211,7 @@ struct CarSelectionView: View {
             selectedCarID = ""
             return
         }
-        selectedCarID = savedID
+        selectedCarID = CarCatalog.canonicalCarID(savedID)
     }
 
     private func runEntranceAnimation() {
@@ -244,7 +253,7 @@ struct CarSelectionView: View {
         for: PlayerProfile.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
     )
-    let profile = PlayerProfile(name: "Alex", age: 10, selectedCarID: "volt")
+    let profile = PlayerProfile(name: "Alex", age: 10, selectedCarID: "raceCar")
     container.mainContext.insert(profile)
     UserDefaults.standard.set(profile.id.uuidString, forKey: ProfileConstants.selectedProfileIDKey)
 
@@ -260,7 +269,7 @@ struct CarSelectionView: View {
         for: PlayerProfile.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
     )
-    let profile = PlayerProfile(name: "Jordan", age: 12, selectedCarID: "blaze")
+    let profile = PlayerProfile(name: "Jordan", age: 12, selectedCarID: "classicBug")
     container.mainContext.insert(profile)
     UserDefaults.standard.set(profile.id.uuidString, forKey: ProfileConstants.selectedProfileIDKey)
 

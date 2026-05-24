@@ -9,6 +9,7 @@ struct CourseMapNodeView: View {
     let displayName: String
     let state: CourseMapNodeState
     let isSelected: Bool
+    var ticketCount: Int? = nil
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var glowPulse = false
@@ -21,7 +22,7 @@ struct CourseMapNodeView: View {
             outerEffects
 
             Circle()
-                .fill(backgroundFill)
+                .fill(backgroundGradient)
                 .overlay {
                     Circle()
                         .fill(
@@ -34,6 +35,11 @@ struct CourseMapNodeView: View {
                                 endPoint: .center
                             )
                         )
+                }
+                .overlay {
+                    if state == .locked {
+                        lockedPatternOverlay
+                    }
                 }
                 .shadow(color: HotWheelsTheme.trackBlack.opacity(0.5), radius: 0, x: 0, y: 4)
 
@@ -55,9 +61,19 @@ struct CourseMapNodeView: View {
                     .frame(width: diameter - 14)
             }
 
+            if let ticketCount, state != .locked {
+                ticketBadge(ticketCount)
+            }
+
+            if isSelected {
+                selectedBadge
+            }
+
+            stateChip
+                .offset(y: diameter * 0.46)
         }
         .frame(width: diameter, height: diameter)
-        .opacity(state == .locked ? 0.55 : 1)
+        .opacity(state == .locked ? 0.58 : 1)
         .scaleEffect(selectionScale)
         .animation(.easeOut(duration: 0.2), value: isSelected)
         .onAppear(perform: runStateAnimations)
@@ -106,6 +122,80 @@ struct CourseMapNodeView: View {
         }
     }
 
+    private var lockedPatternOverlay: some View {
+        Canvas { context, size in
+            var path = Path()
+            let spacing: CGFloat = 8
+            var offset: CGFloat = -size.height
+            while offset < size.width + size.height {
+                path.move(to: CGPoint(x: offset, y: size.height))
+                path.addLine(to: CGPoint(x: offset + size.height, y: 0))
+                offset += spacing
+            }
+            context.stroke(
+                path,
+                with: .color(Color.white.opacity(0.06)),
+                style: StrokeStyle(lineWidth: 2)
+            )
+        }
+        .clipShape(Circle())
+        .allowsHitTesting(false)
+    }
+
+    private func ticketBadge(_ count: Int) -> some View {
+        HStack(spacing: 2) {
+            Image(systemName: "ticket.fill")
+                .font(.system(size: 7, weight: .black))
+            Text("\(count)")
+                .font(.system(size: 8, weight: .black, design: .rounded))
+        }
+        .foregroundStyle(HotWheelsTheme.trackBlack)
+        .padding(.horizontal, 5)
+        .padding(.vertical, 3)
+        .background(
+            Capsule(style: .continuous)
+                .fill(HotWheelsTheme.flameOrange)
+                .overlay(
+                    Capsule(style: .continuous)
+                        .strokeBorder(HotWheelsTheme.trackBlack.opacity(0.35), lineWidth: 1)
+                )
+        )
+        .offset(x: -diameter * 0.28, y: diameter * 0.30)
+        .accessibilityHidden(true)
+    }
+
+    private var selectedBadge: some View {
+        Image(systemName: "scope")
+            .font(.system(size: 10, weight: .black))
+            .foregroundStyle(HotWheelsTheme.racingYellow)
+            .padding(5)
+            .background(
+                Circle()
+                    .fill(HotWheelsTheme.trackBlack.opacity(0.88))
+                    .overlay(Circle().strokeBorder(HotWheelsTheme.racingYellow, lineWidth: 1.5))
+            )
+            .offset(x: -diameter * 0.34, y: -diameter * 0.34)
+            .accessibilityHidden(true)
+    }
+
+    private var stateChip: some View {
+        Text(stateChipTitle)
+            .font(.system(size: 8, weight: .heavy, design: .rounded))
+            .foregroundStyle(stateChipForeground)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(stateChipFill)
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .strokeBorder(stateChipStroke, lineWidth: 1.5)
+                    )
+            )
+            .shadow(color: HotWheelsTheme.trackBlack.opacity(0.35), radius: 0, x: 0, y: 1)
+            .accessibilityHidden(true)
+    }
+
     private var shortLabel: String {
         let words = displayName.split(separator: " ")
         if words.count >= 2, let first = words.first, let second = words.dropFirst().first {
@@ -134,14 +224,35 @@ struct CourseMapNodeView: View {
         }
     }
 
-    private var backgroundFill: Color {
+    private var backgroundGradient: LinearGradient {
         switch state {
         case .locked:
-            HotWheelsTheme.trackBlack.opacity(0.75)
+            LinearGradient(
+                colors: [
+                    HotWheelsTheme.trackBlack.opacity(0.82),
+                    HotWheelsTheme.trackBlack.opacity(0.62),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
         case .available:
-            HotWheelsTheme.hotRed.opacity(0.88)
+            LinearGradient(
+                colors: [
+                    HotWheelsTheme.hotRed,
+                    HotWheelsTheme.flameOrange.opacity(0.92),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
         case .beaten:
-            HotWheelsTheme.electricBlue.opacity(0.92)
+            LinearGradient(
+                colors: [
+                    HotWheelsTheme.electricBlue,
+                    HotWheelsTheme.electricBlue.opacity(0.72),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
         }
     }
 
@@ -174,6 +285,38 @@ struct CourseMapNodeView: View {
         state == .locked ? Color.white.opacity(0.55) : HotWheelsTheme.trackBlack
     }
 
+    private var stateChipTitle: String {
+        switch state {
+        case .locked: "LOCKED"
+        case .available: "OPEN"
+        case .beaten: "CLEAR"
+        }
+    }
+
+    private var stateChipFill: Color {
+        switch state {
+        case .locked: HotWheelsTheme.trackBlack.opacity(0.88)
+        case .available: HotWheelsTheme.electricBlue.opacity(0.92)
+        case .beaten: HotWheelsTheme.racingYellow
+        }
+    }
+
+    private var stateChipStroke: Color {
+        switch state {
+        case .locked: Color.white.opacity(0.22)
+        case .available: HotWheelsTheme.racingYellow.opacity(0.85)
+        case .beaten: HotWheelsTheme.flameOrange
+        }
+    }
+
+    private var stateChipForeground: Color {
+        switch state {
+        case .locked: Color.white.opacity(0.72)
+        case .available: .white
+        case .beaten: HotWheelsTheme.trackBlack
+        }
+    }
+
     private func runStateAnimations() {
         guard !reduceMotion else { return }
         switch state {
@@ -192,13 +335,13 @@ struct CourseMapNodeView: View {
 }
 
 #Preview("Available") {
-    CourseMapNodeView(displayName: "First Steps", state: .available, isSelected: false)
+    CourseMapNodeView(displayName: "First Steps", state: .available, isSelected: false, ticketCount: 3)
         .padding(24)
         .background(HotWheelsTheme.trackBlack)
 }
 
 #Preview("Beaten selected") {
-    CourseMapNodeView(displayName: "Long Haul", state: .beaten, isSelected: true)
+    CourseMapNodeView(displayName: "Long Haul", state: .beaten, isSelected: true, ticketCount: 4)
         .padding(24)
         .background(HotWheelsTheme.trackBlack)
 }
@@ -207,4 +350,14 @@ struct CourseMapNodeView: View {
     CourseMapNodeView(displayName: "Summit Climb", state: .locked, isSelected: false)
         .padding(24)
         .background(HotWheelsTheme.trackBlack)
+}
+
+#Preview("All states") {
+    HStack(spacing: 20) {
+        CourseMapNodeView(displayName: "Summit Climb", state: .locked, isSelected: false)
+        CourseMapNodeView(displayName: "First Steps", state: .available, isSelected: false, ticketCount: 3)
+        CourseMapNodeView(displayName: "Long Haul", state: .beaten, isSelected: true, ticketCount: 5)
+    }
+    .padding(24)
+    .background(HotWheelsTheme.trackBlack)
 }

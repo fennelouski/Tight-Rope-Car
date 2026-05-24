@@ -103,4 +103,11 @@ extension View {
         frame(maxWidth: 560)
         .frame(maxWidth: .infinity)
     }
+
+    /// Adds a 16 pt visual buffer below the status bar / notch for menu funnel screens.
+    /// Apply to the root content stack of each screen; the parent ZStack's safe-area
+    /// constraints already keep content below the system chrome.
+    func hotWheelsScreenContentPadding() -> some View {
+        padding(.top, 16)
+    }
 }

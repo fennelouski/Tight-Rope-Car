@@ -10,7 +10,6 @@ struct LandingCarGraphic: View {
 
     @State private var balance: CGFloat = -1
     @State private var ropeSag: CGFloat = 0
-    @State private var flameScale: CGFloat = 1
     @State private var dashPhase: CGFloat = 0
 
     private let carWidth: CGFloat = 110
@@ -18,9 +17,7 @@ struct LandingCarGraphic: View {
 
     var body: some View {
         ZStack {
-            carShadow
             ropeAndSupports
-            heroTicket
             car
         }
         .frame(height: 220)
@@ -38,12 +35,8 @@ struct LandingCarGraphic: View {
         reduceMotion ? 0 : balance
     }
 
-    private var carShadow: some View {
-        Ellipse()
-            .fill(HotWheelsTheme.trackBlack.opacity(0.35))
-            .frame(width: 100, height: 18)
-            .offset(x: motionBalance * carWidth * CGFloat(lateralOffsetScale), y: 52)
-            .blur(radius: 2)
+    private var lateralOffsetPixels: CGFloat {
+        motionBalance * carWidth * CGFloat(lateralOffsetScale)
     }
 
     private var ropeAndSupports: some View {
@@ -101,12 +94,6 @@ struct LandingCarGraphic: View {
         }
     }
 
-    private var heroTicket: some View {
-        TicketPickupView(displaySize: .compact)
-            .offset(y: 8)
-            .shadow(color: HotWheelsTheme.trackBlack.opacity(0.4), radius: 0, x: 0, y: 2)
-    }
-
     private var supportTower: some View {
         VStack(spacing: 0) {
             RoundedRectangle(cornerRadius: 2, style: .continuous)
@@ -131,6 +118,12 @@ struct LandingCarGraphic: View {
 
     private var car: some View {
         ZStack {
+            Ellipse()
+                .fill(HotWheelsTheme.trackBlack.opacity(0.35))
+                .frame(width: 100, height: 18)
+                .offset(x: lateralOffsetPixels, y: 52)
+                .blur(radius: 2)
+
             CarView(
                 car: Car(
                     lateralOffset: Double(motionBalance) * lateralOffsetScale,
@@ -139,22 +132,6 @@ struct LandingCarGraphic: View {
                 ),
                 size: CGSize(width: carWidth, height: 50)
             )
-
-            FlameAccent()
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            HotWheelsTheme.racingYellow,
-                            HotWheelsTheme.flameOrange,
-                            HotWheelsTheme.hotRed,
-                        ],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .frame(width: 16 * flameScale, height: 14 * flameScale)
-                .offset(x: 40, y: 2)
-                .opacity(0.75 + flameScale * 0.25)
         }
         .offset(y: -10)
     }
@@ -168,10 +145,6 @@ struct LandingCarGraphic: View {
 
         withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) {
             ropeSag = 1
-        }
-
-        withAnimation(.easeInOut(duration: 0.35).repeatForever(autoreverses: true)) {
-            flameScale = 1.25
         }
 
         withAnimation(.linear(duration: 1.2).repeatForever(autoreverses: false)) {
@@ -194,19 +167,8 @@ private struct AnimatedRopeShape: Shape {
         path.move(to: CGPoint(x: 0, y: rect.midY + 10))
         path.addQuadCurve(
             to: CGPoint(x: rect.width, y: rect.midY + 10),
-            control: CGPoint(x: rect.midX, y: rect.midY - sag)
+            control: CGPoint(x: rect.midX, y: rect.midY + sag)
         )
-        return path
-    }
-}
-
-private struct FlameAccent: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.midY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX * 0.7, y: rect.maxY))
-        path.closeSubpath()
         return path
     }
 }

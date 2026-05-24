@@ -12,6 +12,7 @@ import UIKit
 struct BackgroundThemeThumbnailView: View {
     let entry: BackgroundThemeMetadata
     var size: CGFloat = 52
+    var accentColor: Color = HotWheelsTheme.racingYellow
 
     private var assetName: String { entry.galleryThumbnailAssetName }
 
@@ -37,7 +38,7 @@ struct BackgroundThemeThumbnailView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(HotWheelsTheme.racingYellow.opacity(0.9), lineWidth: 2)
+                .strokeBorder(accentColor.opacity(0.95), lineWidth: 2)
         )
         .shadow(color: HotWheelsTheme.trackBlack.opacity(0.35), radius: 0, x: 0, y: 2)
         .accessibilityHidden(true)

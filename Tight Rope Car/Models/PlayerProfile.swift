@@ -70,6 +70,6 @@ final class PlayerProfile {
         guard let selectedCarID, CarCatalog.car(id: selectedCarID) != nil else {
             return CarConstants.defaultCarID
         }
-        return selectedCarID
+        return CarCatalog.canonicalCarID(selectedCarID)
     }
 }

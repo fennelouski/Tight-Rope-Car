@@ -44,4 +44,38 @@ struct BackgroundThemeAssetTests {
         #expect(metadata.ambienceSoundName == "forest_birds")
         #expect(ThemeAmbiencePlayer.isSoundAvailable("forest_birds"))
     }
+
+    @Test func cityAmbienceClipIsBundled() {
+        let metadata = BackgroundThemeCatalog.metadata(for: .city)
+        #expect(metadata.ambienceSoundName == "city_traffic")
+        #expect(ThemeAmbiencePlayer.isSoundAvailable("city_traffic"))
+    }
+
+    @Test func toyShopAmbienceClipIsBundled() {
+        let metadata = BackgroundThemeCatalog.metadata(for: .toyShop)
+        #expect(metadata.ambienceSoundName == "toy_shop_chimes")
+        #expect(ThemeAmbiencePlayer.isSoundAvailable("toy_shop_chimes"))
+    }
+
+    @Test func gardenAmbienceClipIsBundled() {
+        let metadata = BackgroundThemeCatalog.metadata(for: .garden)
+        #expect(metadata.ambienceSoundName == "garden_breeze")
+        #expect(ThemeAmbiencePlayer.isSoundAvailable("garden_breeze"))
+    }
+
+    @Test func beachAmbienceClipIsBundled() {
+        let metadata = BackgroundThemeCatalog.metadata(for: .beach)
+        #expect(metadata.ambienceSoundName == "beach_waves")
+        #expect(ThemeAmbiencePlayer.isSoundAvailable("beach_waves"))
+    }
+
+    @Test func everyCatalogAmbienceNameIsBundledWhenPresent() {
+        for entry in BackgroundThemeCatalog.all {
+            guard let soundName = entry.ambienceSoundName else { continue }
+            #expect(
+                ThemeAmbiencePlayer.isSoundAvailable(soundName),
+                "Missing ambience clip for \(entry.theme): \(soundName)"
+            )
+        }
+    }
 }

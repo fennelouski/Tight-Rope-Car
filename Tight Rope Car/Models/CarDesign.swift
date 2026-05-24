@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-/// Playable car design preset; maps to ``CarAppearance`` and factory ``Car`` instances.
+/// Canonical silhouettes and default paint; player-facing list is ``CarCatalog``.
 ///
 /// Case order: original five, middle five (convertible…taxi), service vehicles (fireTruck…motorcycle).
 enum CarDesign: String, CaseIterable, Identifiable, Equatable, Sendable {
