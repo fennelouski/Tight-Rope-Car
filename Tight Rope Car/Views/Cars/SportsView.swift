@@ -21,7 +21,7 @@ struct SportsView: View {
     }
 
     private var bodyWidth: CGFloat {
-        size.width * 0.85 * appearance.bodyAspectRatio
+        size.width * 0.85
     }
 
     private var bodyHeight: CGFloat {
@@ -290,7 +290,7 @@ struct SportsView: View {
                     )
                 )
         }
-        .frame(width: bodyWidth, height: bodyHeight * 0.62)
+        .frame(width: bodyWidth, height: bodyHeight * 0.68)
     }
 }
 

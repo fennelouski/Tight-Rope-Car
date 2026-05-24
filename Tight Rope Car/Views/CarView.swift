@@ -17,7 +17,7 @@ struct CarView: View {
 
     private var scaledSize: CGSize {
         CGSize(
-            width: size.width * appearance.scale,
+            width: size.width * appearance.scale * appearance.bodyAspectRatio,
             height: size.height * appearance.scale
         )
     }

@@ -21,7 +21,7 @@ struct PoliceCarView: View {
     }
 
     private var bodyWidth: CGFloat {
-        size.width * 0.85 * appearance.bodyAspectRatio
+        size.width * 0.85
     }
 
     private var bodyHeight: CGFloat {
