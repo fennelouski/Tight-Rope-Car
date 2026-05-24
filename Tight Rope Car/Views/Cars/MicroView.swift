@@ -17,7 +17,7 @@ struct MicroView: View {
     }
 
     private var wheelSpacing: CGFloat {
-        size.width * 0.12 * appearance.wheelSpacingMultiplier
+        size.width * 0.35 * appearance.wheelSpacingMultiplier
     }
 
     private var bodyWidth: CGFloat {
@@ -25,7 +25,7 @@ struct MicroView: View {
     }
 
     private var bodyHeight: CGFloat {
-        size.height * 0.52
+        size.height * 0.97
     }
 
     var body: some View {
@@ -242,7 +242,7 @@ struct MicroView: View {
             MicroWheelArchShape()
                 .stroke(appearance.accentColor.opacity(0.3), lineWidth: 0.38)
         }
-        .frame(width: bodyWidth * 0.9, height: bodyHeight * 0.88)
+        .frame(width: bodyWidth * 0.9, height: bodyHeight * 0.95)
     }
 
     private var windowGradient: LinearGradient {
@@ -315,7 +315,7 @@ private struct MicroRockerShape: Shape {
 private struct MicroCanopyGlassShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let glass = CGRect(x: rect.width * 0.22, y: rect.height * 0.16, width: rect.width * 0.48, height: rect.height * 0.42)
+        let glass = CGRect(x: rect.width * 0.22, y: rect.height * 0.16, width: rect.width * 0.48, height: rect.height * 0.38)
         path.addRoundedRect(in: glass, cornerSize: CGSize(width: glass.height * 0.45, height: glass.height * 0.45))
         return path
     }

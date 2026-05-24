@@ -17,7 +17,7 @@ struct PickupView: View {
     }
 
     private var wheelSpacing: CGFloat {
-        size.width * 0.12 * appearance.wheelSpacingMultiplier
+        size.width * 0.35 * appearance.wheelSpacingMultiplier
     }
 
     private var bodyWidth: CGFloat {
@@ -25,7 +25,7 @@ struct PickupView: View {
     }
 
     private var bodyHeight: CGFloat {
-        size.height * 0.58
+        size.height * 0.94
     }
 
     var body: some View {
@@ -39,7 +39,7 @@ struct PickupView: View {
             }
 
             pickupBodyStack
-                .offset(y: -wheelDiameter * 0.35)
+                .offset(x: bodyWidth * 0.05, y: -wheelDiameter * 0.35)
         }
         .frame(width: size.width, height: size.height)
     }
@@ -285,7 +285,7 @@ struct PickupView: View {
             PickupDoorLineShape()
                 .stroke(appearance.accentColor.opacity(0.4), lineWidth: 0.4)
         }
-        .frame(width: bodyWidth, height: bodyHeight * 1.05)
+        .frame(width: bodyWidth, height: bodyHeight * 0.95)
     }
 
     private var windowGradient: LinearGradient {

@@ -17,7 +17,7 @@ struct FireTruckView: View {
     }
 
     private var wheelSpacing: CGFloat {
-        size.width * 0.12 * appearance.wheelSpacingMultiplier
+        size.width * 0.35 * appearance.wheelSpacingMultiplier
     }
 
     private var bodyWidth: CGFloat {

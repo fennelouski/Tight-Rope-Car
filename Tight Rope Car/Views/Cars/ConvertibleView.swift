@@ -17,7 +17,7 @@ struct ConvertibleView: View {
     }
 
     private var wheelSpacing: CGFloat {
-        size.width * 0.12 * appearance.wheelSpacingMultiplier
+        size.width * 0.35 * appearance.wheelSpacingMultiplier
     }
 
     private var bodyWidth: CGFloat {
@@ -25,7 +25,7 @@ struct ConvertibleView: View {
     }
 
     private var bodyHeight: CGFloat {
-        size.height * 0.52
+        size.height * 0.95
     }
 
     var body: some View {
@@ -279,7 +279,7 @@ struct ConvertibleView: View {
             ConvertibleWheelArchShape()
                 .stroke(appearance.accentColor.opacity(0.32), lineWidth: 0.4)
         }
-        .frame(width: bodyWidth, height: bodyHeight * 0.58)
+        .frame(width: bodyWidth, height: bodyHeight * 0.98)
     }
 
     private var windowGradient: LinearGradient {

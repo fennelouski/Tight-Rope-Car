@@ -17,7 +17,7 @@ struct SchoolBusView: View {
     }
 
     private var wheelSpacing: CGFloat {
-        size.width * 0.12 * appearance.wheelSpacingMultiplier
+        size.width * 0.35 * appearance.wheelSpacingMultiplier
     }
 
     private var bodyWidth: CGFloat {
@@ -39,7 +39,7 @@ struct SchoolBusView: View {
             }
 
             schoolBusBodyStack
-                .offset(y: -wheelDiameter * 0.42)
+                .offset(x: bodyWidth * 0.12, y: -wheelDiameter * 0.42)
         }
         .frame(width: size.width, height: size.height)
     }
