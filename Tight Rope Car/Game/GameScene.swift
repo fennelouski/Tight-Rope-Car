@@ -53,6 +53,7 @@ final class GameScene: SKScene {
     private var ropeContainerNode: SKNode!
     private var carNode: CarSpriteNode!
     private var ticketNodes: [SKNode] = []
+    private var obstacleNodes: [SKShapeNode] = []
 
     // Perspective layout constants (in camera/screen space, SpriteKit Y-up)
     private var horizonY: CGFloat { size.height * 0.10 }
@@ -167,6 +168,7 @@ final class GameScene: SKScene {
         cameraNode.addChild(carNode)
 
         buildTicketNodes()
+        buildObstacleNodes()
     }
 
     private func rebuildBackground() {
@@ -187,6 +189,52 @@ final class GameScene: SKScene {
             node.isHidden = true  // Shown when projected into view ahead.
             cameraNode.addChild(node)
             ticketNodes.append(node)
+        }
+    }
+
+    private func buildObstacleNodes() {
+        obstacleNodes.forEach { $0.removeFromParent() }
+        obstacleNodes = []
+        for _ in course.obstacles {
+            let node = makeObstacleShape()
+            node.zPosition = 16
+            node.isHidden = true
+            cameraNode.addChild(node)
+            obstacleNodes.append(node)
+        }
+    }
+
+    private func makeObstacleShape() -> SKShapeNode {
+        let path = CGMutablePath()
+        path.move(to: CGPoint(x: 0, y: 7))
+        path.addLine(to: CGPoint(x: -6, y: -7))
+        path.addLine(to: CGPoint(x: 6, y: -7))
+        path.closeSubpath()
+        let node = SKShapeNode(path: path)
+        node.fillColor = UIColor(red: 1.0, green: 0.45, blue: 0.0, alpha: 1.0)
+        node.strokeColor = UIColor.white.withAlphaComponent(0.6)
+        node.lineWidth = 1.0
+        return node
+    }
+
+    private func updateObstaclePositions(horizonY: CGFloat, bottomY: CGFloat, ropeHalfWidth: Double) {
+        for (i, obstacle) in course.obstacles.enumerated() {
+            if let result = PerspectiveRopeRenderer.obstacleScreenPosition(
+                sampler: sampler,
+                progressS: progressS,
+                obstacleFraction: obstacle.fraction,
+                obstacleLateralOffset: obstacle.lateralOffset,
+                ropeHalfWidth: ropeHalfWidth,
+                sceneSize: size,
+                horizonY: horizonY,
+                bottomY: bottomY
+            ) {
+                obstacleNodes[i].position = result.position
+                obstacleNodes[i].setScale(max(0.2, result.scale * 2.5))
+                obstacleNodes[i].isHidden = false
+            } else {
+                obstacleNodes[i].isHidden = true
+            }
         }
     }
 
@@ -236,6 +284,7 @@ final class GameScene: SKScene {
         backgroundNode?.setForwardProgress(progressS)
         rebuildRopePath(sample: sample, horizonY: hz, bottomY: bcy, ropeHalfWidth: ropeHalfWidth)
         updateTicketPositions(horizonY: hz, bottomY: bcy, ropeHalfWidth: ropeHalfWidth)
+        updateObstaclePositions(horizonY: hz, bottomY: bcy, ropeHalfWidth: ropeHalfWidth)
         let norm = BalanceStabilityEvaluator.normalizedLateralOffset(lateralOffset, ropeHalfWidth: ropeHalfWidth)
         onBalanceUpdate(norm)
     }
@@ -312,6 +361,28 @@ final class GameScene: SKScene {
             )
             playFallAnimation(lateral: lateralOffset) { [weak self] in
                 self?.onOutcome(.failure(stats))
+            }
+            return
+        }
+
+        // Obstacle collision
+        for (i, obstacle) in course.obstacles.enumerated() {
+            let obstacleS = obstacle.fraction * sampler.totalLength
+            let arcDist = abs(obstacleS - progressS)
+            guard arcDist <= GameBalanceConstants.obstacleCollisionArcLength else { continue }
+            let lateralDiff = abs(lateralOffset - obstacle.lateralOffset)
+            guard lateralDiff < GameBalanceConstants.obstacleCollisionLateralRadius else { continue }
+            isGameOver = true
+            obstacleNodes[i].isHidden = true
+            playSFX(.fall)
+            playFallHaptic(.offRope)
+            let obstacleStats = GameRunStats(
+                elapsedSeconds: elapsedSeconds,
+                distanceMeters: sample.progress * sampler.totalLength,
+                ticketsCollected: collectedTicketIndices.count
+            )
+            playFallAnimation(lateral: lateralOffset) { [weak self] in
+                self?.onOutcome(.failure(obstacleStats))
             }
             return
         }

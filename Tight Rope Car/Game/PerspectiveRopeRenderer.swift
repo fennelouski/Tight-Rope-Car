@@ -177,6 +177,49 @@ enum PerspectiveRopeRenderer {
         )
     }
 
+    // MARK: - Obstacle position
+
+    /// Projects an obstacle at `obstacleFraction` of total arc-length with its own lateral offset into screen space.
+    /// Returns position and perspective scale (use scale to size the obstacle node).
+    /// Returns `nil` if the obstacle is behind the car or beyond look-ahead.
+    static func obstacleScreenPosition(
+        sampler: CourseSampler,
+        progressS: Double,
+        obstacleFraction: Double,
+        obstacleLateralOffset: Double,
+        ropeHalfWidth: Double,
+        sceneSize: CGSize,
+        horizonY: CGFloat,
+        bottomY: CGFloat
+    ) -> (position: CGPoint, scale: CGFloat)? {
+        let obstacleS = obstacleFraction * sampler.totalLength
+        let d = obstacleS - progressS
+        guard d > 0 else { return nil }
+        let maxLookAhead = min(sampler.totalLength - progressS, Double(sceneSize.height) * 2.0)
+        guard d <= maxLookAhead else { return nil }
+
+        let ropeScreenHalfW = sceneSize.width / 2 * ropeScreenWidthFraction
+        let posScale = ropeScreenHalfW / CGFloat(ropeHalfWidth)
+        let currentSample = sampler.sample(at: progressS)
+        let futureSample = sampler.sample(at: obstacleS)
+
+        let dx = futureSample.position.x - currentSample.position.x
+        let dy = futureSample.position.y - currentSample.position.y
+        let ropeLateralDev = dx * currentSample.normal.dx + dy * currentSample.normal.dy
+
+        let t = CGFloat(d / maxLookAhead)
+        let ps = 1.0 / (1.0 + t * perspectiveStrength)
+        let totalLateralDev = ropeLateralDev + obstacleLateralOffset
+
+        return (
+            position: CGPoint(
+                x: CGFloat(totalLateralDev) * ps * posScale,
+                y: horizonY + (bottomY - horizonY) * ps
+            ),
+            scale: ps
+        )
+    }
+
     // MARK: - Helpers
 
     private static func filledPolygon(

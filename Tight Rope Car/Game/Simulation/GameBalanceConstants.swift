@@ -66,6 +66,12 @@ enum GameBalanceConstants {
     /// Minimum seconds between early-warning haptic pulses.
     static let nearFallEarlyWarningCooldownSeconds: TimeInterval = 1.2
 
+    /// Arc-length window (world units) around an obstacle within which collision is checked.
+    static let obstacleCollisionArcLength: Double = 28
+
+    /// Lateral distance (world units) from an obstacle center that counts as a hit.
+    static let obstacleCollisionLateralRadius: Double = 14
+
     // MARK: - Simulation loop
 
     /// Maximum `update` delta (seconds) to avoid spiral-of-death after a hitch.

@@ -432,7 +432,13 @@ enum CourseCatalog {
             ),
         ],
         ropeWidth: 60,
-        forwardSpeed: 108
+        forwardSpeed: 108,
+        obstacles: [
+            CourseObstacle(fraction: 0.15, lateralOffset:  16),
+            CourseObstacle(fraction: 0.35, lateralOffset: -16),
+            CourseObstacle(fraction: 0.55, lateralOffset:  14),
+            CourseObstacle(fraction: 0.75, lateralOffset: -18),
+        ]
     )
 
     static let narrowWire = makeCourse(
@@ -7175,7 +7181,8 @@ enum CourseCatalog {
         forwardSpeed: Double = 120,
         maxPitchRadians: Double = .pi / 4,
         backgroundTheme: BackgroundTheme? = nil,
-        windProfile: WindProfile? = nil
+        windProfile: WindProfile? = nil,
+        obstacles: [CourseObstacle] = []
     ) -> Course {
         let ticketCount: Int
         switch unlockOrder {
@@ -7221,7 +7228,8 @@ enum CourseCatalog {
             unlockOrder: unlockOrder,
             ticketCount: ticketCount,
             backgroundTheme: resolvedTheme,
-            windProfile: resolvedWind
+            windProfile: resolvedWind,
+            obstacles: obstacles
         )
     }
 }

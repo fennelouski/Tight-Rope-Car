@@ -20,6 +20,7 @@ struct Course: Identifiable, Codable, Sendable, Equatable {
     let backgroundTheme: BackgroundTheme
     /// Lateral wind preset (`WindProfile.rawValue`); `.calm` on most courses.
     let windProfile: WindProfile
+    let obstacles: [CourseObstacle]
 
     init(
         id: String,
@@ -32,7 +33,8 @@ struct Course: Identifiable, Codable, Sendable, Equatable {
         unlockOrder: Int = 0,
         ticketCount: Int = 3,
         backgroundTheme: BackgroundTheme = .ocean,
-        windProfile: WindProfile = .calm
+        windProfile: WindProfile = .calm,
+        obstacles: [CourseObstacle] = []
     ) {
         self.id = id
         self.displayName = displayName
@@ -45,6 +47,7 @@ struct Course: Identifiable, Codable, Sendable, Equatable {
         self.ticketCount = ticketCount
         self.backgroundTheme = backgroundTheme
         self.windProfile = windProfile
+        self.obstacles = obstacles
     }
 
     /// Arc-length fractions [0,1] where tickets appear, evenly spaced so they're always on-path.
