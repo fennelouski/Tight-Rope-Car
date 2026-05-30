@@ -72,6 +72,14 @@ enum GameBalanceConstants {
     /// Lateral distance (world units) from an obstacle center that counts as a hit.
     static let obstacleCollisionLateralRadius: Double = 14
 
+    // MARK: - Fall trigger
+
+    /// Device tilt magnitude (radians) that must be sustained to trigger a fall. 45° = π/4.
+    static let fallTiltThresholdRadians: Double = .pi / 4
+
+    /// Seconds of continuous tilt at or above `fallTiltThresholdRadians` required to lose.
+    static let fallTiltDurationSeconds: TimeInterval = 0.85
+
     // MARK: - Simulation loop
 
     /// Maximum `update` delta (seconds) to avoid spiral-of-death after a hitch.

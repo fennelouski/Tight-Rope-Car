@@ -32,6 +32,7 @@ final class GameScene: SKScene {
     private var isGameOver = false
     private var lastUpdateTime: TimeInterval?
     private var lastNearFallCreakTime: TimeInterval = 0
+    private var continuousFallTiltDuration: Double = 0
 
     private let tiltProvider: TiltRollProviding
     private var tiltProcessor: TiltInputProcessor
@@ -140,7 +141,7 @@ final class GameScene: SKScene {
         #if targetEnvironment(simulator)
         simulatorForceFall(sample: sample)
         #endif
-        evaluateOutcome(sample: sample)
+        evaluateOutcome(sample: sample, dt: dt)
     }
 
     // MARK: - Build
@@ -343,17 +344,25 @@ final class GameScene: SKScene {
 
     // MARK: - Outcome
 
-    private func evaluateOutcome(sample: RopeSample) {
+    private func evaluateOutcome(sample: RopeSample, dt: Double) {
         let ropeHalfWidth = GameBalanceConstants.ropeHalfWidth(at: sample.ropeWidth)
-        if let fallReason = BalanceStabilityEvaluator.fallReason(
-            lateralOffset: lateralOffset,
-            pitchRadians: tiltRadians,
-            ropeHalfWidth: ropeHalfWidth,
-            maxPitchRadians: course.maxPitchRadians
-        ) {
+
+        // Clamp lateral position to the rope boundary so the car doesn't drift off-screen.
+        if abs(lateralOffset) > ropeHalfWidth {
+            lateralOffset = lateralOffset > 0 ? ropeHalfWidth : -ropeHalfWidth
+            lateralVelocity = 0
+        }
+
+        // Fall only when device tilt >= 45° is held continuously for 850 ms.
+        if abs(tiltRadians) >= GameBalanceConstants.fallTiltThresholdRadians {
+            continuousFallTiltDuration += dt
+        } else {
+            continuousFallTiltDuration = 0
+        }
+        if continuousFallTiltDuration >= GameBalanceConstants.fallTiltDurationSeconds {
             isGameOver = true
             playSFX(.fall)
-            playFallHaptic(fallReason)
+            playFallHaptic(.offRope)
             let stats = GameRunStats(
                 elapsedSeconds: elapsedSeconds,
                 distanceMeters: sample.progress * sampler.totalLength,
