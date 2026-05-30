@@ -23,6 +23,8 @@ private final class MockGameHaptics: GameHapticProviding {
     func playNearFall() {
         nearFallCount += 1
     }
+    func playEarlyWarning() {}
+    func resetEarlyWarningCooldown() {}
 }
 
 @MainActor

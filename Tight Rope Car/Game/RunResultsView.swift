@@ -41,7 +41,7 @@ enum RunResultsAchievementBanners {
 
         if recordKinds.count >= 2 {
             items.append(Item(
-                text: "New personal bests!",
+                text: "New personal bests! \(Int.random(in: 1...90000))",
                 style: .record,
                 accessibilityLabel: combinedRecordAccessibilityLabel(kinds: recordKinds)
             ))
@@ -107,6 +107,7 @@ struct RunResultsView: View {
     var onMap: () -> Void
     var onPlayAgain: () -> Void
     var onRetry: () -> Void
+    var onPlayNextCourse: (() -> Void)? = nil
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var contentAppeared = false
@@ -126,26 +127,29 @@ struct RunResultsView: View {
         ZStack {
             RunFlowOverlayBackdrop(accentColor: accentColor)
 
-            ScrollView {
-                RunFlowOverlayCard(borderColor: accentColor) {
-                    VStack(spacing: 18) {
-                        header
-                        statsSection
-                        if !badgeItems.isEmpty {
-                            badgesSection
+            GeometryReader { proxy in
+                ScrollView {
+                    RunFlowOverlayCard(borderColor: accentColor) {
+                        VStack(spacing: 18) {
+                            header
+                            statsSection
+                            if !badgeItems.isEmpty {
+                                badgesSection
+                            }
+                            actionButtons
                         }
-                        actionButtons
                     }
+                    .padding(.horizontal, 24)
+                    .hotWheelsSafeAreaPadding(.vertical, 12)
+                    .hotWheelsSafeAreaPadding(.bottom, 8)
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: proxy.size.height, alignment: .center)
                 }
-                .padding(.horizontal, 24)
-                .frame(maxWidth: .infinity)
+                .scrollBounceBehavior(.basedOnSize)
+                .hotWheelsContentWidth()
+                .opacity(contentAppeared ? 1 : 0)
+                .scaleEffect(contentAppeared ? 1 : (reduceMotion ? 1 : 0.94))
             }
-            .scrollBounceBehavior(.basedOnSize)
-            .safeAreaPadding(.vertical, 12)
-            .safeAreaPadding(.bottom, 8)
-            .hotWheelsContentWidth()
-            .opacity(contentAppeared ? 1 : 0)
-            .scaleEffect(contentAppeared ? 1 : (reduceMotion ? 1 : 0.94))
         }
         .onAppear(perform: runEntranceAnimation)
     }
@@ -201,29 +205,73 @@ struct RunResultsView: View {
     }
 
     private var ticketMetricTile: some View {
-        HotWheelsMetricTile(
-            systemImage: "ticket.fill",
-            label: "Tickets",
-            value: "+\(recordResult.ticketsCollected)",
-            accent: profileColor,
-            detail: "Total: \(recordResult.newTotalTickets)",
-            isFeatured: recordResult.ticketsCollected > 0
+        let collected = recordResult.ticketsCollected
+        let isFeatured = collected > 0
+        return HStack(spacing: 12) {
+            TicketPickupView(
+                state: .available,
+                accentColor: profileColor,
+                displaySize: .standard,
+                allowsMotionEffects: true
+            )
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("TICKETS")
+                    .font(.system(size: 9, weight: .heavy, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.65))
+                    .tracking(0.4)
+                    .lineLimit(1)
+
+                Text("+\(collected)")
+                    .font(isFeatured ? HotWheelsTheme.headlineFont : HotWheelsTheme.bodyFont)
+                    .foregroundStyle(isFeatured ? profileColor : .white)
+                    .lineLimit(1)
+
+                Text("Total: \(recordResult.newTotalTickets)")
+                    .font(HotWheelsTheme.captionFont)
+                    .foregroundStyle(.white.opacity(0.65))
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 0)
+
+            if collected > 0 {
+                HStack(spacing: 3) {
+                    ForEach(0..<min(collected, 5), id: \.self) { _ in
+                        TicketPickupView(
+                            state: .collected,
+                            accentColor: profileColor,
+                            displaySize: .compact,
+                            allowsMotionEffects: false
+                        )
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(HotWheelsTheme.trackBlack.opacity(isFeatured ? 0.5 : 0.35))
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(
+                    isFeatured ? profileColor.opacity(0.85) : Color.white.opacity(0.12),
+                    lineWidth: isFeatured ? 2 : 1
+                )
+        )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Tickets: +\(collected). Total: \(recordResult.newTotalTickets)")
     }
 
     private var badgesSection: some View {
         VStack(spacing: 8) {
-            ForEach(Array(badgeItems.enumerated()), id: \.offset) { index, item in
+            ForEach(Array(badgeItems.enumerated()), id: \.offset) { _, item in
                 HotWheelsAchievementBanner(
                     text: item.text,
                     style: item.style,
                     accessibilityLabel: item.accessibilityLabel
-                )
-                .opacity(contentAppeared ? 1 : 0)
-                .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 8))
-                .animation(
-                    reduceMotion ? nil : .easeOut(duration: 0.35).delay(0.12 + Double(index) * 0.06),
-                    value: contentAppeared
                 )
             }
         }
@@ -231,10 +279,13 @@ struct RunResultsView: View {
 
     private var actionItems: [(icon: String, title: String, subtitle: String?, style: HotWheelsOverlayActionButton.Style, action: () -> Void)] {
         if outcome.isSuccess {
-            return [
-                ("arrow.clockwise", "Play Again", "Run this course again", .primary, onPlayAgain),
-                ("map.fill", "Course Map", "Back to the track map", .secondary, onMap),
-            ]
+            var items: [(icon: String, title: String, subtitle: String?, style: HotWheelsOverlayActionButton.Style, action: () -> Void)] = []
+            if let onPlayNextCourse {
+                items.append(("chevron.right.2", "Next Course", "Play the next track", .primary, onPlayNextCourse))
+            }
+            items.append(("arrow.clockwise", "Play Again", "Run this course again", onPlayNextCourse != nil ? .secondary : .primary, onPlayAgain))
+            items.append(("map.fill", "Course Map", "Back to the track map", .secondary, onMap))
+            return items
         }
         return [
             ("arrow.clockwise", "Retry", "Give it another shot", .primary, onRetry),
@@ -244,19 +295,13 @@ struct RunResultsView: View {
 
     private var actionButtons: some View {
         VStack(spacing: 10) {
-            ForEach(Array(actionItems.enumerated()), id: \.offset) { index, item in
+            ForEach(Array(actionItems.enumerated()), id: \.offset) { _, item in
                 HotWheelsOverlayActionButton(
                     systemImage: item.icon,
                     title: item.title,
                     subtitle: item.subtitle,
                     style: item.style,
                     action: item.action
-                )
-                .opacity(contentAppeared ? 1 : 0)
-                .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 10))
-                .animation(
-                    reduceMotion ? nil : .easeOut(duration: 0.32).delay(0.08 + Double(index) * 0.05),
-                    value: contentAppeared
                 )
             }
         }

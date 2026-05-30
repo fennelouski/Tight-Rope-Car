@@ -26,38 +26,33 @@ struct BackgroundThemeGalleryView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                HotWheelsTheme.backgroundGradient
-                    .ignoresSafeArea()
+            ScrollView {
+                VStack(spacing: 16) {
+                    summaryHeader
+                        .opacity(contentAppeared ? 1 : 0)
+                        .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 8))
 
-                ScrollView {
-                    VStack(spacing: 16) {
-                        summaryHeader
-                            .opacity(contentAppeared ? 1 : 0)
-                            .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 8))
-
-                        HotWheelsContentPanel(
-                            title: "Theme Library",
-                            trailingCaption: "\(themes.count) worlds",
-                            accessibilityLabel: "Theme library",
-                            accessibilityHint: "Tap a theme to open full-screen preview"
-                        ) {
-                            LazyVStack(spacing: 12) {
-                                ForEach(Array(themes.enumerated()), id: \.element.theme) { index, entry in
-                                    themeRowButton(entry)
-                                        .opacity(contentAppeared ? 1 : 0)
-                                        .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 10))
-                                        .animation(
-                                            reduceMotion ? nil : .easeOut(duration: 0.35).delay(Double(index) * 0.03),
-                                            value: contentAppeared
-                                        )
-                                }
+                    HotWheelsContentPanel(
+                        title: "Theme Library",
+                        trailingCaption: "\(themes.count) worlds",
+                        accessibilityLabel: "Theme library",
+                        accessibilityHint: "Tap a theme to open full-screen preview"
+                    ) {
+                        LazyVStack(spacing: 12) {
+                            ForEach(Array(themes.enumerated()), id: \.element.theme) { index, entry in
+                                themeRowButton(entry)
+                                    .opacity(contentAppeared ? 1 : 0)
+                                    .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 10))
+                                    .animation(
+                                        reduceMotion ? nil : .easeOut(duration: 0.35).delay(Double(index) * 0.03),
+                                        value: contentAppeared
+                                    )
                             }
                         }
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
                 }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
             }
             .navigationTitle("Backgrounds")
             .navigationBarTitleDisplayMode(.inline)
@@ -78,6 +73,8 @@ struct BackgroundThemeGalleryView: View {
                 }
             }
         }
+        .hotWheelsSheetBackground()
+        .hotWheelsSafeAreaPolicy()
         .onAppear {
             if reduceMotion {
                 contentAppeared = true
@@ -244,15 +241,16 @@ private struct BackgroundThemePreviewScreen: View {
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 12)
 
                 Spacer(minLength: 0)
 
                 previewCaption
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 28)
             }
+            .hotWheelsSafeAreaPadding(.top, 12)
+            .hotWheelsSafeAreaPadding(.bottom, 28)
         }
+        .hotWheelsSafeAreaPolicy()
         .onDisappear {
             ambiencePlayer.stop()
         }

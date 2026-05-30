@@ -4,6 +4,9 @@
 //
 
 import SwiftUI
+#if canImport(CoreMotion)
+import CoreMotion
+#endif
 
 /// Preview-only silhouette gallery; production garage uses ``CarSelectionView`` + ``CarCatalog``.
 struct CarDesignPickerView: View {
@@ -13,28 +16,28 @@ struct CarDesignPickerView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var contentAppeared = false
+    @State private var previewLateralOffset: CGFloat = 0
+
+    #if canImport(CoreMotion)
+    private let motionManager = CMMotionManager()
+    #endif
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                HotWheelsTheme.backgroundGradient
-                    .ignoresSafeArea()
+            ScrollView {
+                VStack(spacing: 16) {
+                    summaryHeader
+                        .opacity(contentAppeared ? 1 : 0)
+                        .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 8))
 
-                ScrollView {
-                    VStack(spacing: 16) {
-                        summaryHeader
-                            .opacity(contentAppeared ? 1 : 0)
-                            .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 8))
+                    heroPreview
+                        .opacity(contentAppeared ? 1 : 0)
+                        .scaleEffect(contentAppeared ? 1 : (reduceMotion ? 1 : 0.96))
 
-                        heroPreview
-                            .opacity(contentAppeared ? 1 : 0)
-                            .scaleEffect(contentAppeared ? 1 : (reduceMotion ? 1 : 0.96))
-
-                        designGrid
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
+                    designGrid
                 }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
             }
             .navigationTitle("Car Designs")
             .navigationBarTitleDisplayMode(.inline)
@@ -50,35 +53,39 @@ struct CarDesignPickerView: View {
                 }
             }
         }
+        .hotWheelsSheetBackground()
+        .hotWheelsSafeAreaPolicy()
         .onAppear(perform: runEntranceAnimation)
+        .onDisappear(perform: stopMotion)
     }
 
     private var summaryHeader: some View {
-        HotWheelsScreenHeader(
-            eyebrow: "Dev Gallery",
-            eyebrowSystemImage: "car.side.fill",
-            title: "Car Designs",
-            subtitle: "\(CarDesign.allDesigns.count) body silhouettes for art review — not the gameplay garage"
-        )
+        VStack(alignment: .leading, spacing: 4) {
+            Label("Dev Gallery", systemImage: "car.side.fill")
+                .font(HotWheelsTheme.captionFont.weight(.bold))
+                .foregroundStyle(HotWheelsTheme.racingYellow)
+            Text("\(CarDesign.allDesigns.count) body silhouettes for art review — not the gameplay garage")
+                .font(HotWheelsTheme.captionFont)
+                .foregroundStyle(.white.opacity(0.9))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var heroPreview: some View {
         VStack(spacing: 14) {
-            CarView(
-                car: selectedDesign.makeCar(),
-                size: CGSize(width: 140, height: 64)
+            RearViewCarView(
+                appearance: selectedDesign.makeCar().appearance,
+                size: CGSize(width: 160, height: 120)
             )
-            .frame(height: 72)
+            .offset(x: previewLateralOffset)
+            .frame(height: 120)
             .animation(.easeInOut(duration: 0.2), value: selectedDesign)
 
-            HotWheelsSelectionCard(
-                overline: "Selected silhouette",
-                title: selectedDesign.displayName,
-                detail: "Tap a design below to preview",
-                systemImage: "checkmark.seal.fill",
-                accentColor: selectedDesign.appearance.bodyColor,
-                accessibilityLabel: "Selected design \(selectedDesign.displayName)"
-            )
+            Text(selectedDesign.displayName)
+                .font(HotWheelsTheme.sectionTitleFont)
+                .foregroundStyle(.white)
+                .shadow(color: .black.opacity(0.4), radius: 0, x: 1, y: 2)
+                .animation(.easeInOut(duration: 0.15), value: selectedDesign)
         }
     }
 
@@ -90,7 +97,7 @@ struct CarDesignPickerView: View {
             accessibilityHint: "Double tap a design to select it for preview"
         ) {
             LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 5),
+                columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3),
                 spacing: 12
             ) {
                 ForEach(Array(CarDesign.allDesigns.enumerated()), id: \.element.id) { index, design in
@@ -123,11 +130,11 @@ struct CarDesignPickerView: View {
                 reduceMotion: reduceMotion
             ) {
                 VStack(spacing: 8) {
-                    CarView(
-                        car: design.makeCar(),
-                        size: CGSize(width: 64, height: 32)
+                    RearViewCarView(
+                        appearance: design.makeCar().appearance,
+                        size: CGSize(width: 80, height: 80)
                     )
-                    .frame(height: 36)
+                    .frame(height: 80)
 
                     Text(design.displayName)
                         .font(.system(size: 10, weight: .bold, design: .rounded))
@@ -149,11 +156,31 @@ struct CarDesignPickerView: View {
     private func runEntranceAnimation() {
         if reduceMotion {
             contentAppeared = true
-            return
+        } else {
+            withAnimation(.easeOut(duration: 0.4)) {
+                contentAppeared = true
+            }
         }
-        withAnimation(.easeOut(duration: 0.4)) {
-            contentAppeared = true
+        startMotion()
+    }
+
+    private func startMotion() {
+        #if canImport(CoreMotion)
+        guard motionManager.isDeviceMotionAvailable else { return }
+        motionManager.deviceMotionUpdateInterval = 1.0 / 30.0
+        motionManager.startDeviceMotionUpdates(to: .main) { [self] motion, _ in
+            guard let motion else { return }
+            withAnimation(.interactiveSpring(response: 0.25, dampingFraction: 0.7)) {
+                previewLateralOffset = CGFloat(motion.attitude.roll) * 50
+            }
         }
+        #endif
+    }
+
+    private func stopMotion() {
+        #if canImport(CoreMotion)
+        motionManager.stopDeviceMotionUpdates()
+        #endif
     }
 }
 

@@ -11,6 +11,13 @@ enum CourseProgressStore {
         Set(profile?.completedCourseIDs ?? [])
     }
 
+    /// Last completed course on the map in catalog order; nil if none beaten.
+    static func furthestCompletedMapCourseID(for profile: PlayerProfile?) -> String? {
+        guard let profile else { return nil }
+        let completed = completedSet(for: profile)
+        return CourseMapCatalog.nodes.map(\.courseID).last { completed.contains($0) }
+    }
+
     /// Marks a course beaten for the profile. Idempotent; does not remove other completions.
     /// - Parameter seedScores: When true, writes deterministic sample highs (map long-press dev tool only).
     static func markCompleted(

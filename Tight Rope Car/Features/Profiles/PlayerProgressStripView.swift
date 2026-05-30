@@ -40,11 +40,8 @@ struct PlayerProgressStripView: View {
 
     var body: some View {
         HStack(spacing: style == .banner ? 12 : 8) {
-            HotWheelsStatPill(
-                systemImage: "ticket.fill",
+            TicketStatPill(
                 value: "\(profile.totalTickets)",
-                title: "Tickets",
-                accent: HotWheelsTheme.flameOrange,
                 isEmphasized: profile.totalTickets > 0,
                 size: pillSize
             )
@@ -69,6 +66,61 @@ struct PlayerProgressStripView: View {
         return "\(profile.displayName): \(profile.totalTickets) \(ticketWord) collected, \(completedCount) of \(totalCourses) \(courseWord) beaten"
     }
 }
+
+// MARK: - Animated ticket stat pill
+
+private struct TicketStatPill: View {
+    let value: String
+    let isEmphasized: Bool
+    var size: HotWheelsStatPill.Size = .banner
+
+    var body: some View {
+        HStack(spacing: size == .banner ? 10 : 6) {
+            TicketPickupView(
+                displaySize: .compact,
+                animatesAtAllSizes: true
+            )
+            .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(value)
+                    .font(size == .banner ? HotWheelsTheme.headlineFont : HotWheelsTheme.captionFont.weight(.bold))
+                    .foregroundStyle(.white)
+                    .hotWheelsShowsFullText()
+
+                if size == .banner {
+                    Text("TICKETS")
+                        .font(.system(size: 10, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.75))
+                        .tracking(0.6)
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, size == .banner ? 14 : 10)
+        .padding(.vertical, size == .banner ? 12 : 8)
+        .background(
+            RoundedRectangle(cornerRadius: size == .banner ? 14 : 10, style: .continuous)
+                .fill(HotWheelsTheme.trackBlack.opacity(isEmphasized ? 0.65 : 0.45))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: size == .banner ? 14 : 10, style: .continuous)
+                .strokeBorder(
+                    isEmphasized ? HotWheelsTheme.flameOrange : HotWheelsTheme.hotRed.opacity(0.45),
+                    lineWidth: isEmphasized ? 2.5 : 1.5
+                )
+        )
+        .shadow(
+            color: isEmphasized ? HotWheelsTheme.flameOrange.opacity(0.35) : .clear,
+            radius: isEmphasized ? 6 : 0
+        )
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Tickets: \(value)")
+    }
+}
+
 
 #Preview("Banner") {
     ZStack {

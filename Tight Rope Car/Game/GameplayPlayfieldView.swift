@@ -5,8 +5,8 @@
 
 import SwiftUI
 
-/// Preview / parity reference only — not used in production (`GameplayView` uses `GameSceneView`).
-/// SwiftUI parallax + rope/car mock for canvas previews; behavior reference for `RopePathBuilder`.
+/// Preview / parity reference — not used in production (`GameplayView` uses `GameSceneView`).
+/// Shows a pseudo-3D perspective road mock matching the behind-the-car gameplay view.
 struct GameplayPlayfieldView: View {
     let course: Course?
     var profileColor: Color = HotWheelsTheme.racingYellow
@@ -23,13 +23,13 @@ struct GameplayPlayfieldView: View {
         ZStack {
             ParallaxBackgroundPreviewView(
                 theme: theme,
-                isScrollingEnabled: !reduceMotion
+                isScrollingEnabled: false  // Static in perspective preview
             )
 
             playfieldVignette
 
             GeometryReader { geometry in
-                GameplayRopeSceneOverlay(
+                PerspectiveRoadPreview(
                     course: course,
                     profileColor: profileColor,
                     carBobOffset: carBobOffset,
@@ -47,18 +47,12 @@ struct GameplayPlayfieldView: View {
     private var playfieldVignette: some View {
         ZStack {
             LinearGradient(
-                colors: [
-                    Color.black.opacity(0.45),
-                    Color.clear,
-                ],
+                colors: [Color.black.opacity(0.45), Color.clear],
                 startPoint: .top,
                 endPoint: UnitPoint(x: 0.5, y: 0.22)
             )
             LinearGradient(
-                colors: [
-                    Color.clear,
-                    Color.black.opacity(0.35),
-                ],
+                colors: [Color.clear, Color.black.opacity(0.35)],
                 startPoint: UnitPoint(x: 0.5, y: 0.78),
                 endPoint: .bottom
             )
@@ -75,34 +69,10 @@ struct GameplayPlayfieldView: View {
     }
 }
 
-// MARK: - Rope path + mock gameplay elements
+// MARK: - Perspective road preview
 
-private enum GameplayRopeLayout {
-    static func point(at fraction: CGFloat, in size: CGSize) -> CGPoint {
-        let baseline = size.height * 0.58
-        let amplitude = size.height * 0.065
-        let x = size.width * (0.06 + fraction * 0.88)
-        let wave = sin(fraction * .pi * 2.15) * amplitude
-        return CGPoint(x: x, y: baseline + wave)
-    }
-
-    static func ropePath(in size: CGSize) -> Path {
-        var path = Path()
-        let steps = 48
-        for step in 0 ... steps {
-            let fraction = CGFloat(step) / CGFloat(steps)
-            let point = point(at: fraction, in: size)
-            if step == 0 {
-                path.move(to: point)
-            } else {
-                path.addLine(to: point)
-            }
-        }
-        return path
-    }
-}
-
-private struct GameplayRopeSceneOverlay: View {
+/// Draws a pseudo-3D perspective road converging to a vanishing point, with a rear-view car mock.
+private struct PerspectiveRoadPreview: View {
     let course: Course?
     var profileColor: Color
     var carBobOffset: CGFloat
@@ -113,8 +83,7 @@ private struct GameplayRopeSceneOverlay: View {
     }
 
     private var ropeHighlight: Color {
-        course?.styleSpans.first?.ropeHighlight?.swiftUIColor
-            ?? Color.white.opacity(0.35)
+        course?.styleSpans.first?.ropeHighlight?.swiftUIColor ?? Color.white.opacity(0.35)
     }
 
     private var ticketFractions: [Double] {
@@ -124,76 +93,101 @@ private struct GameplayRopeSceneOverlay: View {
     var body: some View {
         ZStack {
             Canvas { context, size in
-                let ropeWidth = CGFloat(course?.ropeWidth ?? 48) * 0.55
-                let ropePath = GameplayRopeLayout.ropePath(in: size)
+                let vanishX = size.width * 0.50
+                let vanishY = size.height * 0.42
+                let bottomY = size.height * 0.88
+                let bottomHalfW = size.width * 0.13
 
+                // Underlay shadow
+                var roadPath = Path()
+                roadPath.move(to: CGPoint(x: vanishX, y: vanishY))
+                roadPath.addLine(to: CGPoint(x: vanishX + bottomHalfW, y: bottomY))
+                roadPath.addLine(to: CGPoint(x: vanishX - bottomHalfW, y: bottomY))
+                roadPath.closeSubpath()
+                context.fill(roadPath, with: .color(ropeStroke.opacity(0.55)))
+
+                // Main rope/road fill
+                var innerPath = Path()
+                innerPath.move(to: CGPoint(x: vanishX, y: vanishY))
+                innerPath.addLine(to: CGPoint(x: vanishX + bottomHalfW * 0.85, y: bottomY))
+                innerPath.addLine(to: CGPoint(x: vanishX - bottomHalfW * 0.85, y: bottomY))
+                innerPath.closeSubpath()
+                context.fill(innerPath, with: .color(ropeStroke))
+
+                // Highlight stripe
+                var highlightPath = Path()
+                highlightPath.move(to: CGPoint(x: vanishX, y: vanishY))
+                highlightPath.addLine(to: CGPoint(x: vanishX, y: bottomY))
                 context.stroke(
-                    ropePath,
-                    with: .color(ropeStroke.opacity(0.55)),
-                    style: StrokeStyle(lineWidth: ropeWidth + 6, lineCap: .round, lineJoin: .round)
-                )
-                context.stroke(
-                    ropePath,
-                    with: .color(ropeStroke),
-                    style: StrokeStyle(lineWidth: ropeWidth, lineCap: .round, lineJoin: .round)
-                )
-                context.stroke(
-                    ropePath,
+                    highlightPath,
                     with: .color(ropeHighlight),
-                    style: StrokeStyle(lineWidth: max(3, ropeWidth * 0.18), lineCap: .round, lineJoin: .round)
+                    style: StrokeStyle(lineWidth: 2, lineCap: .round)
                 )
 
-                let carCenter = GameplayRopeLayout.point(at: 0.34, in: size)
-                drawCarMock(in: &context, center: carCenter, bob: carBobOffset)
+                // Rear-view car mock at bottom-center
+                let carCenterX = size.width * 0.50
+                let carCenterY = bottomY - 28 + carBobOffset
+                let carW: CGFloat = 54
+                let carH: CGFloat = 36
+
+                let bodyRect = CGRect(
+                    x: carCenterX - carW / 2,
+                    y: carCenterY - carH / 2,
+                    width: carW,
+                    height: carH
+                )
+                context.fill(
+                    Path(roundedRect: bodyRect, cornerRadius: 5),
+                    with: .color(profileColor)
+                )
+                // Rear window
+                let winRect = CGRect(x: carCenterX - carW * 0.28, y: carCenterY - carH * 0.38, width: carW * 0.56, height: carH * 0.38)
+                context.fill(Path(roundedRect: winRect, cornerRadius: 3), with: .color(.black.opacity(0.75)))
+                // Tail lights
+                for lx in [bodyRect.minX + 3, bodyRect.maxX - 11] {
+                    let lr = CGRect(x: lx, y: carCenterY + carH * 0.05, width: 8, height: carH * 0.28)
+                    context.fill(Path(roundedRect: lr, cornerRadius: 2), with: .color(.red.opacity(0.85)))
+                }
+                context.stroke(
+                    Path(roundedRect: bodyRect, cornerRadius: 5),
+                    with: .color(.black.opacity(0.3)),
+                    lineWidth: 1.5
+                )
             }
 
+            // Tickets projected onto perspective road
             GeometryReader { geometry in
+                let size = geometry.size
+                let vanishX = size.width * 0.50
+                let vanishY = size.height * 0.42
+                let bottomY = size.height * 0.88
+                let perspStr: CGFloat = 8.0
+
                 ForEach(Array(ticketFractions.enumerated()), id: \.offset) { index, fraction in
+                    let t = CGFloat(fraction)
+                    let ps = 1.0 / (1.0 + t * perspStr)
+                    let sy = vanishY + (bottomY - vanishY) * ps
                     let state: TicketPickupState = index < ticketsCollected ? .collected : .available
                     TicketPickupView(
                         state: state,
-                        accentColor: profileColor,
+                        accentColor: HotWheelsTheme.racingYellow,
                         displaySize: .playfield
                     )
-                    .position(
-                        GameplayRopeLayout.point(at: CGFloat(fraction), in: geometry.size)
-                    )
+                    .position(x: vanishX, y: sy)
                 }
             }
         }
     }
-
-    private func drawCarMock(in context: inout GraphicsContext, center: CGPoint, bob: CGFloat) {
-        let y = center.y - 18 + bob
-        let body = CGRect(x: center.x - 26, y: y - 10, width: 52, height: 20)
-        context.fill(
-            Path(roundedRect: body, cornerRadius: 6),
-            with: .color(profileColor)
-        )
-        context.stroke(
-            Path(roundedRect: body, cornerRadius: 6),
-            with: .color(HotWheelsTheme.trackBlack),
-            lineWidth: 2.5
-        )
-        for wheelX in [center.x - 16, center.x + 16] {
-            let wheel = CGRect(x: wheelX - 7, y: y + 6, width: 14, height: 14)
-            context.fill(Path(ellipseIn: wheel), with: .color(HotWheelsTheme.trackBlack))
-            context.fill(
-                Path(ellipseIn: wheel.insetBy(dx: 3, dy: 3)),
-                with: .color(.white.opacity(0.85))
-            )
-        }
-    }
 }
 
-#Preview("Tutorial playfield") {
+#Preview("Tutorial playfield – perspective") {
     GameplayPlayfieldView(
         course: CourseCatalog.course(id: "tutorial"),
         profileColor: HotWheelsTheme.electricBlue
     )
 }
 
-#Preview("Jungle course playfield") {
+#Preview("Jungle playfield – perspective") {
     GameplayPlayfieldView(
         course: CourseCatalog.course(id: "jungleSwing"),
         profileColor: HotWheelsTheme.flameOrange

@@ -43,11 +43,11 @@ struct GameplayPauseOverlay: View {
                     }
                 }
                 .padding(.horizontal, 24)
+                .hotWheelsSafeAreaPadding(.vertical, 12)
+                .hotWheelsSafeAreaPadding(.bottom, 8)
                 .frame(maxWidth: .infinity)
             }
             .scrollBounceBehavior(.basedOnSize)
-            .safeAreaPadding(.vertical, 12)
-            .safeAreaPadding(.bottom, 8)
             .hotWheelsContentWidth()
             .opacity(contentAppeared ? 1 : 0)
             .scaleEffect(contentAppeared ? 1 : (reduceMotion ? 1 : 0.94))
@@ -113,19 +113,13 @@ struct GameplayPauseOverlay: View {
 
     private var actionButtons: some View {
         VStack(spacing: 10) {
-            ForEach(Array(actionItems.enumerated()), id: \.offset) { index, item in
+            ForEach(Array(actionItems.enumerated()), id: \.offset) { _, item in
                 HotWheelsOverlayActionButton(
                     systemImage: item.icon,
                     title: item.title,
                     subtitle: item.subtitle,
                     style: item.style,
                     action: item.action
-                )
-                .opacity(contentAppeared ? 1 : 0)
-                .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 10))
-                .animation(
-                    reduceMotion ? nil : .easeOut(duration: 0.32).delay(0.08 + Double(index) * 0.05),
-                    value: contentAppeared
                 )
             }
         }

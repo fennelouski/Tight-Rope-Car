@@ -54,16 +54,19 @@ struct CarSelectionView: View {
         .padding(.horizontal, horizontalPadding)
         .hotWheelsScreenContentPadding()
         .hotWheelsContentWidth()
-        .safeAreaInset(edge: .bottom, spacing: 0) {
+        .hotWheelsMenuScreenBackground()
+        .hotWheelsBottomChromeInset(spacing: 0) {
             continueButton
                 .padding(.horizontal, horizontalPadding)
                 .padding(.top, 8)
                 .padding(.bottom, 16)
                 .frame(maxWidth: .infinity)
                 .hotWheelsContentWidth()
+                .hotWheelsMenuBottomChromeBackground()
                 .opacity(footerAppeared ? 1 : 0)
                 .offset(y: footerAppeared ? 0 : (reduceMotion ? 0 : 16))
         }
+        .hotWheelsSafeAreaPolicy()
         .onAppear {
             syncSelectionFromProfile()
             runEntranceAnimation()
@@ -84,25 +87,21 @@ struct CarSelectionView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HotWheelsScreenHeader(
-                eyebrow: "Garage",
-                eyebrowSystemImage: "car.fill",
-                title: "Choose Your Car",
-                subtitle: headerSubtitle
+            HotWheelsFunnelTopBar(
+                backAccessibilityHint: "Return to profile selection",
+                onBack: onBack
             ) {
                 if let profile = activeProfile {
                     HotWheelsRacerChip(profile: profile)
                 }
             }
 
-            HotWheelsToolbarRail(centerHint: "Swipe the lot below") {
-                CourseMapToolbarButton(
-                    systemImage: "chevron.left",
-                    accessibilityLabel: "Back",
-                    accessibilityHint: "Return to profile selection",
-                    action: onBack
-                )
-            }
+            HotWheelsScreenHeader(
+                eyebrow: "Garage",
+                eyebrowSystemImage: "car.fill",
+                title: "Choose Your Car",
+                subtitle: headerSubtitle
+            )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.bottom, 12)

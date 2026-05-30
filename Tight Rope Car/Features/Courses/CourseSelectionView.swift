@@ -25,6 +25,10 @@ struct CourseSelectionView: View {
     @State private var footerAppeared = false
     @State private var showHighScores = false
     @State private var showGoHomeConfirmation = false
+    @State private var mapScrollPosition = ScrollPosition(edge: .top)
+    @State private var didAutoScrollMap = false
+
+    private static let mapVerticalPadding: CGFloat = 12
 
     private var activeProfile: PlayerProfile? {
         guard let uuid = UUID(uuidString: selectedProfileID) else { return nil }
@@ -78,9 +82,11 @@ struct CourseSelectionView: View {
                 .scaleEffect(contentAppeared ? 1 : (reduceMotion ? 1 : 0.96))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
+        .hotWheelsMenuScreenBackground()
+        .hotWheelsBottomChromeInset(spacing: 0) {
             bottomChrome
         }
+        .hotWheelsSafeAreaPolicy()
         .sheet(isPresented: $showHighScores) {
             if let profile = activeProfile {
                 HighScoresView(
@@ -118,37 +124,18 @@ struct CourseSelectionView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HotWheelsScreenHeader(
-                eyebrow: "Track Map",
-                eyebrowSystemImage: "map.fill",
-                title: "Pick Your Course",
-                subtitle: headerSubtitle
+            HotWheelsFunnelTopBar(
+                backAccessibilityHint: "Return to car selection",
+                onBack: onBack
             ) {
-                if let profile = activeProfile {
-                    HotWheelsRacerChip(profile: profile)
-                }
-            }
-
-            HotWheelsToolbarRail {
                 HStack(spacing: 8) {
-                    CourseMapToolbarButton(
-                        systemImage: "chevron.left",
-                        accessibilityLabel: "Back",
-                        accessibilityHint: "Return to car selection",
-                        action: onBack
-                    )
-
                     CourseMapToolbarButton(
                         systemImage: "house.fill",
                         accessibilityLabel: "Main menu",
                         accessibilityHint: "Return to the landing screen",
                         action: { showGoHomeConfirmation = true }
                     )
-                }
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel("Navigation")
-            } trailing: {
-                HStack(spacing: 8) {
+
                     CourseMapToolbarButton(
                         systemImage: "trophy.fill",
                         accessibilityLabel: "High scores",
@@ -162,6 +149,17 @@ struct CourseSelectionView: View {
                 }
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("Map actions")
+            }
+
+            HotWheelsScreenHeader(
+                eyebrow: "Track Map",
+                eyebrowSystemImage: "map.fill",
+                title: "Pick Your Course",
+                subtitle: headerSubtitle
+            ) {
+                if let profile = activeProfile {
+                    HotWheelsRacerChip(profile: profile)
+                }
             }
 
             Text("Share includes course unlocks, high scores, and a JSON backup.")
@@ -213,6 +211,7 @@ struct CourseSelectionView: View {
     private var mapSection: some View {
         GeometryReader { geometry in
             let canvasSize = CourseMapLayout.canvasSize(containerWidth: geometry.size.width)
+            let viewportSize = geometry.size
 
             ScrollView([.horizontal, .vertical], showsIndicators: true) {
                 CourseMapCanvasView(
@@ -222,12 +221,23 @@ struct CourseSelectionView: View {
                     onSelect: selectCourse,
                     onMarkComplete: debugMarkCompleteHandler
                 )
-                .padding(.vertical, 12)
+                .padding(.vertical, Self.mapVerticalPadding)
             }
+            .scrollPosition($mapScrollPosition)
             .scrollIndicatorsFlash(onAppear: false)
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Course map")
             .accessibilityHint("Scroll to explore tracks. Double tap an unlocked node to select it.")
+            .onAppear {
+                scheduleMapAutoScroll(viewportSize: viewportSize, canvasSize: canvasSize)
+            }
+            .onDisappear {
+                didAutoScrollMap = false
+            }
+            .onChange(of: selectedProfileID) { _, _ in
+                didAutoScrollMap = false
+                scheduleMapAutoScroll(viewportSize: viewportSize, canvasSize: canvasSize)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -245,22 +255,9 @@ struct CourseSelectionView: View {
         .padding(.bottom, 16)
         .frame(maxWidth: .infinity)
         .hotWheelsContentWidth()
-        .background(bottomChromeBackground)
+        .hotWheelsMenuBottomChromeBackground()
         .opacity(footerAppeared ? 1 : 0)
         .offset(y: footerAppeared ? 0 : (reduceMotion ? 0 : 16))
-    }
-
-    private var bottomChromeBackground: some View {
-        LinearGradient(
-            colors: [
-                HotWheelsTheme.trackBlack.opacity(0),
-                HotWheelsTheme.trackBlack.opacity(0.72),
-                HotWheelsTheme.trackBlack.opacity(0.92),
-            ],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .ignoresSafeArea(edges: .bottom)
     }
 
     @ViewBuilder
@@ -409,6 +406,34 @@ struct CourseSelectionView: View {
             withAnimation(.easeOut(duration: 0.45)) {
                 footerAppeared = true
             }
+        }
+    }
+
+    private func scrollMapToFurthestProgress(viewportSize: CGSize, canvasSize: CGSize) {
+        guard !didAutoScrollMap else { return }
+
+        let targetID = CourseProgressStore.furthestCompletedMapCourseID(for: activeProfile)
+            ?? CourseMapCatalog.nodes.first?.courseID
+            ?? "tutorial"
+
+        guard let offset = CourseMapLayout.scrollOffsetToCenter(
+            courseID: targetID,
+            canvasSize: canvasSize,
+            viewportSize: viewportSize,
+            contentPadding: Self.mapVerticalPadding
+        ) else { return }
+
+        var transaction = Transaction()
+        transaction.disablesAnimations = reduceMotion
+        withTransaction(transaction) {
+            mapScrollPosition.scrollTo(x: offset.x, y: offset.y)
+        }
+        didAutoScrollMap = true
+    }
+
+    private func scheduleMapAutoScroll(viewportSize: CGSize, canvasSize: CGSize) {
+        DispatchQueue.main.async {
+            scrollMapToFurthestProgress(viewportSize: viewportSize, canvasSize: canvasSize)
         }
     }
 }

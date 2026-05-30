@@ -13,6 +13,7 @@ final class GameScene: SKScene {
     // Callbacks — set by GameSceneView before the scene is presented.
     var onTicketCollected: (Int) -> Void = { _ in }
     var onOutcome: (GameRunOutcome) -> Void = { _ in }
+    var onBalanceUpdate: (Double) -> Void = { _ in }
 
     private let course: Course
     private let sampler: CourseSampler
@@ -35,7 +36,6 @@ final class GameScene: SKScene {
     private let tiltProvider: TiltRollProviding
     private var tiltProcessor: TiltInputProcessor
     private var windSimulator: WindGustSimulator?
-    /// When true, device roll is ignored (pause / menu); filtered tilt decays toward level.
     var isTiltInputPaused = false
     var reduceMotion = false {
         didSet {
@@ -54,6 +54,9 @@ final class GameScene: SKScene {
     private var carNode: CarSpriteNode!
     private var ticketNodes: [SKNode] = []
 
+    // Perspective layout constants (in camera/screen space, SpriteKit Y-up)
+    private var horizonY: CGFloat { size.height * 0.10 }
+    private var bottomCarY: CGFloat { -size.height * 0.26 }
     init(
         course: Course,
         carAppearance: CarAppearance,
@@ -94,7 +97,6 @@ final class GameScene: SKScene {
         prepareHaptics()
     }
 
-    /// Applies run-start neutral calibration (see ``GameplayTiltSession``).
     func applyNeutralCalibration(_ neutralRoll: Double) {
         tiltProcessor.calibrateNeutral(using: neutralRoll)
     }
@@ -121,6 +123,13 @@ final class GameScene: SKScene {
 
         elapsedSeconds += dt
         applyMotion(dt: dt)
+
+        // Centrifugal drift: path curvature deflects the car outward.
+        // Player must lean into the curve to stay on the rope.
+        let curvature = sampler.curvature(at: progressS)
+        lateralVelocity += -course.forwardSpeed * course.forwardSpeed
+            * curvature * GameBalanceConstants.curvatureDriftStrength * dt
+
         progressS = min(progressS + course.forwardSpeed * dt, sampler.totalLength)
         lateralOffset += lateralVelocity * dt
 
@@ -139,19 +148,25 @@ final class GameScene: SKScene {
         cameraNode = SKCameraNode()
         addChild(cameraNode)
         camera = cameraNode
+        cameraNode.position = .zero  // Camera is fixed; all nodes in camera space.
 
         rebuildBackground()
 
+        // Rope and gameplay nodes live in camera space (= screen space with fixed camera).
         ropeContainerNode = SKNode()
         ropeContainerNode.zPosition = 10
-        addChild(ropeContainerNode)
+        cameraNode.addChild(ropeContainerNode)
 
-        carNode = CarSpriteNode(appearance: carAppearance, texture: carTexture)
+        carNode = CarSpriteNode(
+            appearance: carAppearance,
+            texture: carTexture,
+            artboardSize: CarAppearanceTextureRenderer.rearViewArtboardSize,
+            anchorPoint: CGPoint(x: 0.5, y: 0.5)
+        )
         carNode.zPosition = 20
         cameraNode.addChild(carNode)
 
         buildTicketNodes()
-        cameraNode.position = sampler.sample(at: 0).position
     }
 
     private func rebuildBackground() {
@@ -161,18 +176,16 @@ final class GameScene: SKScene {
         bg.zPosition = -100
         cameraNode.addChild(bg)
         backgroundNode = bg
-        backgroundNode?.setCameraX(sampler.sample(at: progressS).position.x)
     }
 
     private func buildTicketNodes() {
         ticketNodes.forEach { $0.removeFromParent() }
         ticketNodes = []
-        for fraction in course.ticketFractions {
-            let pt = sampler.sample(at: fraction * sampler.totalLength).position
+        for _ in course.ticketFractions {
             let node = TicketPickupSKNode.make(texture: ticketTexture)
-            node.position = pt
             node.zPosition = 15
-            addChild(node)
+            node.isHidden = true  // Shown when projected into view ahead.
+            cameraNode.addChild(node)
             ticketNodes.append(node)
         }
     }
@@ -206,36 +219,62 @@ final class GameScene: SKScene {
     // MARK: - Visuals
 
     private func updateVisuals(sample: RopeSample) {
-        // Camera sits at rope center; car drifts in camera space perpendicular to rope
-        cameraNode.position = sample.position
+        let hz = horizonY
+        let bcy = bottomCarY
+
+        // Camera is fixed at (0,0). Car position is in screen/camera space.
+        let ropeHalfWidth = GameBalanceConstants.ropeHalfWidth(at: sample.ropeWidth)
+        let posScale = size.width / 2 * PerspectiveRopeRenderer.ropeScreenWidthFraction / CGFloat(ropeHalfWidth)
 
         carNode.position = CGPoint(
-            x: CGFloat(lateralOffset) * sample.normal.dx,
-            y: CGFloat(lateralOffset) * sample.normal.dy
+            x: CGFloat(lateralOffset) * posScale,
+            y: bcy
         )
-        carNode.zRotation = sample.tangentAngle + CGFloat(tiltRadians)
+        // Lean only (no tangent angle — car always faces into the screen).
+        carNode.zRotation = -CGFloat(tiltRadians)
 
-        backgroundNode?.setCameraX(sample.position.x)
-        rebuildRopePath(sample: sample)
+        backgroundNode?.setForwardProgress(progressS)
+        rebuildRopePath(sample: sample, horizonY: hz, bottomY: bcy, ropeHalfWidth: ropeHalfWidth)
+        updateTicketPositions(horizonY: hz, bottomY: bcy, ropeHalfWidth: ropeHalfWidth)
+        let norm = BalanceStabilityEvaluator.normalizedLateralOffset(lateralOffset, ropeHalfWidth: ropeHalfWidth)
+        onBalanceUpdate(norm)
     }
 
-    private func rebuildRopePath(sample: RopeSample) {
+    private func rebuildRopePath(sample: RopeSample, horizonY: CGFloat, bottomY: CGFloat, ropeHalfWidth: Double) {
         _ = sample
         ropeContainerNode.removeAllChildren()
-        let layers = RopePathBuilder.buildLayers(
+        let nodes = PerspectiveRopeRenderer.buildNodes(
             sampler: sampler,
             progressS: progressS,
-            elapsedSeconds: elapsedSeconds,
-            reduceMotion: reduceMotion
+            lateralOffset: lateralOffset,
+            ropeHalfWidth: ropeHalfWidth,
+            sceneSize: size,
+            horizonY: horizonY,
+            bottomY: bottomY
         )
-        for layer in layers {
-            let shape = SKShapeNode(path: layer.path)
-            shape.lineCap = .round
-            shape.lineJoin = .round
-            shape.lineWidth = CGFloat(layer.lineWidth)
-            shape.strokeColor = skColor(layer.stroke, opacity: layer.strokeOpacity)
-            shape.fillColor = .clear
-            ropeContainerNode.addChild(shape)
+        for node in nodes {
+            ropeContainerNode.addChild(node)
+        }
+    }
+
+    private func updateTicketPositions(horizonY: CGFloat, bottomY: CGFloat, ropeHalfWidth: Double) {
+        for (index, fraction) in course.ticketFractions.enumerated() {
+            guard !collectedTicketIndices.contains(index) else { continue }
+            let ticketS = fraction * sampler.totalLength
+            if let screenPos = PerspectiveRopeRenderer.ticketScreenPosition(
+                sampler: sampler,
+                progressS: progressS,
+                ticketS: ticketS,
+                ropeHalfWidth: ropeHalfWidth,
+                sceneSize: size,
+                horizonY: horizonY,
+                bottomY: bottomY
+            ) {
+                ticketNodes[index].position = screenPos
+                ticketNodes[index].isHidden = false
+            } else {
+                ticketNodes[index].isHidden = true
+            }
         }
     }
 
@@ -271,7 +310,7 @@ final class GameScene: SKScene {
                 distanceMeters: sample.progress * sampler.totalLength,
                 ticketsCollected: collectedTicketIndices.count
             )
-            playFallAnimation(lateral: lateralOffset, normal: sample.normal) { [weak self] in
+            playFallAnimation(lateral: lateralOffset) { [weak self] in
                 self?.onOutcome(.failure(stats))
             }
             return
@@ -286,6 +325,8 @@ final class GameScene: SKScene {
         if BalanceStabilityEvaluator.isNearFall(severity: severity) {
             playNearFallHaptic()
             playNearFallRopeCreak()
+        } else if severity >= GameBalanceConstants.nearFallEarlyWarningThreshold {
+            playEarlyWarningHaptic()
         }
 
         if sampler.isFinished(s: progressS) {
@@ -304,15 +345,12 @@ final class GameScene: SKScene {
 
     // MARK: - End animations
 
-    private func playFallAnimation(lateral: Double, normal: CGVector, completion: @escaping () -> Void) {
+    private func playFallAnimation(lateral: Double, completion: @escaping () -> Void) {
         let dir = CGFloat(lateral >= 0 ? 1.0 : -1.0)
         let tumble = SKAction.group([
-            SKAction.rotate(byAngle: dir * .pi * 1.5, duration: 0.5),
-            SKAction.moveBy(
-                x: dir * CGFloat(normal.dx) * 120,
-                y: dir * CGFloat(normal.dy) * 120 - 60,
-                duration: 0.5
-            ),
+            SKAction.rotate(toAngle: dir * .pi * 0.55, duration: 0.5),
+            SKAction.moveBy(x: dir * 90, y: -45, duration: 0.5),
+            SKAction.scale(to: 0.45, duration: 0.5),
             SKAction.sequence([
                 SKAction.wait(forDuration: 0.15),
                 SKAction.fadeOut(withDuration: 0.35)
@@ -330,15 +368,6 @@ final class GameScene: SKScene {
     }
 
     // MARK: - Helpers
-
-    private func skColor(_ c: CourseColor, opacity: Double = 1) -> SKColor {
-        SKColor(
-            red: CGFloat(c.red),
-            green: CGFloat(c.green),
-            blue: CGFloat(c.blue),
-            alpha: CGFloat(c.alpha * opacity)
-        )
-    }
 
     private func playSFX(_ sfx: GameSFX, volume: Float = 1) {
         Task { @MainActor in
@@ -370,6 +399,12 @@ final class GameScene: SKScene {
         }
     }
 
+    private func playEarlyWarningHaptic() {
+        Task { @MainActor in
+            GameplayHaptics.shared.playEarlyWarning()
+        }
+    }
+
     private func playNearFallRopeCreak() {
         let now = CACurrentMediaTime()
         guard now - lastNearFallCreakTime >= GameBalanceConstants.nearFallHapticCooldownSeconds else { return }
@@ -382,7 +417,6 @@ final class GameScene: SKScene {
     }
 
     #if targetEnvironment(simulator)
-    // Forces a fall at t=1.5s on simulator so the animation path can be observed without device tilt.
     private func simulatorForceFall(sample: RopeSample) {
         guard elapsedSeconds > 1.5, !isGameOver else { return }
         isGameOver = true
@@ -393,7 +427,7 @@ final class GameScene: SKScene {
             distanceMeters: sample.progress * sampler.totalLength,
             ticketsCollected: collectedTicketIndices.count
         )
-        playFallAnimation(lateral: 1.0, normal: sample.normal) { [weak self] in
+        playFallAnimation(lateral: 1.0) { [weak self] in
             self?.onOutcome(.failure(stats))
         }
     }

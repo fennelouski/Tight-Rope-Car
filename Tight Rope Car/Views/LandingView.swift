@@ -37,7 +37,7 @@ struct LandingView: View {
                 .opacity(titleAppeared ? 1 : 0)
                 .scaleEffect(titleAppeared ? (titlePulse ? 1.02 : 1.0) : 0.96)
 
-            if showsTiltHint {
+            if showsTiltHint && false {
                 taglineSection
                     .padding(.top, 10)
                     .opacity(taglineAppeared ? 1 : 0)
@@ -70,6 +70,8 @@ struct LandingView: View {
         .padding(.horizontal, 24)
         .hotWheelsScreenContentPadding()
         .hotWheelsContentWidth()
+        .hotWheelsMenuScreenBackground()
+        .hotWheelsSafeAreaPolicy()
 #if DEBUG
         .sheet(isPresented: $showsCarDesignGallery) {
             CarDesignPickerView(selectedDesign: $previewCarDesign)

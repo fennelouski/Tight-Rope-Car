@@ -8,11 +8,13 @@ import SwiftUI
 /// Pre-run step: hold the device level until calibration completes.
 struct GameplayCalibrationOverlay: View {
     let progress: Double
+    var isCalibrationComplete: Bool = false
     var courseDisplayName: String?
     var profile: PlayerProfile?
     var usesOnScreenBalance: Bool = false
-    let showsSkipControl: Bool
-    var onSkip: () -> Void
+    var onContinue: () -> Void = {}
+    var onSkipCalibration: () -> Void = {}
+    var onCancel: () -> Void = {}
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var contentAppeared = false
@@ -22,13 +24,23 @@ struct GameplayCalibrationOverlay: View {
     }
 
     private var instructionMessage: String {
-        if usesOnScreenBalance {
-            return "Tilt calibration is optional here — you can use on-screen balance buttons during the run."
+        if isReadyToStart {
+            return "You're set — start the run or cancel to pick another course."
         }
-        return "Hold your device flat like a spirit level. Stay steady until the ring fills."
+        if usesOnScreenBalance {
+            return "Tilt calibration is optional — skip anytime or use on-screen balance during the run."
+        }
+        return "Hold your phone upright with the screen facing you, or skip to use your last saved steering."
+    }
+
+    private var isReadyToStart: Bool {
+        isCalibrationComplete || clampedProgress >= 1
     }
 
     private var statusMessage: String {
+        if isReadyToStart {
+            return isCalibrationComplete ? "Ready to race!" : "Tap Start Run to go"
+        }
         switch clampedProgress {
         case ..<0.25:
             return "Finding neutral tilt…"
@@ -43,23 +55,27 @@ struct GameplayCalibrationOverlay: View {
         ZStack {
             RunFlowOverlayBackdrop(accentColor: HotWheelsTheme.electricBlue)
 
-            RunFlowOverlayCard(borderColor: HotWheelsTheme.electricBlue) {
-                VStack(spacing: 18) {
-                    header
-                    if hasRunContext {
-                        runContextSection
-                    }
-                    progressSection
-                    HotWheelsInfoBanner(
-                        message: instructionMessage,
-                        systemImage: usesOnScreenBalance ? "hand.tap.fill" : "level.fill"
-                    )
-                    if showsSkipControl {
-                        skipButton
+            ScrollView {
+                RunFlowOverlayCard(borderColor: HotWheelsTheme.electricBlue) {
+                    VStack(spacing: 18) {
+                        header
+                        if hasRunContext {
+                            runContextSection
+                        }
+                        progressSection
+                        HotWheelsInfoBanner(
+                            message: instructionMessage,
+                            systemImage: usesOnScreenBalance ? "hand.tap.fill" : "iphone"
+                        )
+                        actionButtons
                     }
                 }
+                .padding(.horizontal, 24)
+                .hotWheelsSafeAreaPadding(.vertical, 12)
+                .hotWheelsSafeAreaPadding(.bottom, 8)
+                .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, 24)
+            .scrollBounceBehavior(.basedOnSize)
             .hotWheelsContentWidth()
             .opacity(contentAppeared ? 1 : 0)
             .scaleEffect(contentAppeared ? 1 : (reduceMotion ? 1 : 0.94))
@@ -117,7 +133,7 @@ struct GameplayCalibrationOverlay: View {
         VStack(spacing: 12) {
             HotWheelsProgressRing(
                 progress: clampedProgress,
-                systemImage: usesOnScreenBalance ? "hand.tap.fill" : "level.fill",
+                systemImage: usesOnScreenBalance ? "hand.tap.fill" : "iphone",
                 accent: HotWheelsTheme.racingYellow
             )
 
@@ -131,20 +147,36 @@ struct GameplayCalibrationOverlay: View {
         }
     }
 
-    private var skipButton: some View {
-        HotWheelsOverlayActionButton(
-            systemImage: "forward.fill",
-            title: "Continue without tilting",
-            subtitle: usesOnScreenBalance ? "Use on-screen balance controls" : "Starts with level balance",
-            style: .secondary,
-            action: onSkip
-        )
-        .opacity(contentAppeared ? 1 : 0)
-        .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 8))
-        .animation(
-            reduceMotion ? nil : .easeOut(duration: 0.32).delay(0.12),
-            value: contentAppeared
-        )
+    private var actionButtons: some View {
+        VStack(spacing: 10) {
+            if isReadyToStart {
+                HotWheelsOverlayActionButton(
+                    systemImage: "flag.checkered",
+                    title: "Start Run",
+                    subtitle: "Begin \(courseDisplayName ?? "this course")",
+                    style: .primary,
+                    action: onContinue
+                )
+            } else {
+                HotWheelsOverlayActionButton(
+                    systemImage: "forward.fill",
+                    title: "Skip calibration",
+                    subtitle: usesOnScreenBalance
+                        ? "Use on-screen balance controls"
+                        : "Use last saved balance",
+                    style: .secondary,
+                    action: onSkipCalibration
+                )
+            }
+
+            HotWheelsOverlayActionButton(
+                systemImage: "xmark",
+                title: "Cancel",
+                subtitle: "Back to course map",
+                style: .destructive,
+                action: onCancel
+            )
+        }
     }
 
     private func runEntranceAnimation() {
@@ -165,9 +197,7 @@ struct GameplayCalibrationOverlay: View {
         GameplayCalibrationOverlay(
             progress: 0.42,
             courseDisplayName: "First Steps",
-            profile: PlayerProfile(name: "Speed Racer", age: 9, profileColorIndex: 4),
-            showsSkipControl: false,
-            onSkip: {}
+            profile: PlayerProfile(name: "Speed Racer", age: 9, profileColorIndex: 4)
         )
     }
 }
@@ -176,12 +206,11 @@ struct GameplayCalibrationOverlay: View {
     ZStack {
         Color.gray
         GameplayCalibrationOverlay(
-            progress: 0.85,
+            progress: 1,
+            isCalibrationComplete: true,
             courseDisplayName: "Roller Rope",
             profile: PlayerProfile(name: "Jordan", age: 12, profileColorIndex: 13),
-            usesOnScreenBalance: true,
-            showsSkipControl: true,
-            onSkip: {}
+            usesOnScreenBalance: true
         )
     }
 }

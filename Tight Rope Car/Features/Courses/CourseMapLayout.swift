@@ -33,4 +33,33 @@ enum CourseMapLayout {
         }
         return result
     }
+
+    static func scrollOffsetToCenter(
+        courseID: String,
+        canvasSize: CGSize,
+        viewportSize: CGSize,
+        contentPadding: CGFloat = 0
+    ) -> CGPoint? {
+        guard let center = positions(in: canvasSize)[courseID] else { return nil }
+
+        let contentWidth = canvasSize.width
+        let contentHeight = canvasSize.height + contentPadding * 2
+
+        let x = clamp(
+            center.x - viewportSize.width / 2,
+            min: 0,
+            max: max(0, contentWidth - viewportSize.width)
+        )
+        let y = clamp(
+            center.y + contentPadding - viewportSize.height / 2,
+            min: 0,
+            max: max(0, contentHeight - viewportSize.height)
+        )
+
+        return CGPoint(x: x, y: y)
+    }
+
+    private static func clamp(_ value: CGFloat, min: CGFloat, max: CGFloat) -> CGFloat {
+        Swift.min(Swift.max(value, min), max)
+    }
 }

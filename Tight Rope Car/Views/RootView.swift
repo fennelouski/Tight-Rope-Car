@@ -58,9 +58,16 @@ struct RootView: View {
         return profiles.first { $0.id == uuid }
     }
 
+    private var showsMenuStripeBackground: Bool {
+        if case .gameplay = flow { return false }
+        return true
+    }
+
     var body: some View {
         ZStack {
-            RacingStripeBackground()
+            if showsMenuStripeBackground {
+                RacingStripeBackground()
+            }
 
             flowContent
                 .id(flow.screenKey)
@@ -98,7 +105,8 @@ struct RootView: View {
                 onExitToMap: goBackToCourseSelection,
                 onExitToLanding: goToLanding,
                 onPlayAgain: { playAgain(courseID: courseID) },
-                onRetry: { retryGameplay(courseID: courseID) }
+                onRetry: { retryGameplay(courseID: courseID) },
+                onPlayNextCourse: nextCourseID(after: courseID).map { id in { self.playNextCourse(courseID: id) } }
             )
             .id(gameplayRunID)
         }
@@ -258,6 +266,21 @@ struct RootView: View {
     }
 
     private func retryGameplay(courseID: String) {
+        guard canStartGameplay(courseID: courseID) else {
+            goBackToCourseSelection()
+            return
+        }
+        gameplayRunID = UUID()
+        applyFlow(.gameplay(courseID: courseID), navigation: .replace)
+    }
+
+    private func nextCourseID(after courseID: String) -> String? {
+        let all = CourseCatalog.all
+        guard let idx = all.firstIndex(where: { $0.id == courseID }), idx + 1 < all.count else { return nil }
+        return all[idx + 1].id
+    }
+
+    private func playNextCourse(courseID: String) {
         guard canStartGameplay(courseID: courseID) else {
             goBackToCourseSelection()
             return

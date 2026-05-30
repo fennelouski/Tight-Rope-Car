@@ -110,3 +110,37 @@ enum CarAppearanceTextureRenderer {
         #endif
     }
 }
+
+// MARK: - Rear-view support
+
+extension CarAppearanceTextureRenderer {
+    /// Artboard size for the rear-view car silhouette (used in behind-the-car gameplay).
+    static let rearViewArtboardSize = CGSize(width: 100, height: 100)
+
+    /// Rasterizes ``RearViewCarView`` into an ``SKTexture``. Cached by appearance key.
+    @MainActor
+    static func rearViewTexture(for appearance: CarAppearance) -> SKTexture {
+        let key = ("rear|" + cacheKey(for: appearance)) as NSString
+        if let cached = cache.object(forKey: key) {
+            return cached
+        }
+
+        #if canImport(UIKit)
+        let view = RearViewCarView(appearance: appearance, size: rearViewArtboardSize)
+        let renderer = ImageRenderer(content: view)
+        renderer.scale = renderScale
+        renderer.isOpaque = false
+
+        guard let image = renderer.uiImage else {
+            return fallbackTexture()
+        }
+
+        let texture = SKTexture(image: image)
+        texture.filteringMode = .linear
+        cache.setObject(texture, forKey: key)
+        return texture
+        #else
+        return SKTexture()
+        #endif
+    }
+}

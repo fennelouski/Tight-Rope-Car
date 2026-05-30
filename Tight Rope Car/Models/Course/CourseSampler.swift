@@ -52,6 +52,19 @@ struct CourseSampler: Sendable {
         self.totalLength = accumulated
     }
 
+    /// Signed path curvature at arc-length `s` (radians per point).
+    /// Positive = counterclockwise curve (appears rightward in perspective view).
+    /// Negative = clockwise curve (appears leftward in perspective view).
+    func curvature(at s: Double, epsilon: Double = 1.5) -> Double {
+        let s0 = max(s - epsilon, 0)
+        let s1 = min(s + epsilon, totalLength)
+        guard s1 > s0 else { return 0 }
+        var delta = Double(sample(at: s1).tangentAngle - sample(at: s0).tangentAngle)
+        while delta >  .pi { delta -= 2 * .pi }
+        while delta < -.pi { delta += 2 * .pi }
+        return delta / (s1 - s0)
+    }
+
     func isFinished(s: Double) -> Bool {
         s >= totalLength
     }

@@ -46,7 +46,7 @@ struct RunFlowOverlayCard<Content: View>: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .strokeBorder(borderColor, lineWidth: 3)
         )
-        .shadow(color: HotWheelsTheme.trackBlack.opacity(0.55), radius: 0, x: 0, y: 6)
+        .shadow(color: HotWheelsTheme.trackBlack.opacity(0.4), radius: 12, x: 0, y: 6)
     }
 }
 

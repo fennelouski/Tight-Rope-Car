@@ -13,7 +13,15 @@ struct LandingCarGraphic: View {
     @State private var dashPhase: CGFloat = 0
 
     private let carWidth: CGFloat = 110
+    private let carHeight: CGFloat = 50
     private let lateralOffsetScale: Double = 0.08
+    private let ropeCurve = LandingRopeCurve()
+    /// Distance from ZStack center to car wheel contact (half car height minus rope stroke).
+    private let carBottomInset: CGFloat = 22
+    /// Extra drop so wheels visually meet the rope surface.
+    private let carVerticalAdjust: CGFloat = 16
+    private let balanceWobbleTilt: Double = 0.03
+    private let shadowBelowValley: CGFloat = 32
 
     var body: some View {
         ZStack {
@@ -35,8 +43,35 @@ struct LandingCarGraphic: View {
         reduceMotion ? 0 : balance
     }
 
-    private var lateralOffsetPixels: CGFloat {
+    private var effectiveSagAmount: CGFloat {
+        reduceMotion ? 0 : ropeSag
+    }
+
+    /// Small lateral sway in points (matches pre-rope-geometry idle motion).
+    private var lateralSwayPixels: CGFloat {
         motionBalance * carWidth * CGFloat(lateralOffsetScale)
+    }
+
+    /// Sample the sagging rope near center so balance reads as wobble, not a full crossing.
+    private var ropeProgress: CGFloat {
+        0.5 + lateralSwayPixels / ropeCurve.width
+    }
+
+    private var carWorldOffset: CGPoint {
+        let ropePos = ropeCurve.worldPosition(at: ropeProgress, sagAmount: effectiveSagAmount)
+        return CGPoint(
+            x: ropePos.x,
+            y: ropePos.y - carBottomInset + carVerticalAdjust
+        )
+    }
+
+    private var carRopeTangentAngle: CGFloat {
+        ropeCurve.tangentAngle(at: ropeProgress, sagAmount: effectiveSagAmount)
+    }
+
+    private var shadowYOffset: CGFloat {
+        let valley = ropeCurve.worldPosition(at: 0.5, sagAmount: effectiveSagAmount)
+        return valley.y + shadowBelowValley - carWorldOffset.y
     }
 
     private var ropeAndSupports: some View {
@@ -52,7 +87,7 @@ struct LandingCarGraphic: View {
                     HotWheelsTheme.trackBlack.opacity(0.55),
                     style: StrokeStyle(lineWidth: 9, lineCap: .round)
                 )
-                .frame(width: 270, height: 84)
+                .frame(width: ropeCurve.width, height: ropeCurve.height)
                 .offset(y: 22)
 
             AnimatedRopeShape(sagAmount: ropeSag)
@@ -60,7 +95,7 @@ struct LandingCarGraphic: View {
                     HotWheelsTheme.hotRed.opacity(0.35),
                     style: StrokeStyle(lineWidth: 6, lineCap: .round)
                 )
-                .frame(width: 270, height: 84)
+                .frame(width: ropeCurve.width, height: ropeCurve.height)
                 .offset(y: 21)
 
             AnimatedRopeShape(sagAmount: ropeSag)
@@ -68,15 +103,15 @@ struct LandingCarGraphic: View {
                     HotWheelsTheme.trackBlack,
                     style: StrokeStyle(lineWidth: 5, lineCap: .round)
                 )
-                .frame(width: 270, height: 84)
-                .offset(y: 20)
+                .frame(width: ropeCurve.width, height: ropeCurve.height)
+                .offset(y: ropeCurve.frameOffsetY)
 
             AnimatedRopeShape(sagAmount: ropeSag)
                 .stroke(
                     HotWheelsTheme.racingYellow.opacity(0.75),
                     style: StrokeStyle(lineWidth: 2, lineCap: .round)
                 )
-                .frame(width: 270, height: 84)
+                .frame(width: ropeCurve.width, height: ropeCurve.height)
                 .offset(y: 18)
 
             AnimatedRopeShape(sagAmount: ropeSag)
@@ -89,7 +124,7 @@ struct LandingCarGraphic: View {
                         dashPhase: dashPhase
                     )
                 )
-                .frame(width: 270, height: 84)
+                .frame(width: ropeCurve.width, height: ropeCurve.height)
                 .offset(y: 17)
         }
     }
@@ -121,19 +156,19 @@ struct LandingCarGraphic: View {
             Ellipse()
                 .fill(HotWheelsTheme.trackBlack.opacity(0.35))
                 .frame(width: 100, height: 18)
-                .offset(x: lateralOffsetPixels, y: 52)
+                .offset(y: shadowYOffset)
                 .blur(radius: 2)
 
             CarView(
                 car: Car(
-                    lateralOffset: Double(motionBalance) * lateralOffsetScale,
-                    tiltRadians: Double(motionBalance) * 0.09,
+                    lateralOffset: 0,
+                    tiltRadians: Double(carRopeTangentAngle) + Double(motionBalance) * balanceWobbleTilt,
                     appearance: heroAppearance
                 ),
-                size: CGSize(width: carWidth, height: 50)
+                size: CGSize(width: carWidth, height: carHeight)
             )
         }
-        .offset(y: -10)
+        .offset(x: carWorldOffset.x, y: carWorldOffset.y)
     }
 
     private func startIdleAnimations() {
@@ -153,6 +188,78 @@ struct LandingCarGraphic: View {
     }
 }
 
+// MARK: - Rope geometry
+
+/// Quadratic tightrope curve shared by `AnimatedRopeShape` and car placement.
+struct LandingRopeCurve {
+    let width: CGFloat = 270
+    let height: CGFloat = 84
+    let frameOffsetY: CGFloat = 20
+
+    func sagPixels(sagAmount: CGFloat) -> CGFloat {
+        30 + sagAmount * 6
+    }
+
+    func bezierPoints(sagAmount: CGFloat, in rect: CGRect) -> (start: CGPoint, control: CGPoint, end: CGPoint) {
+        let sag = sagPixels(sagAmount: sagAmount)
+        return (
+            CGPoint(x: 0, y: rect.midY + 10),
+            CGPoint(x: rect.midX, y: rect.midY + sag),
+            CGPoint(x: rect.width, y: rect.midY + 10)
+        )
+    }
+
+    func standardRect() -> CGRect {
+        CGRect(x: 0, y: 0, width: width, height: height)
+    }
+
+    func point(at t: CGFloat, sagAmount: CGFloat, in rect: CGRect? = nil) -> CGPoint {
+        let rect = rect ?? standardRect()
+        let points = bezierPoints(sagAmount: sagAmount, in: rect)
+        let clamped = min(max(t, 0), 1)
+        let oneMinusT = 1 - clamped
+        let x = oneMinusT * oneMinusT * points.start.x
+            + 2 * oneMinusT * clamped * points.control.x
+            + clamped * clamped * points.end.x
+        let y = oneMinusT * oneMinusT * points.start.y
+            + 2 * oneMinusT * clamped * points.control.y
+            + clamped * clamped * points.end.y
+        return CGPoint(x: x, y: y)
+    }
+
+    func tangent(at t: CGFloat, sagAmount: CGFloat, in rect: CGRect? = nil) -> CGVector {
+        let rect = rect ?? standardRect()
+        let points = bezierPoints(sagAmount: sagAmount, in: rect)
+        let clamped = min(max(t, 0), 1)
+        let dx = 2 * (1 - clamped) * (points.control.x - points.start.x)
+            + 2 * clamped * (points.end.x - points.control.x)
+        let dy = 2 * (1 - clamped) * (points.control.y - points.start.y)
+            + 2 * clamped * (points.end.y - points.control.y)
+        return CGVector(dx: dx, dy: dy)
+    }
+
+    func tangentAngle(at t: CGFloat, sagAmount: CGFloat) -> CGFloat {
+        let vector = tangent(at: t, sagAmount: sagAmount)
+        return atan2(vector.dy, vector.dx)
+    }
+
+    func worldPosition(at t: CGFloat, sagAmount: CGFloat) -> CGPoint {
+        let local = point(at: t, sagAmount: sagAmount)
+        return CGPoint(
+            x: local.x - width / 2,
+            y: local.y - height / 2 + frameOffsetY
+        )
+    }
+
+    func path(in rect: CGRect, sagAmount: CGFloat) -> Path {
+        let points = bezierPoints(sagAmount: sagAmount, in: rect)
+        var path = Path()
+        path.move(to: points.start)
+        path.addQuadCurve(to: points.end, control: points.control)
+        return path
+    }
+}
+
 private struct AnimatedRopeShape: Shape {
     var sagAmount: CGFloat
 
@@ -162,14 +269,7 @@ private struct AnimatedRopeShape: Shape {
     }
 
     func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let sag = 30 + (sagAmount * 6)
-        path.move(to: CGPoint(x: 0, y: rect.midY + 10))
-        path.addQuadCurve(
-            to: CGPoint(x: rect.width, y: rect.midY + 10),
-            control: CGPoint(x: rect.midX, y: rect.midY + sag)
-        )
-        return path
+        LandingRopeCurve().path(in: rect, sagAmount: sagAmount)
     }
 }
 

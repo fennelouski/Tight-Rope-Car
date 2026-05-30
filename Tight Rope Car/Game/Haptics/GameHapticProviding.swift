@@ -13,4 +13,6 @@ protocol GameHapticProviding: AnyObject {
     func prepare()
     func playFall(_ reason: FallReason)
     func playNearFall()
+    func playEarlyWarning()
+    func resetEarlyWarningCooldown()
 }

@@ -23,6 +23,8 @@ struct ProfileSelectionView: View {
     @State private var headerAppeared = false
     @State private var contentAppeared = false
     @State private var footerAppeared = false
+    @State private var editModeActive = false
+    @State private var longPressFeedbackTrigger = 0
 
     private var hasSelection: Bool {
         !selectedProfileID.isEmpty
@@ -42,25 +44,24 @@ struct ProfileSelectionView: View {
             mainContent
                 .opacity(contentAppeared ? 1 : 0)
                 .scaleEffect(contentAppeared ? 1 : (reduceMotion ? 1 : 0.96))
-
-            selectedRacerCard
-                .padding(.top, 12)
-
-            Spacer(minLength: 0)
+                .frame(maxHeight: .infinity)
         }
         .padding(.horizontal, horizontalPadding)
         .hotWheelsScreenContentPadding()
         .hotWheelsContentWidth()
-        .safeAreaInset(edge: .bottom, spacing: 0) {
+        .hotWheelsMenuScreenBackground()
+        .hotWheelsBottomChromeInset(spacing: 0) {
             continueButton
                 .padding(.horizontal, horizontalPadding)
                 .padding(.top, 8)
                 .padding(.bottom, 16)
                 .frame(maxWidth: .infinity)
                 .hotWheelsContentWidth()
+                .hotWheelsMenuBottomChromeBackground()
                 .opacity(footerAppeared ? 1 : 0)
                 .offset(y: footerAppeared ? 0 : (reduceMotion ? 0 : 16))
         }
+        .hotWheelsSafeAreaPolicy()
         .sheet(isPresented: $showCreateProfile) {
             CreateProfileView()
         }
@@ -68,47 +69,46 @@ struct ProfileSelectionView: View {
             EditProfileView(profile: profile)
         }
         .onAppear(perform: runEntranceAnimation)
+        .onChange(of: selectedProfileID) { _, newValue in
+            if newValue.isEmpty { editModeActive = false }
+        }
+        .sensoryFeedback(.impact(weight: .medium, intensity: 0.9), trigger: longPressFeedbackTrigger)
     }
 
     private var horizontalPadding: CGFloat {
         horizontalSizeClass == .regular ? 40 : 24
     }
 
-    private var subtitleText: String {
-        if profiles.isEmpty {
-            return "Every champion needs a pit pass — create yours"
-        }
-        let count = profiles.count
-        let racerWord = count == 1 ? "racer" : "racers"
-        return "\(count) \(racerWord) on the grid — tap one to drive"
-    }
-
     // MARK: - Header
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HotWheelsScreenHeader(
-                eyebrow: "Pit Lane",
-                eyebrowSystemImage: "person.2.fill",
-                title: "Choose Your Racer",
-                subtitle: subtitleText
+            HotWheelsFunnelTopBar(
+                backAccessibilityHint: "Return to main menu",
+                onBack: onBack
             ) {
-                HotWheelsProminentIconButton(
-                    systemImage: "plus",
-                    accessibilityLabel: "Add profile",
-                    accessibilityHint: "Create a new racer profile",
-                    action: { showCreateProfile = true }
-                )
+                if editModeActive, let profile = selectedProfile {
+                    HotWheelsProminentIconButton(
+                        systemImage: "pencil",
+                        accessibilityLabel: "Edit \(profile.displayName)",
+                        accessibilityHint: "Edit this racer's profile",
+                        action: { editingProfile = profile }
+                    )
+                    .transition(.scale(scale: 0.8).combined(with: .opacity))
+                } else {
+                    HotWheelsProminentIconButton(
+                        systemImage: "plus",
+                        accessibilityLabel: "Add profile",
+                        accessibilityHint: "Create a new racer profile",
+                        action: { showCreateProfile = true }
+                    )
+                    .transition(.scale(scale: 0.8).combined(with: .opacity))
+                }
             }
 
-            HotWheelsToolbarRail(centerHint: profiles.isEmpty ? nil : "Swipe a row to edit or delete") {
-                CourseMapToolbarButton(
-                    systemImage: "chevron.left",
-                    accessibilityLabel: "Back",
-                    accessibilityHint: "Return to main menu",
-                    action: onBack
-                )
-            }
+            HotWheelsScreenHeader(
+                title: "Choose Your Racer"
+            )
 
             if let selectedProfile {
                 PlayerProgressStripView(profile: selectedProfile)
@@ -127,7 +127,7 @@ struct ProfileSelectionView: View {
             emptyState
         } else {
             HotWheelsContentPanel(
-                title: "Your Racers",
+                title: profiles.count == 1 ? "1 racer on the grid" : "\(profiles.count) racers on the grid",
                 trailingCaption: selectedProfile?.displayName,
                 accessibilityLabel: "Profile list",
                 accessibilityHint: "Double tap a profile to select it. Swipe for edit or delete."
@@ -190,7 +190,20 @@ struct ProfileSelectionView: View {
                     )
                 }
                 .buttonStyle(.plain)
-                .listRowInsets(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 0))
+                .simultaneousGesture(
+                    LongPressGesture(minimumDuration: 2.0)
+                        .onEnded { _ in
+                            let animation: Animation? = reduceMotion
+                                ? nil
+                                : .spring(response: 0.32, dampingFraction: 0.72)
+                            withAnimation(animation) {
+                                selectedProfileID = profile.id.uuidString
+                                editModeActive = true
+                                longPressFeedbackTrigger += 1
+                            }
+                        }
+                )
+                .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
                 .swipeActions(edge: .leading) {
@@ -212,23 +225,8 @@ struct ProfileSelectionView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .frame(minHeight: min(420, CGFloat(profiles.count) * 130 + 24))
-    }
+        .contentMargins(.horizontal, 0, for: .scrollContent)
 
-    @ViewBuilder
-    private var selectedRacerCard: some View {
-        if let profile = selectedProfile, hasSelection {
-            HotWheelsSelectionCard(
-                overline: "Selected racer",
-                title: profile.displayName,
-                detail: "Age \(profile.age) · ready for the garage",
-                detailColor: profile.profileColor,
-                systemImage: "person.crop.circle.badge.checkmark",
-                accentColor: profile.profileColor,
-                accessibilityLabel: "Selected racer \(profile.displayName), age \(profile.age)"
-            )
-            .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
-        }
     }
 
     // MARK: - Continue

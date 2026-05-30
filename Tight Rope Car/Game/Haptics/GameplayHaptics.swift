@@ -19,7 +19,9 @@ final class GameplayHaptics: GameHapticProviding {
 
     private let fallImpact = UIImpactFeedbackGenerator(style: .heavy)
     private let nearFallImpact = UIImpactFeedbackGenerator(style: .rigid)
+    private let earlyWarningImpact = UIImpactFeedbackGenerator(style: .soft)
     private var lastNearFallTime: TimeInterval = 0
+    private var lastEarlyWarningTime: TimeInterval = 0
 
     private init() {}
 
@@ -30,6 +32,7 @@ final class GameplayHaptics: GameHapticProviding {
     func prepare() {
         fallImpact.prepare()
         nearFallImpact.prepare()
+        earlyWarningImpact.prepare()
     }
 
     func playFall(_ reason: FallReason) {
@@ -56,5 +59,18 @@ final class GameplayHaptics: GameHapticProviding {
 
     func resetNearFallCooldown() {
         lastNearFallTime = 0
+    }
+
+    func playEarlyWarning() {
+        guard shouldPlay else { return }
+        let now = CACurrentMediaTime()
+        guard now - lastEarlyWarningTime >= GameBalanceConstants.nearFallEarlyWarningCooldownSeconds else { return }
+        lastEarlyWarningTime = now
+        earlyWarningImpact.impactOccurred(intensity: 0.30)
+        earlyWarningImpact.prepare()
+    }
+
+    func resetEarlyWarningCooldown() {
+        lastEarlyWarningTime = 0
     }
 }

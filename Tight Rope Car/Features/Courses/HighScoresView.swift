@@ -34,35 +34,30 @@ struct HighScoresView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                HotWheelsTheme.backgroundGradient
-                    .ignoresSafeArea()
+            ScrollView {
+                VStack(spacing: 16) {
+                    summaryHeader
+                        .opacity(contentAppeared ? 1 : 0)
+                        .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 8))
 
-                ScrollView {
-                    VStack(spacing: 16) {
-                        summaryHeader
-                            .opacity(contentAppeared ? 1 : 0)
-                            .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 8))
+                    LazyVStack(spacing: 12) {
+                        HotWheelsFormSectionHeader("All Tracks")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top, 4)
 
-                        LazyVStack(spacing: 12) {
-                            HotWheelsFormSectionHeader("All Tracks")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.top, 4)
-
-                            ForEach(Array(rows.enumerated()), id: \.element.courseID) { index, row in
-                                scoreCard(row)
-                                    .opacity(contentAppeared ? 1 : 0)
-                                    .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 10))
-                                    .animation(
-                                        reduceMotion ? nil : .easeOut(duration: 0.35).delay(Double(index) * 0.03),
-                                        value: contentAppeared
-                                    )
-                            }
+                        ForEach(Array(rows.enumerated()), id: \.element.courseID) { index, row in
+                            scoreCard(row)
+                                .opacity(contentAppeared ? 1 : 0)
+                                .offset(y: contentAppeared ? 0 : (reduceMotion ? 0 : 10))
+                                .animation(
+                                    reduceMotion ? nil : .easeOut(duration: 0.35).delay(Double(index) * 0.03),
+                                    value: contentAppeared
+                                )
                         }
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
                 }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
             }
             .navigationTitle("High Scores")
             .navigationBarTitleDisplayMode(.inline)
@@ -79,6 +74,8 @@ struct HighScoresView: View {
                 }
             }
         }
+        .hotWheelsSheetBackground()
+        .hotWheelsSafeAreaPolicy()
         .onAppear {
             if reduceMotion {
                 contentAppeared = true

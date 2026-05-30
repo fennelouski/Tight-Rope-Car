@@ -65,5 +65,6 @@ flowchart TB
 
 ## Related docs
 
+- [ui-layout.md](ui-layout.md) — safe areas, screen backgrounds, shared layout modifiers
 - [gameplay-tuning.md](gameplay-tuning.md) — all `GameBalanceConstants` knobs
 - [background-themes.md](background-themes.md) — parallax themes per course

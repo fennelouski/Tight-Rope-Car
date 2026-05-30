@@ -60,13 +60,13 @@ All **8 themes × 3 layers = 24** imagesets are populated from `Graphics/`.
 3. **Export** — PNG with alpha into `Graphics/` using the naming convention above.
 4. **Import** — `./scripts/import_parallax_graphics.sh`
 5. **Regenerate placeholders (optional)** — `python3 scripts/generate_parallax_backgrounds.py` writes ocean/forest/beach @1x canvases into Assets; for widescreen strips use `generate_ocean_parallax_graphics.py` or `generate_bedroom_parallax_graphics.py` → `Graphics/bg_*_*.png` then import.
-6. **Verify** — Run unit tests (`BackgroundThemeAssetTests`), open **Backgrounds** on the landing screen, or use `ParallaxBackgroundPreviewView` / `BackgroundThemeGalleryView` previews in Xcode.
+6. **Verify** — Run unit tests (`BackgroundThemeAssetTests`), or open `BackgroundThemeGalleryView` / `ParallaxBackgroundPreviewView` previews in Xcode (the gallery is not linked from the production landing screen yet).
 
 ## Rendering
 
 - **SpriteKit:** `GameBackgroundNode` loads metadata, draws sky/ground, and tiles each `SKTexture` by `scrollFactor` and `zIndex`.
 - **Preview:** `ParallaxBackgroundPreviewScene` auto-scrolls `setCameraX` for simulator checks.
-- **In-app gallery:** Landing → **Backgrounds** → `BackgroundThemeGalleryView` → full-screen `ParallaxBackgroundPreviewView`.
+- **In-app gallery:** `BackgroundThemeGalleryView` (SwiftUI previews or a future menu entry) → full-screen `ParallaxBackgroundPreviewView`. Preview chrome uses safe-area padding; parallax fills the notch and home indicator ([ui-layout.md](ui-layout.md)).
 
 See also [background-themes.md](background-themes.md) for scroll-factor conventions and theme list.
 
@@ -86,4 +86,4 @@ python3 scripts/generate_ocean_waves_audio.py
 python3 scripts/generate_forest_birds_audio.py
 ```
 
-Preview playback: Landing → **Backgrounds** → open a theme with bundled audio → speaker control (loops while preview is open).
+Preview playback: open `BackgroundThemeGalleryView` in Xcode previews → pick a theme with bundled audio → speaker control (loops while preview is open).

@@ -28,20 +28,15 @@ struct CreateProfileView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                HotWheelsTheme.backgroundGradient
-                    .ignoresSafeArea()
-
-                ProfileEditorForm(
-                    name: $name,
-                    age: $age,
-                    selectedColorIndex: $selectedColorIndex,
-                    previewAvatarData: previewAvatarData,
-                    cameraHint: "Tap to take a selfie (optional)",
-                    validationMessage: validationMessage,
-                    onCameraTap: openCamera
-                )
-            }
+            ProfileEditorForm(
+                name: $name,
+                age: $age,
+                selectedColorIndex: $selectedColorIndex,
+                previewAvatarData: previewAvatarData,
+                cameraHint: "Tap to take a selfie (optional)",
+                validationMessage: validationMessage,
+                onCameraTap: openCamera
+            )
             .profileEditorSheetChrome(
                 title: "New Profile",
                 canSave: canSave,
@@ -57,6 +52,8 @@ struct CreateProfileView: View {
                 Text("Use a physical iPhone or iPad to take a profile selfie. The simulator does not have a camera.")
             }
         }
+        .hotWheelsSheetBackground()
+        .hotWheelsSafeAreaPolicy()
     }
 
     private func openCamera() {

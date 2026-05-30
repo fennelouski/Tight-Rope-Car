@@ -17,6 +17,7 @@ struct GameSceneView: View {
     var onScreenBalanceActive: Bool = false
     var onTicketCollected: (Int) -> Void = { _ in }
     var onOutcome: (GameRunOutcome) -> Void = { _ in }
+    var onBalanceUpdate: (Double) -> Void = { _ in }
 
     @State private var scene: GameScene
 
@@ -30,7 +31,8 @@ struct GameSceneView: View {
         reduceMotion: Bool = false,
         onScreenBalanceActive: Bool = false,
         onTicketCollected: @escaping (Int) -> Void = { _ in },
-        onOutcome: @escaping (GameRunOutcome) -> Void = { _ in }
+        onOutcome: @escaping (GameRunOutcome) -> Void = { _ in },
+        onBalanceUpdate: @escaping (Double) -> Void = { _ in }
     ) {
         self.course = course
         self.carAppearance = carAppearance
@@ -41,8 +43,9 @@ struct GameSceneView: View {
         self.onScreenBalanceActive = onScreenBalanceActive
         self.onTicketCollected = onTicketCollected
         self.onOutcome = onOutcome
+        self.onBalanceUpdate = onBalanceUpdate
 
-        let carTexture = CarAppearanceTextureRenderer.texture(for: carAppearance)
+        let carTexture = CarAppearanceTextureRenderer.rearViewTexture(for: carAppearance)
         let ticketTexture = TicketPickupTextureRenderer.texture(
             accentColor: ticketAccentColor,
             reduceMotion: reduceMotion
@@ -59,6 +62,7 @@ struct GameSceneView: View {
         gameScene.applyNeutralCalibration(neutralRollOffset)
         gameScene.onTicketCollected = onTicketCollected
         gameScene.onOutcome = onOutcome
+        gameScene.onBalanceUpdate = onBalanceUpdate
         gameScene.isTiltInputPaused = isPaused
         gameScene.onScreenBalanceActive = onScreenBalanceActive
         _scene = State(initialValue: gameScene)

@@ -104,10 +104,21 @@ extension View {
         .frame(maxWidth: .infinity)
     }
 
-    /// Adds a 16 pt visual buffer below the status bar / notch for menu funnel screens.
-    /// Apply to the root content stack of each screen; the parent ZStack's safe-area
-    /// constraints already keep content below the system chrome.
+    /// Adds a 16 pt buffer below the status bar inside the safe layout.
+    /// Does not define the screen background — use ``hotWheelsMenuScreenBackground()`` for that.
+    @ViewBuilder
     func hotWheelsScreenContentPadding() -> some View {
-        padding(.top, 16)
+        if HotWheelsLayoutExperiment.ignoresSafeArea {
+            self
+        } else {
+            padding(.top, 16)
+        }
+    }
+
+    /// Wraps or grows vertically instead of truncating with an ellipsis.
+    func hotWheelsShowsFullText(alignment: TextAlignment = .leading) -> some View {
+        lineLimit(nil)
+            .multilineTextAlignment(alignment)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }

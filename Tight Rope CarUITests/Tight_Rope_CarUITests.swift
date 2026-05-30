@@ -105,9 +105,15 @@ final class Tight_Rope_CarUITests: XCTestCase {
             // ── Gameplay (Calibration overlay) ───────────────────────────────
             attach(app, name: "09_Gameplay_Calibration")
 
-            // Skip calibration if present
-            let skipBtn = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Continue'")).firstMatch
-            if skipBtn.waitForExistence(timeout: 4) { skipBtn.tap(); sleep(2) }
+            // Leave calibration quickly (skip or start run)
+            let startRun = app.buttons["Start Run"]
+            let skipCalibration = app.buttons["Skip calibration"]
+            if startRun.waitForExistence(timeout: 4) {
+                startRun.tap()
+            } else if skipCalibration.waitForExistence(timeout: 2) {
+                skipCalibration.tap()
+            }
+            sleep(2)
 
             attach(app, name: "10_Gameplay_Running")
 

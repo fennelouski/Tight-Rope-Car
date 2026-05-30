@@ -41,29 +41,15 @@ struct ProfileRowView: View {
                     Text(profile.displayName)
                         .font(HotWheelsTheme.headlineFont)
                         .foregroundStyle(.white)
+                        .hotWheelsShowsFullText()
 
                     Text("Age \(profile.age)")
                         .font(HotWheelsTheme.captionFont)
                         .foregroundStyle(.white.opacity(0.85))
+                        .hotWheelsShowsFullText()
 
                     if hasProgress {
-                        HStack(spacing: 14) {
-                            if profile.totalTickets > 0 {
-                                HotWheelsInlineStat(
-                                    systemImage: "ticket.fill",
-                                    text: "\(profile.totalTickets)",
-                                    accent: HotWheelsTheme.flameOrange
-                                )
-                            }
-
-                            if completedCount > 0 {
-                                HotWheelsInlineStat(
-                                    systemImage: "flag.checkered",
-                                    text: "\(completedCount)/\(totalCourses)",
-                                    accent: HotWheelsTheme.electricBlue
-                                )
-                            }
-                        }
+                        profileProgressStats
                     } else {
                         Text("New racer — no runs yet")
                             .font(.system(size: 12, weight: .medium, design: .rounded))
@@ -86,6 +72,43 @@ struct ProfileRowView: View {
         .accessibilityLabel(rowAccessibilityLabel)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityHint(isSelected ? "Selected racer" : "Double tap to select")
+    }
+
+    @ViewBuilder
+    private var profileProgressStats: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 14) {
+                profileTicketStat
+                profileCourseStat
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                profileTicketStat
+                profileCourseStat
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var profileTicketStat: some View {
+        if profile.totalTickets > 0 {
+            HotWheelsInlineStat(
+                systemImage: "ticket.fill",
+                text: "\(profile.totalTickets)",
+                accent: HotWheelsTheme.flameOrange
+            )
+        }
+    }
+
+    @ViewBuilder
+    private var profileCourseStat: some View {
+        if completedCount > 0 {
+            HotWheelsInlineStat(
+                systemImage: "flag.checkered",
+                text: "\(completedCount)/\(totalCourses)",
+                accent: HotWheelsTheme.electricBlue
+            )
+        }
     }
 
     private var rowAccessibilityLabel: String {

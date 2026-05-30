@@ -56,7 +56,7 @@ A physical device is recommended for playtesting; the Simulator uses on-screen b
 - [ ] Game Center leaderboards and achievements
 - [ ] iCloud sync for progress
 - [x] Accessibility: on-screen left/right balance
-- [x] iPad: adaptive layouts for map, garage, and gameplay
+- [x] iPad: adaptive layouts for map and garage (max-width content); gameplay playfield is full-bleed
 
 ## Garage
 
@@ -64,7 +64,7 @@ Fifteen selectable die-cast silhouettes live in `CarCatalog` (IDs match `CarDesi
 
 ## Level backgrounds
 
-Eight themes (ocean, forest, city, bedroom, toy shop, candy shop, garden, beach) with 24 parallax layers in the asset catalog. Import pipeline: `scripts/import_parallax_graphics.sh`. Bundled ambience: `ocean_waves`, `forest_birds`, `city_traffic`, `toy_shop_chimes`, `garden_breeze`, `beach_waves` (bedroom and candy shop are silent). Loops play in the **Backgrounds** gallery and during gameplay when a theme provides a clip. See [docs/background-themes.md](docs/background-themes.md) and [docs/background-art.md](docs/background-art.md).
+Eight themes (ocean, forest, city, bedroom, toy shop, candy shop, garden, beach) with 24 parallax layers in the asset catalog. Import pipeline: `scripts/import_parallax_graphics.sh`. Bundled ambience: `ocean_waves`, `forest_birds`, `city_traffic`, `toy_shop_chimes`, `garden_breeze`, `beach_waves` (bedroom and candy shop are silent). Loops play during gameplay when a theme provides a clip. Browse themes in Xcode via `BackgroundThemeGalleryView` previews. See [docs/background-themes.md](docs/background-themes.md) and [docs/background-art.md](docs/background-art.md).
 
 ## Technical architecture
 
@@ -93,7 +93,7 @@ flowchart TB
   Scene --> SwiftData[GameRunRecorder]
 ```
 
-See [docs/systems-overview.md](docs/systems-overview.md) for the full input → scene → recorder flow.
+See [docs/systems-overview.md](docs/systems-overview.md) for the full input → scene → recorder flow, and [docs/ui-layout.md](docs/ui-layout.md) for safe-area and screen background conventions.
 
 ## Game design notes
 

@@ -60,6 +60,12 @@ enum GameBalanceConstants {
     /// Minimum seconds between near-fall haptic pulses.
     static let nearFallHapticCooldownSeconds: TimeInterval = 0.45
 
+    /// Normalized severity at or above this triggers the early-warning haptic (softer, earlier than near-fall).
+    static let nearFallEarlyWarningThreshold: Double = 0.50
+
+    /// Minimum seconds between early-warning haptic pulses.
+    static let nearFallEarlyWarningCooldownSeconds: TimeInterval = 1.2
+
     // MARK: - Simulation loop
 
     /// Maximum `update` delta (seconds) to avoid spiral-of-death after a hitch.
@@ -99,6 +105,10 @@ enum GameBalanceConstants {
 
     /// Start a new rope micro-segment when width changes by more than this (points).
     static let ropeVisualWidthChangeThreshold: Double = 1
+
+    /// Scales the centrifugal lateral drift from path curvature.
+    /// 1.0 = physically accurate v²κ; increase for more demanding steering.
+    static let curvatureDriftStrength: Double = 1.0
 
     static func ropeHalfWidth(at ropeWidth: Double) -> Double {
         (ropeWidth / 2) * lateralFallThresholdOfHalfWidth

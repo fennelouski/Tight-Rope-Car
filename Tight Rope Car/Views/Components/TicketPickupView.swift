@@ -46,6 +46,8 @@ struct TicketPickupView: View {
     var displaySize: TicketPickupDisplaySize = .playfield
     /// When false, sparkle and shimmer are suppressed (e.g. SpriteKit rasterization with reduce motion).
     var allowsMotionEffects: Bool = true
+    /// When true, shimmer and sparkle animate regardless of displaySize (used for compact stat pill icons).
+    var animatesAtAllSizes: Bool = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var shimmer = false
@@ -78,7 +80,7 @@ struct TicketPickupView: View {
     }
 
     private var shimmerScale: CGFloat {
-        guard state == .available, shimmer, !motionReduced, displaySize == .playfield else {
+        guard state == .available, shimmer, !motionReduced, (animatesAtAllSizes || displaySize == .playfield) else {
             return 1
         }
         return 1.06
@@ -87,7 +89,7 @@ struct TicketPickupView: View {
     private var showsSparkle: Bool {
         state == .available
             && !motionReduced
-            && (displaySize == .playfield || displaySize == .standard)
+            && (animatesAtAllSizes || displaySize == .playfield || displaySize == .standard)
     }
 
     private var ticketBody: some View {
@@ -165,7 +167,7 @@ struct TicketPickupView: View {
     }
 
     private func runShimmerAnimation() {
-        guard state == .available, !motionReduced, displaySize == .playfield else { return }
+        guard state == .available, !motionReduced, (animatesAtAllSizes || displaySize == .playfield) else { return }
         withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
             shimmer = true
         }

@@ -13,6 +13,7 @@ struct GameplayView: View {
     var onExitToLanding: () -> Void = {}
     var onPlayAgain: () -> Void = {}
     var onRetry: () -> Void = {}
+    var onPlayNextCourse: (() -> Void)? = nil
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -35,6 +36,7 @@ struct GameplayView: View {
     @State private var hudAppeared = false
     /// Tickets collected so far in the current run; updated by the game scene.
     @State private var ticketsCollected: Int = 0
+    @State private var normalizedBalance: Double = 0
     @StateObject private var ambiencePlayer = ThemeAmbiencePlayer()
     @StateObject private var gameplayLoopPlayer = GameplayLoopSFXPlayer()
 
@@ -60,9 +62,9 @@ struct GameplayView: View {
     }
 
     private var balanceHintText: String {
-        if !isRunActive { return "Hold device level" }
+        if !isRunActive { return "Hold phone upright" }
         if showsOnScreenBalance { return "Use balance buttons" }
-        return "Tilt to balance"
+        return "Tilt to steer"
     }
 
     private var isSimulator: Bool {
@@ -146,9 +148,13 @@ struct GameplayView: View {
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 24)
-            .hotWheelsScreenContentPadding()
+            .safeAreaPadding(.top)
+            .padding(.top, 16)
+            .hotWheelsContentWidth()
 
             overlayForPhase
+
+            BalanceIndicatorView(normalizedOffset: normalizedBalance, isActive: isRunActive)
 
             if showsOnScreenBalancePad, let course {
                 VStack {
@@ -162,7 +168,7 @@ struct GameplayView: View {
                 }
             }
         }
-        .hotWheelsContentWidth()
+        .ignoresSafeArea()
         .onChange(of: reduceMotion) { _, enabled in
             tiltSession.configureForAccessibility(reduceMotion: enabled, isSimulator: isSimulator)
         }
@@ -173,6 +179,7 @@ struct GameplayView: View {
                 Task { @MainActor in
                     GameSFXPlayer.shared.stopAll()
                     GameplayHaptics.shared.resetNearFallCooldown()
+                    GameplayHaptics.shared.resetEarlyWarningCooldown()
                 }
             }
         }
@@ -233,7 +240,8 @@ struct GameplayView: View {
                 reduceMotion: reduceMotion,
                 onScreenBalanceActive: tiltSession.preferOnScreenBalance,
                 onTicketCollected: { total in ticketsCollected = total },
-                onOutcome: { outcome in finishRun(outcome: outcome) }
+                onOutcome: { outcome in finishRun(outcome: outcome) },
+                onBalanceUpdate: { norm in normalizedBalance = norm }
             )
         } else {
             Color.black
@@ -348,11 +356,13 @@ struct GameplayView: View {
         case .calibrating:
             GameplayCalibrationOverlay(
                 progress: tiltSession.calibrationProgress,
+                isCalibrationComplete: tiltSession.isCalibrationComplete,
                 courseDisplayName: courseDisplayName,
                 profile: activeProfile,
                 usesOnScreenBalance: showsOnScreenBalance,
-                showsSkipControl: reduceMotion || isSimulator,
-                onSkip: skipCalibrationAndStartRun
+                onContinue: continueCalibrationAndStartRun,
+                onSkipCalibration: skipCalibrationAndStartRun,
+                onCancel: onExitToMap
             )
             .transition(.opacity)
         case .running:
@@ -374,7 +384,8 @@ struct GameplayView: View {
                 profileColor: activeProfile?.profileColor ?? HotWheelsTheme.racingYellow,
                 onMap: onExitToMap,
                 onPlayAgain: onPlayAgain,
-                onRetry: onRetry
+                onRetry: onRetry,
+                onPlayNextCourse: outcome.isSuccess ? onPlayNextCourse : nil
             )
             .transition(.opacity)
         }
@@ -433,6 +444,14 @@ struct GameplayView: View {
         finishCalibrationAndStartRun()
     }
 
+    private func continueCalibrationAndStartRun() {
+        guard case .calibrating = phase else { return }
+        if !tiltSession.isCalibrationComplete {
+            tiltSession.skipCalibration(using: activeProfile?.tiltNeutralRollRadians)
+        }
+        finishCalibrationAndStartRun()
+    }
+
     private func finishCalibrationAndStartRun() {
         guard case .calibrating = phase else { return }
         tiltSession.commitCalibration()
@@ -482,6 +501,51 @@ extension GameRunStats {
             distanceMeters: 180.0 + Double(hash % 160),
             ticketsCollected: Int(Double(ticketCount) * distanceFraction)
         )
+    }
+}
+
+
+// MARK: - Balance Indicator
+
+private struct BalanceIndicatorView: View {
+    let normalizedOffset: Double
+    let isActive: Bool
+
+    private var indicatorColor: Color {
+        let abs = Swift.abs(normalizedOffset)
+        if abs < 0.45 { return .green }
+        if abs < 0.72 { return .yellow }
+        return .red
+    }
+
+    var body: some View {
+        let trackWidth: CGFloat = 140
+        let trackHeight: CGFloat = 8
+        let dotSize: CGFloat = 14
+        let travelRange = trackWidth - dotSize
+        let clampedOffset = max(-1, min(1, normalizedOffset))
+
+        GeometryReader { _ in
+            ZStack {
+                Capsule()
+                    .fill(HotWheelsTheme.trackBlack.opacity(0.72))
+                    .frame(width: trackWidth, height: trackHeight)
+
+                Circle()
+                    .fill(indicatorColor)
+                    .frame(width: dotSize, height: dotSize)
+                    .offset(x: CGFloat(clampedOffset) * travelRange / 2)
+                    .animation(.interactiveSpring(response: 0.12, dampingFraction: 0.75), value: clampedOffset)
+            }
+        }
+        .frame(height: dotSize)
+        .padding(.horizontal)
+        .safeAreaPadding(.bottom)
+        .padding(.bottom, 20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .opacity(isActive ? 0.88 : 0)
+        .animation(.easeOut(duration: 0.2), value: isActive)
+        .allowsHitTesting(false)
     }
 }
 

@@ -8,17 +8,17 @@ import SwiftUI
 // MARK: - Screen header
 
 struct HotWheelsScreenHeader<Trailing: View>: View {
-    let eyebrow: String
-    let eyebrowSystemImage: String
+    let eyebrow: String?
+    let eyebrowSystemImage: String?
     let title: String
-    let subtitle: String
+    let subtitle: String?
     @ViewBuilder var trailing: () -> Trailing
 
     init(
-        eyebrow: String,
-        eyebrowSystemImage: String,
+        eyebrow: String? = nil,
+        eyebrowSystemImage: String? = nil,
         title: String,
-        subtitle: String,
+        subtitle: String? = nil,
         @ViewBuilder trailing: @escaping () -> Trailing = { EmptyView() }
     ) {
         self.eyebrow = eyebrow
@@ -29,28 +29,36 @@ struct HotWheelsScreenHeader<Trailing: View>: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 6) {
-                Label(eyebrow, systemImage: eyebrowSystemImage)
-                    .font(HotWheelsTheme.captionFont.weight(.bold))
-                    .foregroundStyle(HotWheelsTheme.racingYellow)
-                    .labelStyle(.titleAndIcon)
-                    .accessibilityHidden(true)
+        VStack(alignment: .leading, spacing: 6) {
+            if let eyebrow, let eyebrowSystemImage {
+                HStack(alignment: .center, spacing: 12) {
+                    Label(eyebrow, systemImage: eyebrowSystemImage)
+                        .font(HotWheelsTheme.captionFont.weight(.bold))
+                        .foregroundStyle(HotWheelsTheme.racingYellow)
+                        .labelStyle(.titleAndIcon)
+                        .accessibilityHidden(true)
 
-                Text(title)
-                    .font(HotWheelsTheme.sectionTitleFont)
-                    .foregroundStyle(.white)
-                    .hotWheelsTitleShadow()
-                    .accessibilityAddTraits(.isHeader)
+                    Spacer(minLength: 8)
 
+                    trailing()
+                }
+            }
+
+            Text(title)
+                .font(HotWheelsTheme.sectionTitleFont)
+                .foregroundStyle(.white)
+                .hotWheelsTitleShadow()
+                .hotWheelsShowsFullText()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityAddTraits(.isHeader)
+
+            if let subtitle {
                 Text(subtitle)
                     .font(HotWheelsTheme.captionFont)
                     .foregroundStyle(.white.opacity(0.9))
+                    .hotWheelsShowsFullText()
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-
-            Spacer(minLength: 8)
-
-            trailing()
         }
     }
 }
@@ -75,7 +83,7 @@ struct HotWheelsRacerChip: View {
                 Text(profile.displayName)
                     .font(HotWheelsTheme.captionFont.weight(.bold))
                     .foregroundStyle(.white)
-                    .lineLimit(1)
+                    .hotWheelsShowsFullText()
             }
         }
         .padding(.horizontal, 10)
@@ -151,16 +159,18 @@ struct HotWheelsContentPanel<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
+            HStack(alignment: .top, spacing: 8) {
                 Text(title)
                     .font(HotWheelsTheme.captionFont.weight(.bold))
                     .foregroundStyle(.white.opacity(0.85))
-                Spacer()
+                    .hotWheelsShowsFullText()
+                Spacer(minLength: 8)
                 if let trailingCaption {
                     Text(trailingCaption)
                         .font(HotWheelsTheme.captionFont.weight(.bold))
                         .foregroundStyle(trailingCaptionColor)
-                        .lineLimit(1)
+                        .hotWheelsShowsFullText(alignment: .trailing)
+                        .multilineTextAlignment(.trailing)
                 }
             }
             .accessibilityHidden(true)
@@ -275,8 +285,7 @@ struct HotWheelsStatPill: View {
                 Text(value)
                     .font(size == .banner ? HotWheelsTheme.headlineFont : HotWheelsTheme.captionFont.weight(.bold))
                     .foregroundStyle(.white)
-                    .minimumScaleFactor(0.8)
-                    .lineLimit(1)
+                    .hotWheelsShowsFullText()
 
                 if size == .banner {
                     Text(title.uppercased())
@@ -384,6 +393,8 @@ struct HotWheelsInlineStat: View {
             .font(.system(size: 12, weight: .bold, design: .rounded))
             .foregroundStyle(accent.opacity(0.95))
             .labelStyle(.titleAndIcon)
+            .fixedSize(horizontal: true, vertical: false)
+            .layoutPriority(1)
             .accessibilityHidden(true)
     }
 }
@@ -418,15 +429,14 @@ struct HotWheelsSelectableRowCard<Content: View>: View {
                         isSelected ? accentColor : HotWheelsTheme.hotRed.opacity(0.55),
                         lineWidth: isSelected ? 3 : 2
                     )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .strokeBorder(
-                                isSelected ? HotWheelsTheme.racingYellow : Color.clear,
-                                lineWidth: 2
-                            )
-                            .padding(-3)
-                    )
             )
+            .overlay {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(HotWheelsTheme.racingYellow, lineWidth: 2)
+                        .padding(2)
+                }
+            }
             .scaleEffect(isSelected && !reduceMotion ? 1.02 : 1)
             .animation(reduceMotion ? nil : .spring(response: 0.32, dampingFraction: 0.72), value: isSelected)
             .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -745,7 +755,7 @@ struct HotWheelsOverlayActionButton: View {
             .background(
                 Capsule(style: .continuous)
                     .fill(fillColor)
-                    .shadow(color: HotWheelsTheme.trackBlack.opacity(0.35), radius: 0, x: 0, y: 3)
+                    .shadow(color: HotWheelsTheme.trackBlack.opacity(0.3), radius: 4, x: 0, y: 3)
             )
             .overlay(
                 Capsule(style: .continuous)
